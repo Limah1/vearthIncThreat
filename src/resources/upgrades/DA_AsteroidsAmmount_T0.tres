@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://bn7eihs2pekyr"]
+
+[ext_resource type="Texture2D" uid="uid://dkj7ha3tpah6g" path="res://src/assets/UI/UpgradeIcons/Damage.png" id="1_bcfpi"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_xu8be"]
+
+[resource]
+script = ExtResource("2_xu8be")
+upgrade_id = "DA_Asteroid_Ammount_T0"
+upgrade_name = "More Asteroids!"
+description = "Increase by 100% the number of asteroids
+"
+icon = ExtResource("1_bcfpi")
+category = "UnlockSmallAsteroid"
+base_cost = 18.0
+value_increment = 1.0
+is_percentage = true
+unlocks = Array[String]([])

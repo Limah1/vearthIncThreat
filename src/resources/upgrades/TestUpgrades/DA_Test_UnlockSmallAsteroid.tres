@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://test_unlocksmallasteroid"]
+
+[ext_resource type="Texture2D" uid="uid://csl4mdyrbxope" path="res://src/assets/UI/UpgradeIcons/Hourglass2.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+upgrade_id = "Test_UnlockSmallAsteroid"
+upgrade_name = "Test Unlock Small Asteroid"
+description = "Test upgrade for UnlockSmallAsteroid category."
+icon = ExtResource("1_icon")
+category = "UnlockSmallAsteroid"
+unlocks = Array[String]([])
+base_cost = 0.0
+max_level = 1
+value_increment = 1.0
+internal_level = 1.0
+is_percentage = false
+default_unlocked = true

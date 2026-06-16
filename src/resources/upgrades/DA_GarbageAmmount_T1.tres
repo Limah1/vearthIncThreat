@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://7kpqqswctm44"]
+
+[ext_resource type="Texture2D" uid="uid://cptm6aehmjdy2" path="res://src/assets/UI/UpgradeIcons/T_SpawnRate.png" id="1_t7uxb"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_8f233"]
+
+[resource]
+script = ExtResource("2_8f233")
+upgrade_id = "DA_GarbageAmmount_T1"
+upgrade_name = "Garbage Ammount"
+description = "Gain + 15 garbage ammount on screen!"
+icon = ExtResource("1_t7uxb")
+base_cost = 15.0
+value_increment = 15.0
+unlocks = Array[String]([])

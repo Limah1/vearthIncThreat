@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://c6p50gcrw4w8g"]
+
+[ext_resource type="Script" uid="uid://dbfpymgvo8fgr" path="res://src/entities/space_garbage.gd" id="1_garbage"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8b" path="res://src/entities/visuals/space_garbage_3d.tscn" id="2_visual"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_garbage"]
+radius = 18.0
+
+[node name="SpaceGarbage" type="CharacterBody2D" unique_id=1109222332]
+collision_layer = 2
+collision_mask = 2
+motion_mode = 1
+script = ExtResource("1_garbage")
+base_speed = 15.0
+base_value = 1.0
+base_planet_damage = 1.0
+base_debris_chance = 0.0
+base_hp = 3.0
+rotation_speed = 1.0
+visual_3d_scene = ExtResource("2_visual")
+max_hp = 3.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=64444672]
+shape = SubResource("CircleShape2D_garbage")

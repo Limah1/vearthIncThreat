@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://c6p50gcrw4w8h"]
+
+[ext_resource type="Script" uid="uid://bt5aim7f78q16" path="res://src/entities/asteroid.gd" id="1_asteroid"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8c" path="res://src/entities/visuals/small_asteroid.tscn" id="2_visual"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_asteroid"]
+radius = 25.0
+
+[node name="Asteroid" type="CharacterBody2D" unique_id=1011584906]
+collision_layer = 2
+collision_mask = 2
+motion_mode = 1
+script = ExtResource("1_asteroid")
+base_value = 5.0
+base_planet_damage = 2.0
+visual_3d_scene = ExtResource("2_visual")
+max_hp = 6.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1918646502]
+shape = SubResource("CircleShape2D_asteroid")

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://geqw0ld2yx4m"]
+
+[ext_resource type="Texture2D" uid="uid://viuupex8k4ld" path="res://src/assets/UI/UpgradeIcons/T_AtkSpeed.png" id="1_7lx5j"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_gxxfv"]
+
+[resource]
+script = ExtResource("2_gxxfv")
+upgrade_id = "DA_ClickSpeed_T1"
+upgrade_name = "Auto Clicker"
+description = "Increases by 5% Click Speed
+"
+icon = ExtResource("1_7lx5j")
+category = "AutoClickRate"
+base_cost = 7.0
+value_increment = 0.05
+is_percentage = true
+unlocks = Array[String]([])

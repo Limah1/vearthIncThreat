@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://c6p50gcrw4w80"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_satlaser"]
+albedo_color = Color(0.0, 0.8, 1.0, 1)
+emission_enabled = true
+emission = Color(0.0, 0.8, 1.0, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_satlaser"]
+material = SubResource("StandardMaterial3D_satlaser")
+radius = 0.2
+height = 1.0
+
+[node name="SatelliteProjectile3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_satlaser")

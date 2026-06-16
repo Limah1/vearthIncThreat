@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://c15inqb30qxoj"]
+
+[ext_resource type="Texture2D" uid="uid://csl4mdyrbxope" path="res://src/assets/UI/UpgradeIcons/Hourglass2.png" id="1_2ba4y"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_a5t1r"]
+
+[resource]
+script = ExtResource("2_a5t1r")
+upgrade_id = "DA_PlanetHP_T1"
+upgrade_name = "Planet Fortification"
+description = "Planet gains + 8 Health points
+"
+icon = ExtResource("1_2ba4y")
+category = "DebrisUnlock"
+base_cost = 15.0
+value_increment = 8.0
+unlocks = Array[String](["DA_UnlockDebrie_T0", "", ""])

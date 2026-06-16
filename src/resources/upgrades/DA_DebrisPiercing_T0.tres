@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://debris_piercing_t0"]
+
+[ext_resource type="Texture2D" uid="uid://c15inqb30qxos" path="res://src/assets/UI/UpgradeIcons/T_SateliteDamage.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+upgrade_id = "DebrisPiercing"
+upgrade_name = "Debris Piercing"
+description = "Allows debris projectiles to penetrate +1 threat before being destroyed."
+icon = ExtResource("1_icon")
+category = "DebrisPiercing"
+unlocks = Array[String]([])
+base_cost = 25.0
+max_level = 3
+value_increment = 1.0
+internal_level = 1.0
+is_percentage = false
+default_unlocked = false

@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://c6p50gcrw4w8f"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_laser"]
+albedo_color = Color(1, 0.1, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.0, 0.0, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_laser"]
+material = SubResource("StandardMaterial3D_laser")
+radius = 5.0
+height = 20.0
+
+[node name="EnemyProjectile3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_laser")

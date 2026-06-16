@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://dd8d3a1r8q0o6"]
+
+[ext_resource type="Script" uid="uid://buug27wtu7kpu" path="res://src/ui/upgrade_slot_ui.gd" id="1_slot"]
+
+[node name="UpgradeSlotUI" type="PanelContainer" unique_id=530972564]
+custom_minimum_size = Vector2(80, 80)
+offset_right = 80.0
+offset_bottom = 80.0
+script = ExtResource("1_slot")
+
+[node name="IconButton" type="Button" parent="." unique_id=1527156828]
+layout_mode = 2
+
+[node name="PlaceholderRect" type="ColorRect" parent="IconButton" unique_id=471319028]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.15, 0.15, 0.18, 1)
+
+[node name="IconRect" type="TextureRect" parent="IconButton" unique_id=1341464618]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LvlIndicator" type="Label" parent="IconButton" unique_id=1135353806]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -30.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "✓"
+horizontal_alignment = 2
+vertical_alignment = 2

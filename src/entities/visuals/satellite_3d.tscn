@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://c6p50gcrw4w8p"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gold"]
+albedo_color = Color(0.9, 0.7, 0.1, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+material = SubResource("StandardMaterial3D_gold")
+top_radius = 0.5
+bottom_radius = 0.5
+height = 1.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_solar"]
+albedo_color = Color(0.05, 0.2, 0.6, 1)
+metallic = 0.9
+roughness = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_panel"]
+material = SubResource("StandardMaterial3D_solar")
+size = Vector3(1.5, 0.05, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dish"]
+albedo_color = Color(0.7, 0.7, 0.7, 1)
+metallic = 0.5
+roughness = 0.4
+
+[sub_resource type="PrismMesh" id="PrismMesh_dish"]
+material = SubResource("StandardMaterial3D_dish")
+size = Vector3(0.6, 0.6, 0.3)
+
+[node name="Satellite3D" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_body")
+
+[node name="PanelLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, 0)
+mesh = SubResource("BoxMesh_panel")
+
+[node name="PanelRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0)
+mesh = SubResource("BoxMesh_panel")
+
+[node name="Dish" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, -0.8)
+mesh = SubResource("PrismMesh_dish")

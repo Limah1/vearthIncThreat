@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://c6p50gcrw4w8d"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ship"]
+albedo_color = Color(0.12, 0.13, 0.16, 1)
+metallic = 0.9
+roughness = 0.35
+
+[sub_resource type="PrismMesh" id="PrismMesh_ship"]
+material = SubResource("StandardMaterial3D_ship")
+size = Vector3(40.0, 48.0, 10.0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_engine"]
+emission_enabled = true
+emission = Color(1, 0.1, 0.1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_engine"]
+material = SubResource("StandardMaterial3D_engine")
+size = Vector3(12.0, 6.0, 9.0)
+
+[node name="EnemySpaceship3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("PrismMesh_ship")
+
+[node name="EngineGlow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 22.0)
+mesh = SubResource("BoxMesh_engine")

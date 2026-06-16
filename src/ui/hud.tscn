@@ -1,0 +1,86 @@
+[gd_scene load_steps=2 format=3 uid="uid://btj50gcrw4w8a"]
+
+[ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BottomRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BarsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.4
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="HPBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/BottomRow/BarsContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 24)
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+value = 100.0
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/BottomRow/BarsContainer/HPBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "HP: 100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ShieldBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/BottomRow/BarsContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+value = 50.0
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/BottomRow/BarsContainer/ShieldBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "SHIELD: 50/50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CreditsLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow/BarsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "CREDITS: $0"
+
+[node name="BottomSpacer" type="Control" parent="MarginContainer/VBoxContainer/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.6
+mouse_filter = 2

@@ -1,0 +1,185 @@
+[gd_scene format=3 uid="uid://debug_menu_scene_1"]
+
+[ext_resource type="Script" path="res://src/ui/debug_menu.gd" id="1_script"]
+
+[node name="DebugMenu" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0313726, 0.0470588, 0.0784314, 0.85)
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -600.0
+offset_top = -400.0
+offset_right = 600.0
+offset_top = -400.0
+offset_right = 600.0
+offset_bottom = 400.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="MainSplit" type="HBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="LeftColumn" type="VBoxContainer" parent="PanelContainer/MarginContainer/MainSplit"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "DEBUG PANEL"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+
+[node name="StatusHeader" type="Label" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "GAME STATUS"
+
+[node name="CreditsLabel" type="Label" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Credits: $0"
+
+[node name="CreditsButtons" type="HBoxContainer" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Add1kButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/CreditsButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+$1k"
+
+[node name="Add10kButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/CreditsButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+$10k"
+
+[node name="Add100kButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/CreditsButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+$100k"
+
+[node name="ResetCreditsButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/CreditsButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset"
+
+[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="ZoneLabel" type="Label" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Zone: 1"
+
+[node name="ZoneButtons" type="HBoxContainer" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AddZoneButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/ZoneButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "+1 Zone"
+
+[node name="SubZoneButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/ZoneButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "-1 Zone"
+
+[node name="ReloadZoneButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn/ZoneButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reload"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+
+[node name="GlobalActionsHeader" type="Label" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "GLOBAL ACTIONS"
+
+[node name="MaxAllButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "MAX ALL UPGRADES"
+
+[node name="ResetAllButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "RESET ALL UPGRADES"
+
+[node name="Spacer2" type="Control" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/MainSplit/LeftColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "CLOSE [F12]"
+
+[node name="VSeparator" type="VSeparator" parent="PanelContainer/MarginContainer/MainSplit"]
+layout_mode = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="PanelContainer/MarginContainer/MainSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="RightTitle" type="Label" parent="PanelContainer/MarginContainer/MainSplit/RightColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ALL UPGRADES (OVERRIDE)"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/MainSplit/RightColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="UpgradesList" type="VBoxContainer" parent="PanelContainer/MarginContainer/MainSplit/RightColumn/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10

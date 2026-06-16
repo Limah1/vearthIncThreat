@@ -1,0 +1,855 @@
+[gd_scene format=3 uid="uid://dd8d3a1r8q0o7"]
+
+[ext_resource type="Script" uid="uid://bkovevnetfam0" path="res://src/ui/skill_tree.gd" id="1_tree"]
+[ext_resource type="PackedScene" uid="uid://dd8d3a1r8q0o6" path="res://src/ui/upgrade_slot_ui.tscn" id="2_slot"]
+[ext_resource type="Resource" uid="uid://c15inqb30qxoj" path="res://src/resources/upgrades/DA_PlanetHP_T1.tres" id="3_4ekbc"]
+[ext_resource type="Resource" uid="uid://dy11mnpmky67q" path="res://src/resources/upgrades/DA_PlanetHP_T0.tres" id="3_yujo4"]
+[ext_resource type="Resource" uid="uid://dwmytrlpamb1v" path="res://src/resources/upgrades/DA_GarbageAmmount_T0.tres" id="4_64tqs"]
+[ext_resource type="Resource" uid="uid://clickdamage1" path="res://src/resources/upgrades/DA_ClickDamage_T0.tres" id="4_gm6cx"]
+[ext_resource type="Resource" uid="uid://geqw0ld2yx4m" path="res://src/resources/upgrades/DA_ClickSpeed_T1.tres" id="4_w8oyu"]
+[ext_resource type="Resource" uid="uid://clickradius1" path="res://src/resources/upgrades/DA_ClickRadius_T0.tres" id="5_gm6cx"]
+[ext_resource type="Resource" uid="uid://bqq084chr0uey" path="res://src/resources/upgrades/DA_ClickRadius_T1.tres" id="6_ecoli"]
+[ext_resource type="Resource" uid="uid://bimym7qbxagl7" path="res://src/resources/upgrades/DA_ClickSpeed_T0.tres" id="6_rjd3r"]
+[ext_resource type="Resource" uid="uid://bckceaq4hq4l7" path="res://src/resources/upgrades/DA_UnlockDebrie_T0.tres" id="8_unlockdebrie"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_DebrisPiercing_T0.tres" id="9_debris_piercing"]
+[ext_resource type="Resource" uid="uid://ccp1d153h0a0y" path="res://src/resources/upgrades/DA_ClickDamage_T1.tres" id="9_mnh8q"]
+[ext_resource type="Resource" uid="uid://tkh8ra0cjr0o" path="res://src/resources/upgrades/DA_GarbageQualityT_0.tres" id="10_o00n4"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_DebrisAmount_T0.tres" id="13_07v8b"]
+[ext_resource type="Resource" uid="uid://7kpqqswctm44" path="res://src/resources/upgrades/DA_GarbageAmmount_T1.tres" id="13_w8oyu"]
+
+[node name="SkillTree" type="Control" unique_id=1201646280]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tree")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1620092915]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1120.0
+offset_right = 960.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0431373, 0.0588235, 0.0980392, 0.882353)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=520256907]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=643980504]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1030187996]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/Header" unique_id=504270933]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "UPGRADE CENTER"
+
+[node name="BalanceLabel" type="Label" parent="MarginContainer/VBoxContainer/Header" unique_id=51991511]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "BANK CREDITS: $0"
+horizontal_alignment = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer" unique_id=2050321563]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridContainer" type="Control" parent="MarginContainer/VBoxContainer/ScrollContainer" unique_id=2038303017]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="UpgradeSlotUI" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=366875371 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 301.0
+offset_right = 840.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI2" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=756967140 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 301.0
+offset_right = 1000.0
+offset_bottom = 381.0
+upgrade_data = ExtResource("3_4ekbc")
+
+[node name="UpgradeSlotUI3" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1982991130 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 301.0
+offset_right = 1160.0
+offset_bottom = 381.0
+upgrade_data = ExtResource("4_w8oyu")
+
+[node name="UpgradeSlotUI4" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=84996732 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 301.0
+offset_right = 1320.0
+offset_bottom = 381.0
+upgrade_data = ExtResource("9_mnh8q")
+
+[node name="UpgradeSlotUI5" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1561243125 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 301.0
+offset_right = 1480.0
+offset_bottom = 381.0
+upgrade_data = ExtResource("6_ecoli")
+
+[node name="UpgradeSlotUI6" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=748338168 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 301.0
+offset_right = 1640.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI7" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=705813598 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 301.0
+offset_right = 1800.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI8" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=2063512533 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 301.0
+offset_right = 1800.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI9" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=337642819 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 461.0
+offset_right = 840.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI10" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1118710142 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 461.0
+offset_right = 1000.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI11" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1660473585 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 461.0
+offset_right = 1160.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI12" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=688637096 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 461.0
+offset_right = 1320.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI13" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=23312027 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 461.0
+offset_right = 1480.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI14" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=937735049 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 461.0
+offset_right = 1640.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI15" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1068634301 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 461.0
+offset_right = 1800.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI16" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1170109061 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 461.0
+offset_right = 1800.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI17" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1863898959 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 461.0
+offset_right = 840.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("4_64tqs")
+
+[node name="UpgradeSlotUI18" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=998903227 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 461.0
+offset_right = 1000.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("3_yujo4")
+
+[node name="UpgradeSlotUI19" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1406026898 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 461.0
+offset_right = 1160.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("4_gm6cx")
+
+[node name="UpgradeSlotUI20" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=964308233 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 461.0
+offset_right = 1320.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("5_gm6cx")
+
+[node name="UpgradeSlotUI21" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1630394632 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 461.0
+offset_right = 1480.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("6_rjd3r")
+
+[node name="UpgradeSlotUI22" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1486078357 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 461.0
+offset_right = 1640.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI23" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1440373437 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 461.0
+offset_right = 1800.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI24" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1389081778 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 461.0
+offset_right = 1800.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI25" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=407588356 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 621.0
+offset_right = 840.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI33" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=25779519 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 301.0
+offset_right = 680.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI34" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1431344899 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 461.0
+offset_right = 680.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("10_o00n4")
+
+[node name="UpgradeSlotUI35" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=698828659 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 621.0
+offset_right = 680.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI36" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=717924441 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 301.0
+offset_right = 520.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI37" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1544246498 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 461.0
+offset_right = 520.0
+offset_bottom = 541.0
+upgrade_data = ExtResource("13_w8oyu")
+
+[node name="UpgradeSlotUI38" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=588361298 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 621.0
+offset_right = 520.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI39" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1483693797 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 301.0
+offset_right = 360.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI40" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=516592046 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 461.0
+offset_right = 360.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI41" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1463420624 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 621.0
+offset_right = 360.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI42" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=980368300 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 301.0
+offset_right = 360.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI43" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1281246486 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 461.0
+offset_right = 360.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI44" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1182551817 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 621.0
+offset_right = 360.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI45" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=599157252 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 301.0
+offset_right = 200.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI48" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1284900238 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 141.0
+offset_right = 840.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI49" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=967199673 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 141.0
+offset_right = 1000.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI50" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=280537803 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 141.0
+offset_right = 1160.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI51" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1814986684 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 141.0
+offset_right = 1320.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI52" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=174180338 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 141.0
+offset_right = 1480.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI53" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=812386977 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 141.0
+offset_right = 1640.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI54" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=370596338 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 141.0
+offset_right = 1800.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI55" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1654610312 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 141.0
+offset_right = 680.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI56" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=64130054 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 141.0
+offset_right = 520.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI57" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1675171665 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 141.0
+offset_right = 360.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI58" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1395995983 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 141.0
+offset_right = 200.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI59" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=500905522 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 141.0
+offset_right = 840.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI60" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1477134823 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 141.0
+offset_right = 1000.0
+offset_bottom = 221.0
+upgrade_data = ExtResource("8_unlockdebrie")
+
+[node name="UpgradeSlotUI61" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=2033735023 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 141.0
+offset_right = 1160.0
+offset_bottom = 221.0
+upgrade_data = ExtResource("9_debris_piercing")
+
+[node name="UpgradeSlotUI62" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=164574455 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 141.0
+offset_right = 1320.0
+offset_bottom = 221.0
+upgrade_data = ExtResource("13_07v8b")
+
+[node name="UpgradeSlotUI63" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=540444364 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 141.0
+offset_right = 1480.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI64" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=413902379 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 141.0
+offset_right = 1640.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI65" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1570243538 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 141.0
+offset_right = 1800.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI66" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1681385562 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 141.0
+offset_right = 680.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI67" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1768337247 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 141.0
+offset_right = 520.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI68" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=672836117 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 141.0
+offset_right = 360.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI69" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1607656155 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 141.0
+offset_right = 200.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI46" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=859429172 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 461.0
+offset_right = 200.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI47" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1667079121 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 621.0
+offset_right = 200.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI26" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=2126267890 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 621.0
+offset_right = 1000.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI27" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1586489491 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 621.0
+offset_right = 1160.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI28" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1312119432 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 621.0
+offset_right = 1320.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI29" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1255861686 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 621.0
+offset_right = 1480.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI30" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=928614308 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 621.0
+offset_right = 1640.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI31" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1708169738 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 621.0
+offset_right = 1800.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI32" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=30874821 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 621.0
+offset_right = 1800.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI70" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=123284466 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 781.0
+offset_right = 840.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI71" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1748458637 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 781.0
+offset_right = 680.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI72" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=160768240 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 781.0
+offset_right = 520.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI73" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=589451060 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 781.0
+offset_right = 360.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI74" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=347466505 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 781.0
+offset_right = 200.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI81" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=2016586689 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -40.0
+offset_top = 301.0
+offset_right = 40.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI82" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1401087886 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -40.0
+offset_top = 141.0
+offset_right = 40.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI83" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=116831741 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -40.0
+offset_top = 461.0
+offset_right = 40.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI84" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=593743294 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -40.0
+offset_top = 621.0
+offset_right = 40.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI85" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=900300505 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -40.0
+offset_top = 781.0
+offset_right = 40.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI86" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1649741206 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -120.0
+offset_top = 301.0
+offset_right = -40.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI87" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1163690767 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -120.0
+offset_top = 141.0
+offset_right = -40.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI88" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1161481172 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -120.0
+offset_top = 461.0
+offset_right = -40.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI89" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1014557493 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -120.0
+offset_top = 621.0
+offset_right = -40.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI90" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1554157593 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -120.0
+offset_top = 781.0
+offset_right = -40.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI91" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1403299082 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 301.0
+offset_right = -120.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI92" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=673880290 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 141.0
+offset_right = -120.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI93" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1800459149 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 461.0
+offset_right = -120.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI94" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1316874112 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 621.0
+offset_right = -120.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI95" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=978328537 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -200.0
+offset_top = 781.0
+offset_right = -120.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI96" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1814617663 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -360.0
+offset_top = 301.0
+offset_right = -280.0
+offset_bottom = 381.0
+
+[node name="UpgradeSlotUI97" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=2091601531 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -360.0
+offset_top = 141.0
+offset_right = -280.0
+offset_bottom = 221.0
+
+[node name="UpgradeSlotUI98" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=928281677 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -360.0
+offset_top = 461.0
+offset_right = -280.0
+offset_bottom = 541.0
+
+[node name="UpgradeSlotUI99" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1365659675 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -360.0
+offset_top = 621.0
+offset_right = -280.0
+offset_bottom = 701.0
+
+[node name="UpgradeSlotUI100" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=793800538 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = -360.0
+offset_top = 781.0
+offset_right = -280.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI75" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=414307005 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 781.0
+offset_right = 1000.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI76" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1330177436 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1080.0
+offset_top = 781.0
+offset_right = 1160.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI77" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=2005849023 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1240.0
+offset_top = 781.0
+offset_right = 1320.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI78" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1856818495 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 781.0
+offset_right = 1480.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI79" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=312412213 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 781.0
+offset_right = 1640.0
+offset_bottom = 861.0
+
+[node name="UpgradeSlotUI80" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1687852071 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 781.0
+offset_right = 1800.0
+offset_bottom = 861.0
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=70993994]
+custom_minimum_size = Vector2(250, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+text = "START NEXT ZONE"
+
+[node name="TooltipPopup" type="Control" parent="." unique_id=1351641327]
+visible = false
+custom_minimum_size = Vector2(250, 110)
+anchors_preset = 0
+offset_right = 250.0
+offset_bottom = 110.0
+
+[node name="Bg" type="ColorRect" parent="TooltipPopup" unique_id=1948108459]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.11, 0.18, 0.95)
+
+[node name="Margin" type="MarginContainer" parent="TooltipPopup" unique_id=439066196]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="TooltipPopup/Margin" unique_id=738432719]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TooltipTitle" type="Label" parent="TooltipPopup/Margin/VBox" unique_id=1513054388]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Upgrade Name"
+autowrap_mode = 3
+
+[node name="TooltipDetails" type="Label" parent="TooltipPopup/Margin/VBox" unique_id=232622226]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "COST: $100 | BONUS: +5"
+autowrap_mode = 3
+
+[node name="TooltipDesc" type="Label" parent="TooltipPopup/Margin/VBox" unique_id=1970071127]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "Upgrade description goes here."
+autowrap_mode = 3

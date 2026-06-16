@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://bckceaq4hq4l7"]
+
+[ext_resource type="Texture2D" uid="uid://cptm6aehmjdy2" path="res://src/assets/UI/UpgradeIcons/T_SpawnRate.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+upgrade_id = "DA_UnlockDebrie_T0"
+upgrade_name = "Unlock Debrie"
+description = "Chance of debris salvage from active threats becomes 80% temporarily, resetting to 20% once debris is successfully spawned."
+icon = ExtResource("1_icon")
+category = "DebrisUnlock"
+base_cost = 1.0
+value_increment = 0.2
+is_percentage = true
+unlocks = Array[String](["DebrisPiercing", "DebrisAmount"])

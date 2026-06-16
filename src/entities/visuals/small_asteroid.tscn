@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://c6p50gcrw4w8c"]
+
+[ext_resource type="PackedScene" uid="uid://hkulpumg5kqk" path="res://src/assets/3DAssets/meteoro_small.FBX" id="1_4bp76"]
+
+[node name="Asteroid3D" type="Node3D" unique_id=584592245]
+
+[node name="meteoro_small" parent="." unique_id=188322611 instance=ExtResource("1_4bp76")]
+transform = Transform3D(90, 0, 0, 0, 90, 0, 0, 0, 90, 0, 0, 0)

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://dy11mnpmky67q"]
+
+[ext_resource type="Texture2D" uid="uid://csl4mdyrbxope" path="res://src/assets/UI/UpgradeIcons/Hourglass2.png" id="1_4x3v6"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_w2h0q"]
+
+[resource]
+script = ExtResource("2_w2h0q")
+upgrade_id = "DA_PlanetHP_T0"
+upgrade_name = "Planet HP"
+description = "Planet gains + 5 Health points
+"
+icon = ExtResource("1_4x3v6")
+category = "PlanetHealth"
+base_cost = 5.0
+value_increment = 5.0
+default_unlocked = true
+unlocks = Array[String](["DA_ClickDamage_T0", "DA_ClickRadius_T0", "DA_ClickSpeed_T0", "DA_PlanetHP_T1", "DA_GarbageAmmount_T0"])
