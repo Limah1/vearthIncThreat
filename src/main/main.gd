@@ -4,7 +4,6 @@ extends Node3D
 @onready var camera: Camera3D = $CameraController
 @onready var world_2d: Node2D = $World2D
 @onready var world_3d: Node3D = $World3D
-@onready var object_pooler: ObjectPooler = $ObjectPooler
 
 # UI Nodes
 @onready var hud: Control = $CanvasLayer/HUD
@@ -14,9 +13,6 @@ extends Node3D
 var wave_active: bool = false
 
 func _ready() -> void:
-	# Initialize pooler
-	object_pooler.setup(world_2d, world_3d)
-	
 	# Trigger camera animation or start spawning directly
 	var game_mgr = get_node("/root/GameManager")
 	if game_mgr.b_can_animate_camera:

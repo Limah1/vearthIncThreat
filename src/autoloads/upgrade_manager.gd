@@ -75,18 +75,24 @@ func can_unlock_upgrade(upgrade_data: UpgradeData) -> bool:
 
 # Try to purchase upgrade. Deducts currency from GameManager.
 func purchase_upgrade(upgrade_data: UpgradeData) -> bool:
+	print("[UpgradeManager] Attempting to purchase: ", upgrade_data.upgrade_id)
 	if not can_unlock_upgrade(upgrade_data):
+		print("[UpgradeManager] Purchase failed: cannot unlock ", upgrade_data.upgrade_id)
 		return false
 		
 	var current_level = get_upgrade_level(upgrade_data.upgrade_id)
 	var cost = upgrade_data.get_cost(current_level)
 	
+	print("[UpgradeManager] Cost: ", cost, ", Current Level: ", current_level)
+	
 	# Access global GameManager (we will create this autoload as GameManager)
 	if GameManager.spend_lifetime_credits(cost):
 		purchased_levels[upgrade_data.upgrade_id] = current_level + 1
+		print("[UpgradeManager] Purchase success! New level for ", upgrade_data.upgrade_id, " is ", purchased_levels[upgrade_data.upgrade_id])
 		upgrade_purchased.emit(upgrade_data.upgrade_id, current_level + 1)
 		return true
 		
+	print("[UpgradeManager] Purchase failed: not enough credits.")
 	return false
 
 # Calculate Category Multiplier using additive scaling:

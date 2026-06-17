@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 UpgradeManager="*res://src/autoloads/upgrade_manager.gd"
 GameManager="*res://src/autoloads/game_manager.gd"
+PerformanceLogger="*res://src/core/performance_logger.gd"
 
 [display]
 

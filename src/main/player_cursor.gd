@@ -72,6 +72,13 @@ func _recalculate_click_stats() -> void:
 	final_click_radius = base_click_radius + upgrade_mgr.get_total_bonus("ClickRadius")
 	click_damage = base_click_damage + upgrade_mgr.get_total_bonus("ClickDamage")
 
+func _input(event: InputEvent) -> void:
+	var game_mgr = get_node("/root/GameManager")
+	if game_mgr.current_state != game_mgr.GameState.PLAYING:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_perform_click_sweep()
+
 func _exit_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -144,11 +151,9 @@ func project_mouse_to_plane() -> Vector2:
 func _perform_click_sweep() -> void:
 	var click_pos = project_mouse_to_plane()
 	var targets = get_tree().get_nodes_in_group("damageable")
-	print("[PlayerCursor] Click sweep at: ", click_pos, ". Target count in damageable group: ", targets.size())
 	
 	for target in targets:
 		if not target.active:
-			print("  - Target ", target.name, " is inactive")
 			continue
 			
 		# Make sure we only hit gameplay entities (not debris/planets)
@@ -157,12 +162,17 @@ func _perform_click_sweep() -> void:
 			
 		# Query entity's circle collision shape radius to calculate exact bounding overlaps
 		var target_radius = 0.0
-		var col_shape = target.get_node_or_null("CollisionShape2D")
-		if col_shape and col_shape.shape is CircleShape2D:
-			target_radius = col_shape.shape.radius * target.scale.x
+		if "radius" in target:
+			target_radius = target.radius * target.scale.x
+		else:
+			var col_shape = target.get_node_or_null("CollisionShape2D")
+			if col_shape and col_shape.shape is CircleShape2D:
+				target_radius = col_shape.shape.radius * target.scale.x
 			
-		var dist = target.global_position.distance_to(click_pos)
-		print("  - Target ", target.name, " active=true, pos=", target.global_position, ", dist=", dist, ", target_radius=", target_radius, ", click_radius=", final_click_radius)
+		var target_pos_2d = target.global_position
+		if target is Node3D:
+			target_pos_2d = Vector2(target.global_position.x, target.global_position.z)
+		var dist = target_pos_2d.distance_to(click_pos)
 		
 		# Hit if the hover circle overlaps anywhere with the target's physical shape bounds
 		if dist <= (final_click_radius + target_radius):

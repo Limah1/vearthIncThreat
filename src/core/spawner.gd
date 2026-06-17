@@ -143,58 +143,73 @@ func _process(delta: float) -> void:
 func _start_orbit_garbage_wave() -> void:
 	_spawning_orbit_wave = true
 	
-	# Calculate total garbage count from upgrades (additive)
-	var garbage_bonus = UpgradeManager.get_total_bonus("GarbageAmount")
-	var total_garbage = int(round(base_garbage_amount + garbage_bonus))
+	# Calculate total garbage count (set to 20)
+	var total_garbage = 20
 	
+	# Start cascading spawns (immediate is delay = 0)
+	_spawn_garbage_chunk(total_garbage, 0.0)
+
+func _spawn_garbage_chunk(remaining_garbage: int, delay_seconds: float) -> void:
+	if remaining_garbage <= 0:
+		_spawning_orbit_wave = false
+		return
+		
+	if delay_seconds > 0.0:
+		get_tree().create_timer(delay_seconds).timeout.connect(
+			func():
+				if not is_inside_tree():
+					return
+				if GameManager.current_state == GameManager.GameState.PLAYING:
+					_do_spawn_chunk(remaining_garbage)
+				else:
+					_spawning_orbit_wave = false
+		)
+	else:
+		_do_spawn_chunk(remaining_garbage)
+
+func _do_spawn_chunk(remaining_garbage: int) -> void:
 	# Shuffle spawn points to ensure random unique selection
 	var available_points = garbage_spawn_points.duplicate()
 	available_points.shuffle()
 	
-	# Spawning Stage 1 (Immediate)
 	var points_count = available_points.size()
-	var immediate_spawn_count = min(total_garbage, points_count)
-	
-	if not GameManager.object_pooler:
+	if points_count == 0:
 		_spawning_orbit_wave = false
 		return
-	var pooler = GameManager.object_pooler
 		
-	for i in range(immediate_spawn_count):
+	var spawn_count = min(remaining_garbage, points_count)
+	var master_node = get_tree().get_first_node_in_group("garbage_master")
+	if not master_node:
+		_spawning_orbit_wave = false
+		return
+		
+	for i in range(spawn_count):
 		var point = available_points[i]
-		# Spawn space garbage heading straight inwards
-		var dir = (Vector2.ZERO - point.global_position).normalized()
-		pooler.borrow_from_pool("garbage", point.global_position, dir)
+		master_node.spawn_garbage(point.global_position)
 		
-	var remaining_count = total_garbage - immediate_spawn_count
-	if remaining_count > 0:
-		# Stage 2: Spawn remaining after 2.0s delay
-		get_tree().create_timer(2.0).timeout.connect(
-			func():
-				if GameManager.current_state == GameManager.GameState.PLAYING:
-					for i in range(remaining_count):
-						var point = available_points[i % points_count]
-						var dir = (Vector2.ZERO - point.global_position).normalized()
-						pooler.borrow_from_pool("garbage", point.global_position, dir)
-				_spawning_orbit_wave = false
-		)
+	var next_remaining = remaining_garbage - spawn_count
+	if next_remaining > 0:
+		_spawn_garbage_chunk(next_remaining, 1.0)
 	else:
 		_spawning_orbit_wave = false
 
 func _spawn_enemy() -> void:
-	if not GameManager.object_pooler or enemy_spawn_points.is_empty():
+	if enemy_spawn_points.is_empty():
 		return
 	if not is_enemy_unlocked:
 		return # Do not spawn enemies until AutoClickRate (Auto Clicker) is unlocked
-	var pooler = GameManager.object_pooler
+		
+	var enemy_master = get_tree().get_first_node_in_group("enemy_master")
+	if not enemy_master:
+		return
 		
 	# Choose random spawner from the tagged list
 	var spawner_node = enemy_spawn_points.pick_random()
-	# Spawn enemy and let it navigate inwards
-	pooler.borrow_from_pool("enemy", spawner_node.global_position)
+	var spawn_pos_3d = Vector3(spawner_node.global_position.x, 0.0, spawner_node.global_position.y)
+	enemy_master.spawn_enemy(spawn_pos_3d)
 
 func _spawn_asteroid() -> void:
-	if not GameManager.object_pooler or asteroid_spawn_points.is_empty():
+	if asteroid_spawn_points.is_empty():
 		return
 		
 	# Check which asteroid types are unlocked
@@ -226,21 +241,23 @@ func _spawn_asteroid() -> void:
 	var extra_asteroids = int(UpgradeManager.get_total_bonus("AsteroidAmount"))
 	var spawn_count = 5 + extra_asteroids
 	
-	var pooler = GameManager.object_pooler
+	var asteroid_master = get_tree().get_first_node_in_group("asteroid_master")
+	if not asteroid_master:
+		return
 	
 	for i in range(spawn_count):
 		var chosen_type = _pick_weighted(allowed, weights)
 		var spawner_node = asteroid_spawn_points.pick_random()
-		var dir = (Vector2.ZERO - spawner_node.global_position).normalized()
+		var dir_2d = (Vector2.ZERO - spawner_node.global_position).normalized()
+		var dir_3d = Vector3(dir_2d.x, 0.0, dir_2d.y)
 		
 		# Slight offset to prevent exact overlap at spawn time
 		var offset = Vector2.ZERO
 		if i > 0:
 			offset = Vector2(randf_range(-25.0, 25.0), randf_range(-25.0, 25.0))
 			
-		var asteroid_node = pooler.borrow_from_pool("asteroid", spawner_node.global_position + offset, dir)
-		if asteroid_node and asteroid_node.has_method("set_asteroid_type"):
-			asteroid_node.call("set_asteroid_type", chosen_type)
+		var spawn_pos_3d = Vector3(spawner_node.global_position.x + offset.x, 0.0, spawner_node.global_position.y + offset.y)
+		asteroid_master.spawn_asteroid(spawn_pos_3d, dir_3d, chosen_type)
 
 func _pick_weighted(options: Array, weights: Array) -> String:
 	var sum = 0.0

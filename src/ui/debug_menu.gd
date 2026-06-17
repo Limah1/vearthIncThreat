@@ -34,6 +34,7 @@ func _ready() -> void:
 	add_zone_button.pressed.connect(func(): _change_zone(1))
 	sub_zone_button.pressed.connect(func(): _change_zone(-1))
 	reload_zone_button.pressed.connect(_reload_zone)
+	add_zone_button.get_parent().visible = false
 	
 	max_all_button.pressed.connect(_max_all)
 	reset_all_button.pressed.connect(_reset_all)
@@ -63,7 +64,8 @@ func toggle_menu() -> void:
 
 func _update_status() -> void:
 	credits_label.text = "Credits: $%d" % int(GameManager.lifetime_credits)
-	zone_label.text = "Zone: %d" % GameManager.current_zone
+	var sat_count = get_tree().get_nodes_in_group("satellites").size()
+	zone_label.text = "Satellites: %d" % sat_count
 
 func _populate_upgrades() -> void:
 	for child in upgrades_list.get_children():

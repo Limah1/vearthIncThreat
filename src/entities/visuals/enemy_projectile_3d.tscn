@@ -1,4 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://c6p50gcrw4w8f"]
+[gd_scene load_steps=4 format=3 uid="uid://c6p50gcrw4w8f"]
+
+[ext_resource type="Script" path="res://src/entities/instances/enemy_projectile_instance.gd" id="1_script"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_laser"]
 albedo_color = Color(1, 0.1, 0.1, 1)
@@ -12,6 +14,7 @@ radius = 5.0
 height = 20.0
 
 [node name="EnemyProjectile3D" type="Node3D"]
+script = ExtResource("1_script")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)

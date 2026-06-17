@@ -78,6 +78,7 @@ Orchestrates wave progression, spawning garbage resources, asteroids, and enemy 
   - Locates path-followers under `SpawnPath` to determine spawn coordinates.
   - Rolls against a random weighted spawn table to decide entity types.
   - Controls spawning rate, limits maximum active entity counts, and increments difficulty based on `current_zone`.
+  - Spawns orbit garbage in chunks matching the number of available spawn points (e.g., 50). If the total garbage count exceeds the number of spawn points, it cascades the remaining garbage in chunks of the same size, delayed by 1.0 second per chunk.
 
 ### `SpawnPath` (`spawn_path.gd`)
 A customized `Path2D` that draws and generates a spawning ring around the planet.
@@ -134,8 +135,22 @@ Hostile ships that orbit the planet.
 ### `Satellite` (`satellite.gd`)
 Defensive satellites that orbit the planet.
 * **Key Features**:
-  - Circles the planet at a constant distance.
-  - Automatically targets closest threat and fires `SatelliteProjectile`.
+  - Requires `SatelliteUnlock` level > 0 to spawn.
+  - Starts with 2 base satellites upon unlock, plus 1 per level of `SatelliteAmount` upgrade (up to a maximum of 16 satellites / 8 symmetric pairs).
+  - Circles the planet continuously at a constant speed (scaled by `SatelliteSpeed` upgrade) without pausing to shoot.
+  - 3D visual body is configured as a gold cone pointing outward.
+  - Instantiated deferred via `add_child.call_deferred()` to prevent thread-blocking errors during scene initialization.
+  - Fires `SatelliteProjectile` outward away from the planet (damage scaled by `SatelliteDamage` and speed by `SatelliteProjectileSpeed`).
+  - 3D mesh is automatically rotated by `+ PI / 2.0` radians so its front (tip of the cone) faces the outward shooting direction.
+
+### `SatelliteProjectile` (`satellite_projectile.gd`)
+Projectiles spawned by defensive satellites.
+* **Key Features**:
+  - Travels outward from the planet in linear directions (direction set away from planet center).
+  - Velocity scaled by `SatelliteProjectileSpeed` upgrade.
+  - Damage scaled by `SatelliteDamage` upgrade.
+  - Sweeps and inflicts damage (`take_player_damage` or `take_damage`) on `garbage`, `asteroid`, and `enemy` group targets within its collision circle.
+  - Recycled back to the `ObjectPooler` upon first hit or lifetime expiration (4 seconds).
 
 ### `DebrisProjectile` (`debris_projectile.gd`)
 Projectiles spawned on threat deaths.
@@ -166,3 +181,10 @@ Individually represents a single upgrade in the tree.
   - The `IconButton` uses custom `StyleBoxFlat` with rounded corners (12px) modulated in purple `#39009C` via `self_modulate` to serve as a separate backdrop.
   - `IconRect` (holds the `.png` data asset icon) is sized to be exactly **25% smaller** than the button using `SIZE_SHRINK_CENTER` sizing flags and custom sizes (60x60 inside 80x80 container).
   - When purchased, the `IconButton` (the purple background) spins 405 degrees via a Tween while the `IconRect` remains completely static on top of it.
+
+### `DebugMenu` (`debug_menu.gd`)
+Developer panel toggled via `F12`.
+* **Key Features**:
+  - Allows adjusting run/lifetime credits and active zones.
+  - Provides "+" and "-" level controls for all dynamically loaded upgrades.
+  - Displays active zone and active satellite count (`Zone: X | Satellites: Y`).

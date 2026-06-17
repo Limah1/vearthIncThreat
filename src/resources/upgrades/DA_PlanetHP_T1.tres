@@ -13,4 +13,4 @@ icon = ExtResource("1_2ba4y")
 category = "DebrisUnlock"
 base_cost = 15.0
 value_increment = 8.0
-unlocks = Array[String](["DA_GarbageAmmount_T2", "DA_ClickDamage_T2", "DA_ClickSpeed_T1", "DA_ClickRadius_T1", "DA_UnlockDebrie_T0", "DA_GarbageQualityT_0"])
+unlocks = Array[String](["DA_GarbageQualityT_0", "DA_GarbageAmmount_T2", "DA_ClickDamage_T2", "DA_ClickSpeed_T1", "DA_ClickRadius_T1", "DA_UnlockDebrie_T0"])

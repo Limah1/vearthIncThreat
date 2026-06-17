@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://dyuq75kda3e5y"]
+
+[ext_resource type="Texture2D" uid="uid://ca1jbuqbw0755" path="res://src/assets/UI/UpgradeIcons/T_Satelite.png" id="1_k1470"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_pb1ej"]
+
+[resource]
+script = ExtResource("2_pb1ej")
+upgrade_id = "DA_UnlockSatellite_"
+upgrade_name = "Defensive Satellites"
+description = "Adds 2 defensive satellites on opposite sides. Shoots slowing lasers every 2s."
+icon = ExtResource("1_k1470")
+category = "SatelliteUnlock"
+base_cost = 1.0
+max_level = 4
+value_increment = 2.0
+default_unlocked = true
+unlocks = Array[String]([])

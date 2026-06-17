@@ -16,6 +16,7 @@
 [ext_resource type="Resource" uid="uid://7kpqqswctm44" path="res://src/resources/upgrades/DA_GarbageAmmount_T1.tres" id="13_w8oyu"]
 [ext_resource type="Resource" uid="uid://bckceaq4hq4l7" path="res://src/resources/upgrades/DA_UnlockDebrie_T0.tres" id="14_w8oyu"]
 [ext_resource type="Resource" uid="uid://bj2soxog64qp8" path="res://src/resources/upgrades/DA_GarbageAmmount_T2.tres" id="15_8hhd3"]
+[ext_resource type="Resource" uid="uid://dyuq75kda3e5y" path="res://src/resources/upgrades/DA_UnlockSatellite_.tres" id="15_ecoli"]
 
 [node name="SkillTree" type="Control" unique_id=1201646280]
 layout_mode = 3
@@ -182,7 +183,7 @@ offset_left = 1480.0
 offset_top = 290.0
 offset_right = 1560.0
 offset_bottom = 370.0
-upgrade_data = ExtResource("10_o00n4")
+upgrade_data = ExtResource("6_ecoli")
 
 [node name="UpgradeSlotUI8" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1149455441 instance=ExtResource("2_slot")]
 layout_mode = 0
@@ -198,7 +199,7 @@ offset_left = 1480.0
 offset_top = 450.0
 offset_right = 1560.0
 offset_bottom = 530.0
-upgrade_data = ExtResource("6_ecoli")
+upgrade_data = ExtResource("10_o00n4")
 
 [node name="UpgradeSlotUI25" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=494767026 instance=ExtResource("2_slot")]
 layout_mode = 0
@@ -210,10 +211,11 @@ upgrade_data = ExtResource("14_w8oyu")
 
 [node name="UpgradeSlotUI26" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=94134855 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1800.0
-offset_top = 450.0
-offset_right = 1880.0
-offset_bottom = 530.0
+offset_left = 1000.0
+offset_top = 130.0
+offset_right = 1080.0
+offset_bottom = 210.0
+upgrade_data = ExtResource("15_ecoli")
 
 [node name="UpgradeSlotUI31" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1681206854 instance=ExtResource("2_slot")]
 layout_mode = 0

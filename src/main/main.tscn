@@ -2,25 +2,31 @@
 
 [ext_resource type="Script" uid="uid://dprrm31iece1n" path="res://src/main/main.gd" id="1_main"]
 [ext_resource type="Script" uid="uid://dwgjhdhhmu2ax" path="res://src/main/camera_controller.gd" id="2_camera"]
-[ext_resource type="Script" uid="uid://c0ew5fe8nt4m7" path="res://src/core/object_pooler.gd" id="3_pooler"]
 [ext_resource type="Script" uid="uid://ce7alrdjwg3qa" path="res://src/entities/player_planet.gd" id="5_planet"]
 [ext_resource type="PackedScene" uid="uid://btj50gcrw4w8a" path="res://src/ui/hud.tscn" id="6_hud"]
 [ext_resource type="PackedScene" uid="uid://dd8d3a1r8q0o5" path="res://src/ui/pause_overlay.tscn" id="7_pause"]
 [ext_resource type="PackedScene" uid="uid://dd8d3a1r8q0o7" path="res://src/ui/skill_tree.tscn" id="8_tree"]
-[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8g" path="res://src/entities/space_garbage.tscn" id="9_garbage"]
-[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8h" path="res://src/entities/small_asteroid.tscn" id="10_asteroid"]
-[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8i" path="res://src/entities/enemy_spaceship.tscn" id="11_enemy"]
-[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8j" path="res://src/entities/debris_projectile.tscn" id="12_debris"]
-[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8k" path="res://src/entities/enemy_projectile.tscn" id="13_projectile"]
 [ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8a" path="res://src/entities/visuals/player_planet_3d.tscn" id="14_planet_3d"]
 [ext_resource type="Script" uid="uid://fjiuohnsergu" path="res://src/main/player_cursor.gd" id="15_cursor"]
 [ext_resource type="Shader" uid="uid://bflqeikjk7h5u" path="res://src/assets/shaders/space_background.gdshader" id="16_bg_shader"]
 [ext_resource type="Script" uid="uid://dn381u1mk23g6" path="res://src/core/spawner.gd" id="17_spawner"]
 [ext_resource type="Script" uid="uid://dwj2e3ngp3vn5" path="res://src/core/spawn_path.gd" id="18_spawn_path"]
-[ext_resource type="PackedScene" uid="uid://ijao32jdv5yq" path="res://src/entities/satellite.tscn" id="19_satellite"]
-[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8s" path="res://src/entities/satellite_projectile.tscn" id="20_satellite_proj"]
 [ext_resource type="PackedScene" path="res://src/ui/in_game_pause.tscn" id="21_in_game_pause"]
 [ext_resource type="PackedScene" path="res://src/ui/debug_menu.tscn" id="22_debug_menu"]
+[ext_resource type="Script" path="res://src/entities/space_garbage_master.gd" id="23_garbage_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8b" path="res://src/entities/visuals/space_garbage_3d.tscn" id="24_garbage_3d_scene"]
+[ext_resource type="Script" path="res://src/entities/debris_master.gd" id="25_debris_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4e8e" path="res://src/entities/visuals/debris_3d.tscn" id="26_debris_3d_scene"]
+[ext_resource type="Script" path="res://src/entities/asteroid_master.gd" id="27_asteroid_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8c" path="res://src/entities/visuals/small_asteroid.tscn" id="28_asteroid_3d_scene"]
+[ext_resource type="Script" path="res://src/entities/enemy_master.gd" id="29_enemy_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8d" path="res://src/entities/visuals/enemy_spaceship_3d.tscn" id="30_enemy_3d_scene"]
+[ext_resource type="Script" path="res://src/entities/enemy_proj_master.gd" id="31_enemy_proj_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8f" path="res://src/entities/visuals/enemy_projectile_3d.tscn" id="32_enemy_proj_3d_scene"]
+[ext_resource type="Script" path="res://src/entities/sat_proj_master.gd" id="33_sat_proj_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w80" path="res://src/entities/visuals/satellite_projectile_3d.tscn" id="34_sat_proj_3d_scene"]
+[ext_resource type="Script" path="res://src/entities/satellite_master.gd" id="35_satellite_master_script"]
+[ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8p" path="res://src/entities/visuals/satellite_3d.tscn" id="36_satellite_3d_scene"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_space_bg"]
 shader = ExtResource("16_bg_shader")
@@ -80,19 +86,44 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 25, 0)
 script = ExtResource("2_camera")
 
-[node name="ObjectPooler" type="Node" parent="." unique_id=1293911619]
-script = ExtResource("3_pooler")
-garbage_scene = ExtResource("9_garbage")
-asteroid_scene = ExtResource("10_asteroid")
-enemy_scene = ExtResource("11_enemy")
-debris_scene = ExtResource("12_debris")
-enemy_projectile_scene = ExtResource("13_projectile")
-satellite_projectile_scene = ExtResource("20_satellite_proj")
+[node name="SpaceGarbage" type="Node3D" parent="." unique_id=55555555]
+script = ExtResource("23_garbage_master_script")
+scene_to_pool = ExtResource("24_garbage_3d_scene")
+pool_size = 550
+
+[node name="Debris" type="Node3D" parent="." unique_id=66666666]
+script = ExtResource("25_debris_master_script")
+scene_to_pool = ExtResource("26_debris_3d_scene")
+pool_size = 200
+
+[node name="Asteroids" type="Node3D" parent="." unique_id=77777777]
+script = ExtResource("27_asteroid_master_script")
+scene_to_pool = ExtResource("28_asteroid_3d_scene")
+pool_size = 40
+
+[node name="Enemies" type="Node3D" parent="." unique_id=88888888]
+script = ExtResource("29_enemy_master_script")
+scene_to_pool = ExtResource("30_enemy_3d_scene")
+pool_size = 20
+
+[node name="EnemyProjectiles" type="Node3D" parent="." unique_id=99999999]
+script = ExtResource("31_enemy_proj_master_script")
+scene_to_pool = ExtResource("32_enemy_proj_3d_scene")
+pool_size = 50
+
+[node name="SatProjectiles" type="Node3D" parent="." unique_id=111111111]
+script = ExtResource("33_sat_proj_master_script")
+scene_to_pool = ExtResource("34_sat_proj_3d_scene")
+pool_size = 250
+
+[node name="Satellites" type="Node3D" parent="." unique_id=222222222]
+script = ExtResource("35_satellite_master_script")
+scene_to_pool = ExtResource("36_satellite_3d_scene")
+pool_size = 16
 
 [node name="PlayerPlanet" type="Area2D" parent="." unique_id=1667043785]
 script = ExtResource("5_planet")
 visual_3d_scene = ExtResource("14_planet_3d")
-satellite_scene = ExtResource("19_satellite")
 base_hp = 10.0
 decay_rate = 0.4
 

@@ -1,8 +1,10 @@
-[gd_scene format=3 uid="uid://c6p50gcrw4w8b"]
+[gd_scene load_steps=3 format=3 uid="uid://c6p50gcrw4w8b"]
 
 [ext_resource type="PackedScene" uid="uid://be8jmpuduv1di" path="res://src/assets/3DAssets/dumpster_fbx.FBX" id="1_taig3"]
+[ext_resource type="Script" path="res://src/entities/instances/space_garbage_instance.gd" id="2_instance"]
 
 [node name="SpaceGarbage3D" type="Node3D" unique_id=829643639]
+script = ExtResource("2_instance")
 
 [node name="dumpster_fbx" parent="." unique_id=153386760 instance=ExtResource("1_taig3")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

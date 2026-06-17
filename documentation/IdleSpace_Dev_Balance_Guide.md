@@ -73,7 +73,9 @@ This design prevents compounding multipliers from making individual upgrades exc
 | **Auto Clicker Rate** (`AutoClickRate`) | Compound (Rec.) | `0.10 - 0.15` | Capped at a minimum click interval of **0.05s** (20 clicks/sec) to protect processing speed. |
 | **Click Radius** (`ClickRadius`) | Linear | `0.10 - 0.15` | Keep max levels low (e.g. 5-10) to avoid sweep coverage consuming the entire screen. |
 | **Planet Health / Shield** | Compound | `0.20 - 0.30` | High level runs have intense incoming threat damage, requiring compound scaling to keep up. |
-| **Exact Quantities** (e.g. `SatelliteAmount`) | **Linear Only** | `1.0` | These values represent exact node counts, not percentages. Non-integer multipliers are truncated down (e.g., 1.5 satellites yields 1 satellite). Keep `is_percentage = false` and `value_increment = 1.0`. |
+| **Exact Quantities** (e.g. `SatelliteAmount`) | **Linear Only** | `1.0` | These values represent exact node counts. Capped at a maximum of 16 satellites. |
+| **Satellite Multipliers** (`SatelliteSpeed` / `SatelliteDamage` / `SatelliteProjectileSpeed`) | Linear or Compound | `0.10 - 0.20` | Core satellite stats. Scale linearly or exponentially depending on late-game threat scaling. |
+| **Satellite Unlock** (`SatelliteUnlock`) | **Linear Only** | `1.0` | Enables satellite spawning if level > 0. |
 
 ---
 
