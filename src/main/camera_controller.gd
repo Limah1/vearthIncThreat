@@ -12,7 +12,8 @@ func _ready() -> void:
 	# Set initial camera position looking down at center (0, 0, 0)
 	projection = Camera3D.PROJECTION_ORTHOGONAL
 	size = 1080.0
-	position = Vector3(0.0, 100.0, 0.0) # Elevated to avoid clipping
+	far = 1000.0 # Prevent clipping planet/garbage at Y=100
+	position = Vector3(0.0, 100.0, 0.0) # Elevated to avoid clipping to 100m distance
 	rotation_degrees = Vector3(-90.0, 0.0, 0.0)
 	target_height = base_height
 	current = true

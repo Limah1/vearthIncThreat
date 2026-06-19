@@ -2,7 +2,7 @@
 extends Node
 class_name Spawner
 
-@export var base_garbage_amount: int = 200
+@export var base_garbage_amount: int = 20
 @export var base_enemy_interval: float = 5.0
 @export var base_asteroid_interval: float = 9.0
 

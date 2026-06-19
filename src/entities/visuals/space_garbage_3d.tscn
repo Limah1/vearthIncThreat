@@ -7,4 +7,3 @@
 script = ExtResource("2_instance")
 
 [node name="dumpster_fbx" parent="." unique_id=153386760 instance=ExtResource("1_taig3")]
-transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

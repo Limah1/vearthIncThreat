@@ -6,7 +6,7 @@ signal credits_changed(run_credits: float, lifetime_credits: float)
 signal timer_updated(time_left: float)
 signal trigger_camera_animation()
 
-enum GameState { PLAYING, PAUSED, UPGRADE_SCREEN, END_SESSION, VICTORY, TRANSITION }
+enum GameState {PLAYING, PAUSED, UPGRADE_SCREEN, END_SESSION, VICTORY, TRANSITION}
 
 var current_state: GameState = GameState.PLAYING
 
@@ -25,7 +25,7 @@ var decay_timer: float = 60.0
 var current_zone: int = 1
 
 var eliminated_threats: int = 0
-var debris_chance: float = 1.0
+var debris_chance: float = 0.0
 
 # Camera transition trigger from purchases
 var b_can_animate_camera: bool = false
@@ -68,6 +68,10 @@ func reset_game() -> void:
 	b_can_animate_camera = false
 	has_camera_animated_once = false
 	eliminated_threats = 0
+	if UpgradeManager.get_upgrade_level("DA_UnlockDebrie_T0") > 0:
+		debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
+	else:
+		debris_chance = 0.0
 	change_state(GameState.PLAYING, false)
 	save_game()
 
