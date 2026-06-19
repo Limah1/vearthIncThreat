@@ -4,18 +4,20 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://nrwkk4k1w01i"
-path="res://.godot/imported/meteoro_big.FBX-c9fc4c9aba987906b5e3047a56ea6839.scn"
+path="res://.godot/imported/meteoro_big.FBX-ac2b048da6e3610d43549af7122e35c4.scn"
 
 [deps]
 
-source_file="res://src/assets/3DAssets/meteoro_big.FBX"
-dest_files=["res://.godot/imported/meteoro_big.FBX-c9fc4c9aba987906b5e3047a56ea6839.scn"]
+source_file="res://src/assets/3d/meteoro_big.FBX"
+dest_files=["res://.godot/imported/meteoro_big.FBX-ac2b048da6e3610d43549af7122e35c4.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false

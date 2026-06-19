@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://ddm0n708phb3q"]
+
+[ext_resource type="PackedScene" uid="uid://bu60qw7oblerk" path="res://src/assets/3d/glb_mesh/clouds.glb" id="1_gxlmy"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2ib0j"]
+diffuse_mode = 3
+specular_mode = 2
+
+[node name="clouds" unique_id=1086342424 instance=ExtResource("1_gxlmy")]
+
+[node name="clouds" parent="." index="0" unique_id=558253614]
+material_override = SubResource("StandardMaterial3D_2ib0j")

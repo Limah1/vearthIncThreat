@@ -3,19 +3,21 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://be8jmpuduv1di"
-path="res://.godot/imported/dumpster_fbx.FBX-de8745d1688a2a218cadd08dcce8f9d4.scn"
+uid="uid://b4f31jtjikwsx"
+path="res://.godot/imported/clouds.FBX-3a7d6fbadd64a8effb918c346a223e72.scn"
 
 [deps]
 
-source_file="res://src/assets/3DAssets/dumpster_fbx.FBX"
-dest_files=["res://.godot/imported/dumpster_fbx.FBX-de8745d1688a2a218cadd08dcce8f9d4.scn"]
+source_file="res://src/assets/3d/clouds.FBX"
+dest_files=["res://.godot/imported/clouds.FBX-3a7d6fbadd64a8effb918c346a223e72.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false

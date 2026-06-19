@@ -3,19 +3,21 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dqulwdqy3jlvo"
-path="res://.godot/imported/water.FBX-3e9713b0ef18ffa5fcc51ff069bd4d7a.scn"
+uid="uid://be8jmpuduv1di"
+path="res://.godot/imported/dumpster_fbx.FBX-9d7aa59d3292a6657bf38d92842b707c.scn"
 
 [deps]
 
-source_file="res://src/assets/3DAssets/water.FBX"
-dest_files=["res://.godot/imported/water.FBX-3e9713b0ef18ffa5fcc51ff069bd4d7a.scn"]
+source_file="res://src/assets/3d/dumpster_fbx.FBX"
+dest_files=["res://.godot/imported/dumpster_fbx.FBX-9d7aa59d3292a6657bf38d92842b707c.scn"]
 
 [params]
 
 nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false

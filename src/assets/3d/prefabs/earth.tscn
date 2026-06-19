@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://db0jveaf1u16b"]
+
+[ext_resource type="PackedScene" uid="uid://3l3kf7uxdd27" path="res://src/assets/3d/glb_mesh/earth.glb" id="1_aj53t"]
+[ext_resource type="Texture2D" uid="uid://rbyfdy7fk3s7" path="res://src/assets/3d/texture/m_water_BaseColor.png" id="2_yueuf"]
+[ext_resource type="Texture2D" uid="uid://qrn01l16htqh" path="res://src/assets/3d/texture/m_terra_BaseColor.png" id="3_03kpf"]
+[ext_resource type="PackedScene" uid="uid://1q2mylh0wbv" path="res://src/assets/3d/prefabs/shield.tscn" id="4_03kpf"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6u1ac"]
+diffuse_mode = 3
+specular_mode = 2
+albedo_texture = ExtResource("2_yueuf")
+rim_enabled = true
+rim = 0.25
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pn2pw"]
+diffuse_mode = 3
+specular_mode = 2
+albedo_texture = ExtResource("3_03kpf")
+
+[node name="earth" unique_id=1968427451 instance=ExtResource("1_aj53t")]
+
+[node name="water" parent="." index="0" unique_id=1923519433]
+material_override = SubResource("StandardMaterial3D_6u1ac")
+
+[node name="earth" parent="." index="1" unique_id=571948434]
+material_override = SubResource("StandardMaterial3D_pn2pw")
+
+[node name="shield" parent="." index="2" unique_id=1596572204 instance=ExtResource("4_03kpf")]

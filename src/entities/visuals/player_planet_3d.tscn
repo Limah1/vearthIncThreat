@@ -1,32 +1,10 @@
 [gd_scene format=3 uid="uid://c6p50gcrw4w8a"]
 
-[ext_resource type="PackedScene" uid="uid://dqulwdqy3jlvo" path="res://src/assets/3DAssets/water.FBX" id="1_ema4r"]
-[ext_resource type="PackedScene" uid="uid://cjkuc0b7hcmw6" path="res://src/assets/3DAssets/earth.FBX" id="2_ejtd4"]
-[ext_resource type="PackedScene" uid="uid://b4f31jtjikwsx" path="res://src/assets/3DAssets/clouds.FBX" id="3_2ib0j"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shield"]
-transparency = 1
-albedo_color = Color(0.2, 0.7, 1, 0.15)
-emission_enabled = true
-emission = Color(0, 0.6, 1, 1)
-emission_energy_multiplier = 1.5
-
-[sub_resource type="SphereMesh" id="SphereMesh_shield"]
-material = SubResource("StandardMaterial3D_shield")
-radius = 50.0
-height = 100.0
+[ext_resource type="PackedScene" uid="uid://ddm0n708phb3q" path="res://src/assets/3d/prefabs/clouds.tscn" id="2_6rpcd"]
+[ext_resource type="PackedScene" uid="uid://db0jveaf1u16b" path="res://src/assets/3d/prefabs/earth.tscn" id="4_ejtd4"]
 
 [node name="PlayerPlanet3D" type="Node3D" unique_id=1215877529]
 
-[node name="PlanetMesh" type="MeshInstance3D" parent="." unique_id=820832]
+[node name="earth2" parent="." unique_id=1968427451 instance=ExtResource("4_ejtd4")]
 
-[node name="ShieldMesh" type="MeshInstance3D" parent="." unique_id=984229639]
-mesh = SubResource("SphereMesh_shield")
-
-[node name="water" parent="." unique_id=2011010653 instance=ExtResource("1_ema4r")]
-
-[node name="earth" parent="." unique_id=598965416 instance=ExtResource("2_ejtd4")]
-transform = Transform3D(80, 0, 0, 0, 80, 0, 0, 0, 80, 0, 0, 0)
-
-[node name="clouds" parent="." unique_id=1493571223 instance=ExtResource("3_2ib0j")]
-transform = Transform3D(90, 0, 0, 0, 90, 0, 0, 0, 90, 0, 0, 0)
+[node name="clouds" parent="." unique_id=1086342424 instance=ExtResource("2_6rpcd")]

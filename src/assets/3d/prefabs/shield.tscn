@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://1q2mylh0wbv"]
+
+[ext_resource type="PackedScene" uid="uid://dro5uy3taajjd" path="res://src/assets/3d/glb_mesh/shield.glb" id="1_qx1j5"]
+[ext_resource type="Material" uid="uid://b2d4140k4f8kb" path="res://src/assets/3d/material/base_material.tres" id="2_5fcvl"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5fcvl"]
+transparency = 1
+diffuse_mode = 3
+specular_mode = 2
+albedo_color = Color(0.4117647, 0.91764706, 1, 0.12156863)
+roughness = 0.0
+emission_enabled = true
+disable_receive_shadows = true
+
+[node name="shield" unique_id=1596572204 instance=ExtResource("1_qx1j5")]
+
+[node name="shield" parent="." index="0" unique_id=191103390]
+material_override = SubResource("StandardMaterial3D_5fcvl")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." index="1" unique_id=1700243420]
+material_override = ExtResource("2_5fcvl")

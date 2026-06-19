@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://c6p50gcrw4w8b"]
+[gd_scene format=3 uid="uid://c6p50gcrw4w8b"]
 
-[ext_resource type="PackedScene" uid="uid://be8jmpuduv1di" path="res://src/assets/3DAssets/dumpster_fbx.FBX" id="1_taig3"]
-[ext_resource type="Script" path="res://src/entities/instances/space_garbage_instance.gd" id="2_instance"]
+[ext_resource type="PackedScene" uid="uid://be8jmpuduv1di" path="res://src/assets/3d/dumpster_fbx.FBX" id="1_taig3"]
+[ext_resource type="Script" uid="uid://j7wtllovsqdn" path="res://src/entities/instances/space_garbage_instance.gd" id="2_instance"]
 
 [node name="SpaceGarbage3D" type="Node3D" unique_id=829643639]
 script = ExtResource("2_instance")

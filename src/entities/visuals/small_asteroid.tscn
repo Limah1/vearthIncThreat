@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://c6p50gcrw4w8c"]
+[gd_scene format=3 uid="uid://c6p50gcrw4w8c"]
 
-[ext_resource type="PackedScene" uid="uid://hkulpumg5kqk" path="res://src/assets/3DAssets/meteoro_small.FBX" id="1_4bp76"]
-[ext_resource type="Script" path="res://src/entities/instances/asteroid_instance.gd" id="2_script"]
+[ext_resource type="PackedScene" uid="uid://hkulpumg5kqk" path="res://src/assets/3d/meteoro_small.FBX" id="1_4bp76"]
+[ext_resource type="Script" uid="uid://d13xrwwm2de06" path="res://src/entities/instances/asteroid_instance.gd" id="2_script"]
 
 [node name="Asteroid3D" type="Node3D" unique_id=584592245]
 script = ExtResource("2_script")
