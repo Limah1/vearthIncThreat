@@ -13,4 +13,4 @@ category = "ClickRadius"
 base_cost = 7.0
 value_increment = 0.2
 is_percentage = true
-unlocks = Array[String]([])
+unlocks = Array[String](["DA_ClickSpeed_T1", "DA_ClickRadius_T2", "DA_ClickDamage_T2"])

@@ -12,4 +12,4 @@ icon = ExtResource("1_t4hik")
 category = "ClickDamage"
 base_cost = 5.0
 value_increment = 1.0
-unlocks = Array[String]([])
+unlocks = Array[String](["DA_ClickRadius_T0", "DA_ClickSpeed_T0", "DA_ClickDamage_T1", "DA_ClickRadius_T1"])

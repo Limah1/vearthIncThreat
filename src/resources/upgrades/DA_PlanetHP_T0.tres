@@ -14,4 +14,4 @@ category = "PlanetHealth"
 base_cost = 5.0
 value_increment = 5.0
 default_unlocked = true
-unlocks = Array[String](["DA_ClickDamage_T0", "DA_DebrisAmount_T0", "DA_GarbageAmmount_T0"])
+unlocks = Array[String](["DA_ClickDamage_T0", "DA_UnlockDebrie_T0", "DA_GarbageAmmount_T0", "DA_PlanetHP_T1"])

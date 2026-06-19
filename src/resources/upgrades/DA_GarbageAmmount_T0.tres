@@ -11,4 +11,4 @@ description = "Gain + 15 garbage ammount on screen!"
 icon = ExtResource("1_31vsd")
 base_cost = 15.0
 value_increment = 15.0
-unlocks = Array[String]([])
+unlocks = Array[String](["DA_GarbageAmmount_T1", "DA_GarbageAmmount_T2", "DA_GarbageQualityT_0"])

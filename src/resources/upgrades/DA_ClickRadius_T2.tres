@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://envivsma04ah"]
+
+[ext_resource type="Texture2D" uid="uid://bn86hvygkc0ji" path="res://src/assets/UI/UpgradeIcons/T_Radius.png" id="1_one40"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_hxkoh"]
+
+[resource]
+script = ExtResource("2_hxkoh")
+upgrade_id = "DA_ClickRadius_T2"
+upgrade_name = "Click Radius"
+description = "Increases 20% on clicker radius."
+icon = ExtResource("1_one40")
+category = "ClickRadius"
+base_cost = 18.0
+value_increment = 0.2
+is_percentage = true
+unlocks = Array[String](["", "", ""])

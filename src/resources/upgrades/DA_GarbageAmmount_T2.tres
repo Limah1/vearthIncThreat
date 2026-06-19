@@ -7,8 +7,8 @@
 script = ExtResource("2_to8v6")
 upgrade_id = "DA_GarbageAmmount_T2"
 upgrade_name = "Garbage Ammount"
-description = "Gain + 15 garbage ammount on screen!"
+description = "Gain + 20 garbage ammount on screen!"
 icon = ExtResource("1_tgcx1")
-base_cost = 15.0
+base_cost = 20.0
 value_increment = 15.0
 unlocks = Array[String]([])

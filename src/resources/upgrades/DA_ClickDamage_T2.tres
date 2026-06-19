@@ -10,6 +10,6 @@ upgrade_name = "Click Damage"
 description = "Gain + 1 damage."
 icon = ExtResource("1_h0vyk")
 category = "ClickDamage"
-base_cost = 5.0
+base_cost = 20.0
 value_increment = 1.0
 unlocks = Array[String]([])

@@ -171,9 +171,9 @@ func hide_tooltip() -> void:
 
 # Draw connections between prerequisite upgrades and their unlocks
 func _get_furthest_children_by_direction(parent_slot: UpgradeSlotUI, slot_map: Dictionary) -> Dictionary:
-	var result = {} # direction (String) -> child_id (String)
-	var max_distances = {} # direction (String) -> float
+	var result = {} # cluster_index (String) -> child_id (String)
 	var parent_center = parent_slot.position + parent_slot.size / 2.0
+	var clusters: Array = [] # Array of Dictionary: { "angle": float, "child_ids": Array }
 	
 	for child_id in parent_slot.upgrade_data.unlocks:
 		if slot_map.has(child_id):
@@ -182,21 +182,39 @@ func _get_furthest_children_by_direction(parent_slot: UpgradeSlotUI, slot_map: D
 			var diff = child_center - parent_center
 			var angle = diff.angle()
 			
-			# Classify direction into 4 main quadrants
-			var dir = "left"
-			if angle >= -PI/4.0 and angle < PI/4.0:
-				dir = "right"
-			elif angle >= PI/4.0 and angle < 3.0*PI/4.0:
-				dir = "down"
-			elif angle >= -3.0*PI/4.0 and angle < -PI/4.0:
-				dir = "up"
+			# Find if there is an existing cluster within 20 degrees
+			var found_cluster = false
+			for cluster in clusters:
+				var diff_angle = abs(angle_difference(cluster.angle, angle))
+				if diff_angle <= deg_to_rad(20.0):
+					cluster.child_ids.append(child_id)
+					found_cluster = true
+					break
+			
+			if not found_cluster:
+				clusters.append({
+					"angle": angle,
+					"child_ids": [child_id]
+				})
 				
-			var dist = diff.length()
-			if not max_distances.has(dir) or dist > max_distances[dir]:
-				max_distances[dir] = dist
-				result[dir] = child_id
+	# Find furthest child in each cluster
+	var cluster_idx = 0
+	for cluster in clusters:
+		var furthest_child_id = ""
+		var max_dist = -1.0
+		for child_id in cluster.child_ids:
+			var child_slot = slot_map[child_id]
+			var child_center = child_slot.position + child_slot.size / 2.0
+			var dist = parent_center.distance_to(child_center)
+			if dist > max_dist:
+				max_dist = dist
+				furthest_child_id = child_id
+		if not furthest_child_id.is_empty():
+			result[str(cluster_idx)] = furthest_child_id
+			cluster_idx += 1
 				
 	return result
+
 
 func _on_grid_container_draw() -> void:
 	var upgrade_mgr = get_node("/root/UpgradeManager")
@@ -343,17 +361,9 @@ func _on_line_animation_finished(anim: Dictionary) -> void:
 			var child_slot = slot_map[child_id]
 			var child_center = child_slot.position + child_slot.size / 2.0
 			var diff = child_center - parent_center
-			var angle = diff.angle()
-			
-			var target_dir = "left"
-			if angle >= -PI/4.0 and angle < PI/4.0:
-				target_dir = "right"
-			elif angle >= PI/4.0 and angle < 3.0*PI/4.0:
-				target_dir = "down"
-			elif angle >= -3.0*PI/4.0 and angle < -PI/4.0:
-				target_dir = "up"
+			var target_angle = diff.angle()
 				
-			# Bounce all children that are in the same direction!
+			# Bounce all children that are in the same direction (within 20 degrees)!
 			for other_id in parent_slot.upgrade_data.unlocks:
 				if slot_map.has(other_id):
 					var other_slot = slot_map[other_id]
@@ -361,15 +371,7 @@ func _on_line_animation_finished(anim: Dictionary) -> void:
 					var other_diff = other_center - parent_center
 					var other_angle = other_diff.angle()
 					
-					var other_dir = "left"
-					if other_angle >= -PI/4.0 and other_angle < PI/4.0:
-						other_dir = "right"
-					elif other_angle >= PI/4.0 and other_angle < 3.0*PI/4.0:
-						other_dir = "down"
-					elif other_angle >= -3.0*PI/4.0 and other_angle < -PI/4.0:
-						other_dir = "up"
-						
-					if other_dir == target_dir:
+					if abs(angle_difference(target_angle, other_angle)) <= deg_to_rad(20.0):
 						other_slot.play_bounce_animation()
 					
 	# If trigger_next is true, start next connection in chain

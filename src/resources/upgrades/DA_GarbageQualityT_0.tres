@@ -10,6 +10,6 @@ upgrade_name = "Garbage Quality"
 description = "20% chance space garbage spawns as High Quality (2x HP, 2x value, +50% size)."
 icon = ExtResource("1_uu53v")
 category = "GarbageQuality"
-base_cost = 17.0
+base_cost = 25.0
 value_increment = 1.0
 unlocks = Array[String]([])

@@ -29,7 +29,7 @@ func _on_state_changed(state: int) -> void:
 		visible = true
 		title_label.text = "Session Finished"
 		continue_button.text = "Continue"
-		stats_label.text = "Credits on this session: $%d\nEliminated Threats: %d" % [int(game_mgr.run_credits), game_mgr.eliminated_threats]
+		stats_label.text = "Credits on this session: $%d\nTotal Credits: $%d\nEliminated Threats: %d" % [int(game_mgr.run_credits), int(game_mgr.lifetime_credits), game_mgr.eliminated_threats]
 		skill_tree_button.visible = true
 		continue_button.visible = true
 	else:
