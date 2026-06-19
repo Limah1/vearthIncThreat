@@ -31,21 +31,21 @@ func _ready() -> void:
 	add_to_group("asteroid")
 	
 	# Pre-instantiate visual meshes to avoid runtime instantiations/disk loading
-	var scene_small = load("res://src/assets/3DAssets/meteoro_small.FBX")
+	var scene_small = load("res://src/assets/3d/meteoro_small.FBX")
 	if scene_small:
 		fbx_small = scene_small.instantiate() as Node3D
 		fbx_small.scale = Vector3(90.0, 90.0, 90.0)
 		fbx_small.visible = false
 		add_child(fbx_small)
 		
-	var scene_medium = load("res://src/assets/3DAssets/meteoro_medium.FBX")
+	var scene_medium = load("res://src/assets/3d/meteoro_medium.FBX")
 	if scene_medium:
 		fbx_medium = scene_medium.instantiate() as Node3D
 		fbx_medium.scale = Vector3(140.0, 140.0, 140.0)
 		fbx_medium.visible = false
 		add_child(fbx_medium)
 		
-	var scene_large = load("res://src/assets/3DAssets/meteoro_big.FBX")
+	var scene_large = load("res://src/assets/3d/meteoro_big.FBX")
 	if scene_large:
 		fbx_large = scene_large.instantiate() as Node3D
 		fbx_large.scale = Vector3(220.0, 220.0, 220.0)
