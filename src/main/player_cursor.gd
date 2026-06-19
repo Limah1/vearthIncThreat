@@ -3,7 +3,7 @@ extends Node3D
 class_name PlayerCursor
 
 @export var base_click_radius: float = 15.0
-@export var base_click_damage: float = 2.0
+@export var base_click_damage: float = 5.0
 @export var base_auto_click_interval: float = 1.5
 
 var final_click_radius: float = 15.0
@@ -143,21 +143,17 @@ func project_mouse_to_plane() -> Vector2:
 	if abs(to.y) < 0.0001:
 		return Vector2.ZERO
 		
-	var t = -from.y / to.y
+	var t = - from.y / to.y
 	var intersection_3d = from + to * t
 	return Vector2(intersection_3d.x, intersection_3d.z)
 
 # Apply damage sweep in a circle
 func _perform_click_sweep() -> void:
 	var click_pos = project_mouse_to_plane()
-	var targets = get_tree().get_nodes_in_group("damageable")
+	var targets = GameManager._active_damageable
 	
 	for target in targets:
 		if not target.active:
-			continue
-			
-		# Make sure we only hit gameplay entities (not debris/planets)
-		if not ("pool_type" in target and target.pool_type in ["garbage", "asteroid", "enemy"]):
 			continue
 			
 		# Query entity's circle collision shape radius to calculate exact bounding overlaps

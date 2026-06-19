@@ -3,6 +3,7 @@ extends Control
 class_name HUD
 
 @onready var credits_label: Label = $MarginContainer/VBoxContainer/BottomRow/BarsContainer/CreditsLabel
+@onready var fps_label: Label = $FPSLabel
 
 @onready var hp_bar: ProgressBar = $MarginContainer/VBoxContainer/BottomRow/BarsContainer/HPBar
 @onready var shield_bar: ProgressBar = $MarginContainer/VBoxContainer/BottomRow/BarsContainer/ShieldBar
@@ -21,6 +22,10 @@ func _ready() -> void:
 	planet = get_tree().current_scene.find_child("PlayerPlanet", true, false) as PlayerPlanet
 
 func _process(_delta: float) -> void:
+	# Update FPS
+	if is_instance_valid(fps_label):
+		fps_label.text = "FPS: " + str(Engine.get_frames_per_second())
+
 	# Periodically update planet health and shield bars
 	if planet and is_instance_valid(planet):
 		hp_bar.max_value = planet.max_hp

@@ -2,7 +2,7 @@
 extends Node
 class_name Spawner
 
-@export var base_garbage_amount: int = 25
+@export var base_garbage_amount: int = 200
 @export var base_enemy_interval: float = 5.0
 @export var base_asteroid_interval: float = 9.0
 
@@ -22,6 +22,11 @@ var garbage_spawn_points: Array[Node2D] = []
 var asteroid_spawn_points: Array[Node2D] = []
 var enemy_spawn_points: Array[Node2D] = []
 
+# Referências cacheadas aos masters — evita get_first_node_in_group por evento/frame
+var _garbage_master: SpaceGarbageMaster = null
+var _enemy_master: Node = null
+var _asteroid_master: Node = null
+
 func _ready() -> void:
 	# Add spawner to group for easy referencing
 	add_to_group("spawner")
@@ -35,6 +40,15 @@ func _ready() -> void:
 		
 	# Gather tagged spawner points
 	_gather_tagged_spawner_points()
+	
+	# Cachear masters (estão na cena quando o spawner faz _ready)
+	_garbage_master = get_tree().get_first_node_in_group("garbage_master") as SpaceGarbageMaster
+	_enemy_master = get_tree().get_first_node_in_group("enemy_master")
+	_asteroid_master = get_tree().get_first_node_in_group("asteroid_master")
+	
+	# Conectar ao sinal wave_cleared — dispara nova wave sem polling por frame
+	if _garbage_master:
+		_garbage_master.wave_cleared.connect(_on_garbage_wave_cleared)
 
 func _update_unlocked_types() -> void:
 	is_small_asteroid_unlocked = _is_category_purchased("UnlockSmallAsteroid")
@@ -110,21 +124,12 @@ func _process(delta: float) -> void:
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		return
 		
-	# 1. ORBIT GARBAGE RESPAWN
-	# If there is no active garbage, spawn a new wave
-	var active_garbage = get_tree().get_nodes_in_group("garbage")
-	var active_count = 0
-	for g in active_garbage:
-		if g.active:
-			active_count += 1
-			
-	if active_count == 0 and not _spawning_orbit_wave:
-		_start_orbit_garbage_wave()
-		
+	# 1. ORBIT GARBAGE: controlado por sinal wave_cleared — sem polling de grupo aqui
+	
 	# 2. ENEMY SPAWNING LOOP
-	var _enemy_mult = UpgradeManager.get_multiplier("AutoClickRate") # Scale wave pacing with difficulty
+	var _enemy_mult = UpgradeManager.get_multiplier("AutoClickRate")
 	var side_switch_interval = base_enemy_interval / (1.0 + (GameManager.current_zone - 1) * 0.1)
-	side_switch_interval = max(0.2, side_switch_interval) # Cap spawning limit
+	side_switch_interval = max(0.2, side_switch_interval)
 	
 	enemy_timer += delta
 	if enemy_timer >= side_switch_interval:
@@ -143,11 +148,17 @@ func _process(delta: float) -> void:
 func _start_orbit_garbage_wave() -> void:
 	_spawning_orbit_wave = true
 	
-	# Calculate total garbage count (set to 20)
-	var total_garbage = 20
+	
+	var total_garbage = base_garbage_amount
+
 	
 	# Start cascading spawns (immediate is delay = 0)
 	_spawn_garbage_chunk(total_garbage, 0.0)
+
+## Disparado pelo sinal wave_cleared do SpaceGarbageMaster
+func _on_garbage_wave_cleared() -> void:
+	if GameManager.current_state == GameManager.GameState.PLAYING and not _spawning_orbit_wave:
+		_start_orbit_garbage_wave()
 
 func _spawn_garbage_chunk(remaining_garbage: int, delay_seconds: float) -> void:
 	if remaining_garbage <= 0:
@@ -168,24 +179,28 @@ func _spawn_garbage_chunk(remaining_garbage: int, delay_seconds: float) -> void:
 		_do_spawn_chunk(remaining_garbage)
 
 func _do_spawn_chunk(remaining_garbage: int) -> void:
-	# Shuffle spawn points to ensure random unique selection
-	var available_points = garbage_spawn_points.duplicate()
-	available_points.shuffle()
-	
-	var points_count = available_points.size()
+	var points_count = garbage_spawn_points.size()
 	if points_count == 0:
 		_spawning_orbit_wave = false
 		return
 		
-	var spawn_count = min(remaining_garbage, points_count)
-	var master_node = get_tree().get_first_node_in_group("garbage_master")
-	if not master_node:
+	if not _garbage_master:
+		_garbage_master = get_tree().get_first_node_in_group("garbage_master") as SpaceGarbageMaster
+	if not _garbage_master:
 		_spawning_orbit_wave = false
 		return
 		
+	var spawn_count = min(remaining_garbage, points_count)
+	
+	# Fisher-Yates parcial in-place: sem duplicate() nem shuffle() completo
 	for i in range(spawn_count):
-		var point = available_points[i]
-		master_node.spawn_garbage(point.global_position)
+		var j = randi_range(i, points_count - 1)
+		var tmp = garbage_spawn_points[i]
+		garbage_spawn_points[i] = garbage_spawn_points[j]
+		garbage_spawn_points[j] = tmp
+	
+	for i in range(spawn_count):
+		_garbage_master.spawn_garbage(garbage_spawn_points[i].global_position)
 		
 	var next_remaining = remaining_garbage - spawn_count
 	if next_remaining > 0:
@@ -197,16 +212,16 @@ func _spawn_enemy() -> void:
 	if enemy_spawn_points.is_empty():
 		return
 	if not is_enemy_unlocked:
-		return # Do not spawn enemies until AutoClickRate (Auto Clicker) is unlocked
-		
-	var enemy_master = get_tree().get_first_node_in_group("enemy_master")
-	if not enemy_master:
 		return
 		
-	# Choose random spawner from the tagged list
+	if not _enemy_master:
+		_enemy_master = get_tree().get_first_node_in_group("enemy_master")
+	if not _enemy_master:
+		return
+		
 	var spawner_node = enemy_spawn_points.pick_random()
 	var spawn_pos_3d = Vector3(spawner_node.global_position.x, 0.0, spawner_node.global_position.y)
-	enemy_master.spawn_enemy(spawn_pos_3d)
+	_enemy_master.spawn_enemy(spawn_pos_3d)
 
 func _spawn_asteroid() -> void:
 	if asteroid_spawn_points.is_empty():
@@ -241,8 +256,9 @@ func _spawn_asteroid() -> void:
 	var extra_asteroids = int(UpgradeManager.get_total_bonus("AsteroidAmount"))
 	var spawn_count = 5 + extra_asteroids
 	
-	var asteroid_master = get_tree().get_first_node_in_group("asteroid_master")
-	if not asteroid_master:
+	if not _asteroid_master:
+		_asteroid_master = get_tree().get_first_node_in_group("asteroid_master")
+	if not _asteroid_master:
 		return
 	
 	for i in range(spawn_count):
@@ -251,13 +267,12 @@ func _spawn_asteroid() -> void:
 		var dir_2d = (Vector2.ZERO - spawner_node.global_position).normalized()
 		var dir_3d = Vector3(dir_2d.x, 0.0, dir_2d.y)
 		
-		# Slight offset to prevent exact overlap at spawn time
 		var offset = Vector2.ZERO
 		if i > 0:
 			offset = Vector2(randf_range(-25.0, 25.0), randf_range(-25.0, 25.0))
 			
 		var spawn_pos_3d = Vector3(spawner_node.global_position.x + offset.x, 0.0, spawner_node.global_position.y + offset.y)
-		asteroid_master.spawn_asteroid(spawn_pos_3d, dir_3d, chosen_type)
+		_asteroid_master.spawn_asteroid(spawn_pos_3d, dir_3d, chosen_type)
 
 func _pick_weighted(options: Array, weights: Array) -> String:
 	var sum = 0.0

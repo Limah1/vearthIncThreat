@@ -41,7 +41,7 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	visible = true
 	
 	if movement_direction.length_squared() > 0.01:
-		global_rotation.y = -Vector2(movement_direction.x, movement_direction.z).angle()
+		global_rotation.y = - Vector2(movement_direction.x, movement_direction.z).angle()
 
 func on_pool_deactivate() -> void:
 	active = false
@@ -75,10 +75,6 @@ func _sweep_damage() -> void:
 		if not is_instance_valid(target) or not target.active:
 			continue
 		if hit_targets.has(target):
-			continue
-			
-		# Check if target is correct type (garbage, asteroid, enemy)
-		if not ("pool_type" in target and target.pool_type in ["garbage", "asteroid", "enemy"]):
 			continue
 			
 		# Query target's physical shape bounds if available

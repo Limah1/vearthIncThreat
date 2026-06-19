@@ -170,6 +170,34 @@ func hide_tooltip() -> void:
 		tooltip_popup.visible = false
 
 # Draw connections between prerequisite upgrades and their unlocks
+func _get_furthest_children_by_direction(parent_slot: UpgradeSlotUI, slot_map: Dictionary) -> Dictionary:
+	var result = {} # direction (String) -> child_id (String)
+	var max_distances = {} # direction (String) -> float
+	var parent_center = parent_slot.position + parent_slot.size / 2.0
+	
+	for child_id in parent_slot.upgrade_data.unlocks:
+		if slot_map.has(child_id):
+			var child_slot = slot_map[child_id]
+			var child_center = child_slot.position + child_slot.size / 2.0
+			var diff = child_center - parent_center
+			var angle = diff.angle()
+			
+			# Classify direction into 4 main quadrants
+			var dir = "left"
+			if angle >= -PI/4.0 and angle < PI/4.0:
+				dir = "right"
+			elif angle >= PI/4.0 and angle < 3.0*PI/4.0:
+				dir = "down"
+			elif angle >= -3.0*PI/4.0 and angle < -PI/4.0:
+				dir = "up"
+				
+			var dist = diff.length()
+			if not max_distances.has(dir) or dist > max_distances[dir]:
+				max_distances[dir] = dist
+				result[dir] = child_id
+				
+	return result
+
 func _on_grid_container_draw() -> void:
 	var upgrade_mgr = get_node("/root/UpgradeManager")
 	var game_mgr = get_node("/root/GameManager")
@@ -187,55 +215,31 @@ func _on_grid_container_draw() -> void:
 		var parent_id = slot.upgrade_data.upgrade_id
 		var parent_center = slot.position + slot.size / 2.0
 		
-		var closest_child_id = _get_closest_child_id(slot, slot_map)
-		var closest_center = Vector2.ZERO
-		if closest_child_id != "" and slot_map.has(closest_child_id):
-			var closest_slot = slot_map[closest_child_id]
-			closest_center = closest_slot.position + closest_slot.size / 2.0
-			
-		for child_id in slot.upgrade_data.unlocks:
-			if slot_map.has(child_id):
-				var key = parent_id + "->" + child_id
-				if not connection_progress.has(key):
-					continue
-					
-				var progress = connection_progress[key]
-				if progress <= 0.0:
-					continue
-					
-				var child_slot = slot_map[child_id]
-				var child_center = child_slot.position + child_slot.size / 2.0
+		# Draw line to the furthest child in each direction
+		var furthest_children = _get_furthest_children_by_direction(slot, slot_map)
+		for dir in furthest_children:
+			var child_id = furthest_children[dir]
+			var key = parent_id + "->" + child_id
+			if not connection_progress.has(key):
+				continue
 				
-				var line_start = parent_center
-				if child_id != closest_child_id and closest_center != Vector2.ZERO:
-					line_start = closest_center
-					
-				# Interpolate line endpoint for filling effect
-				var line_end = line_start.lerp(child_center, progress)
+			var progress = connection_progress[key]
+			if progress <= 0.0:
+				continue
 				
-				# White line connecting the upgrade to the upgrades it unlocks
-				var line_color = Color(1.0, 1.0, 1.0, 0.9)
-				var line_width = 3.5
-				
-				# Draw black outline/shadow first for high contrast contrast
-				grid_container.draw_line(line_start, line_end, Color(0.0, 0.0, 0.0, 0.8), line_width + 2.0, true)
-				# Draw foreground colored line
-				grid_container.draw_line(line_start, line_end, line_color, line_width, true)
-
-func _get_closest_child_id(parent_slot: UpgradeSlotUI, slot_map: Dictionary) -> String:
-	var closest_child_id = ""
-	var min_dist = INF
-	var parent_center = parent_slot.position + parent_slot.size / 2.0
-	
-	for child_id in parent_slot.upgrade_data.unlocks:
-		if slot_map.has(child_id):
 			var child_slot = slot_map[child_id]
 			var child_center = child_slot.position + child_slot.size / 2.0
-			var dist = parent_center.distance_to(child_center)
-			if dist < min_dist:
-				min_dist = dist
-				closest_child_id = child_id
-	return closest_child_id
+			
+			var line_start = parent_center
+			var line_end = line_start.lerp(child_center, progress)
+			
+			var line_color = Color(1.0, 1.0, 1.0, 0.9)
+			var line_width = 3.5
+			
+			# Draw black outline/shadow first for high contrast contrast
+			grid_container.draw_line(line_start, line_end, Color(0.0, 0.0, 0.0, 0.8), line_width + 2.0, true)
+			# Draw foreground colored line
+			grid_container.draw_line(line_start, line_end, line_color, line_width, true)
 
 func _add_active_animation(anim: Dictionary) -> void:
 	var exists = false
@@ -263,10 +267,11 @@ func _initialize_connection_progress() -> void:
 		
 		# If parent is already purchased on entry, its outgoing lines are fully drawn
 		if parent_lvl > 0:
-			for child_id in slot.upgrade_data.unlocks:
-				if slot_map.has(child_id):
-					var key = parent_id + "->" + child_id
-					connection_progress[key] = 1.0
+			var furthest_children = _get_furthest_children_by_direction(slot, slot_map)
+			for dir in furthest_children:
+				var child_id = furthest_children[dir]
+				var key = parent_id + "->" + child_id
+				connection_progress[key] = 1.0
 
 func _start_line_animation_from(parent_id: String) -> void:
 	var upgrade_mgr = get_node("/root/UpgradeManager")
@@ -280,24 +285,22 @@ func _start_line_animation_from(parent_id: String) -> void:
 		return
 		
 	var parent_slot = slot_map[parent_id]
-	var closest_child_id = _get_closest_child_id(parent_slot, slot_map)
-	
-	if closest_child_id != "":
-		# Start closest child animation first
-		var key = parent_id + "->" + closest_child_id
+	var furthest_children = _get_furthest_children_by_direction(parent_slot, slot_map)
+	for dir in furthest_children:
+		var child_id = furthest_children[dir]
+		var key = parent_id + "->" + child_id
 		connection_progress[key] = 0.0
 		
-		var child_lvl = upgrade_mgr.get_upgrade_level(closest_child_id)
+		var child_lvl = upgrade_mgr.get_upgrade_level(child_id)
 		var trigger_next = child_lvl > 0
 		
 		var anim = {
 			"parent_id": parent_id,
-			"child_id": closest_child_id,
+			"child_id": child_id,
 			"key": key,
 			"progress": 0.0,
 			"duration": 0.4,
-			"trigger_next_on_finish": trigger_next,
-			"is_closest": true
+			"trigger_next_on_finish": trigger_next
 		}
 		_add_active_animation(anim)
 
@@ -323,47 +326,51 @@ func _process(delta: float) -> void:
 		grid_container.queue_redraw()
 
 func _on_line_animation_finished(anim: Dictionary) -> void:
-	# Find child slot and trigger bounce animation
 	var slots = _find_slots_recursive(self)
-	var child_slot: UpgradeSlotUI = null
+	var slot_map = {}
 	for slot in slots:
-		if slot.upgrade_data and slot.upgrade_data.upgrade_id == anim.child_id:
-			child_slot = slot
-			break
+		if slot.upgrade_data:
+			slot_map[slot.upgrade_data.upgrade_id] = slot
 			
-	if child_slot:
-		child_slot.play_bounce_animation()
+	var parent_id = anim.parent_id
+	if slot_map.has(parent_id):
+		var parent_slot = slot_map[parent_id]
+		var parent_center = parent_slot.position + parent_slot.size / 2.0
 		
-	# If this was the closest child animation, trigger remaining child animations
-	if anim.get("is_closest", false):
-		var parent_id = anim.parent_id
-		var slot_map = {}
-		for slot in slots:
-			if slot.upgrade_data:
-				slot_map[slot.upgrade_data.upgrade_id] = slot
-				
-		if slot_map.has(parent_id):
-			var parent_slot = slot_map[parent_id]
-			var upgrade_mgr = get_node("/root/UpgradeManager")
+		# Find the direction of the animation's target child
+		var child_id = anim.child_id
+		if slot_map.has(child_id):
+			var child_slot = slot_map[child_id]
+			var child_center = child_slot.position + child_slot.size / 2.0
+			var diff = child_center - parent_center
+			var angle = diff.angle()
 			
-			for child_id in parent_slot.upgrade_data.unlocks:
-				if child_id != anim.child_id and slot_map.has(child_id):
-					var key = parent_id + "->" + child_id
-					connection_progress[key] = 0.0
+			var target_dir = "left"
+			if angle >= -PI/4.0 and angle < PI/4.0:
+				target_dir = "right"
+			elif angle >= PI/4.0 and angle < 3.0*PI/4.0:
+				target_dir = "down"
+			elif angle >= -3.0*PI/4.0 and angle < -PI/4.0:
+				target_dir = "up"
+				
+			# Bounce all children that are in the same direction!
+			for other_id in parent_slot.upgrade_data.unlocks:
+				if slot_map.has(other_id):
+					var other_slot = slot_map[other_id]
+					var other_center = other_slot.position + other_slot.size / 2.0
+					var other_diff = other_center - parent_center
+					var other_angle = other_diff.angle()
 					
-					var child_lvl = upgrade_mgr.get_upgrade_level(child_id)
-					var trigger_next = child_lvl > 0
-					
-					var child_anim = {
-						"parent_id": parent_id,
-						"child_id": child_id,
-						"key": key,
-						"progress": 0.0,
-						"duration": 0.4,
-						"trigger_next_on_finish": trigger_next,
-						"is_closest": false
-					}
-					_add_active_animation(child_anim)
+					var other_dir = "left"
+					if other_angle >= -PI/4.0 and other_angle < PI/4.0:
+						other_dir = "right"
+					elif other_angle >= PI/4.0 and other_angle < 3.0*PI/4.0:
+						other_dir = "down"
+					elif other_angle >= -3.0*PI/4.0 and other_angle < -PI/4.0:
+						other_dir = "up"
+						
+					if other_dir == target_dir:
+						other_slot.play_bounce_animation()
 					
 	# If trigger_next is true, start next connection in chain
 	if anim.trigger_next_on_finish:

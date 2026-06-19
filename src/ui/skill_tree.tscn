@@ -115,42 +115,42 @@ size_flags_vertical = 3
 
 [node name="UpgradeSlotUI5" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1561243125 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 680.0
-offset_top = 290.0
-offset_right = 760.0
-offset_bottom = 370.0
+offset_left = -120.0
+offset_top = 450.0
+offset_right = -40.0
+offset_bottom = 530.0
 upgrade_data = ExtResource("4_64tqs")
 
 [node name="UpgradeSlotUI6" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=748338168 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 840.0
+offset_left = 600.0
 offset_top = 290.0
-offset_right = 920.0
+offset_right = 680.0
 offset_bottom = 370.0
 upgrade_data = ExtResource("5_gm6cx")
 
 [node name="UpgradeSlotUI21" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1630394632 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 680.0
+offset_left = 760.0
 offset_top = 450.0
-offset_right = 760.0
+offset_right = 840.0
 offset_bottom = 530.0
 upgrade_data = ExtResource("4_gm6cx")
 
 [node name="UpgradeSlotUI22" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1486078357 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 840.0
-offset_top = 450.0
-offset_right = 920.0
-offset_bottom = 530.0
+offset_left = -280.0
+offset_top = 290.0
+offset_right = -200.0
+offset_bottom = 370.0
 upgrade_data = ExtResource("13_w8oyu")
 
 [node name="UpgradeSlotUI23" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=530972564 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1160.0
-offset_top = 450.0
-offset_right = 1240.0
-offset_bottom = 530.0
+offset_left = 280.0
+offset_top = 610.0
+offset_right = 360.0
+offset_bottom = 690.0
 upgrade_data = ExtResource("3_4ekbc")
 
 [node name="UpgradeSlotUI43" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1281246486 instance=ExtResource("2_slot")]
@@ -163,26 +163,26 @@ upgrade_data = ExtResource("3_yujo4")
 
 [node name="UpgradeSlotUI29" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1255861686 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 680.0
-offset_top = 610.0
-offset_right = 760.0
-offset_bottom = 690.0
+offset_left = 920.0
+offset_top = 290.0
+offset_right = 1000.0
+offset_bottom = 370.0
 upgrade_data = ExtResource("6_rjd3r")
 
 [node name="UpgradeSlotUI30" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=928614308 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 840.0
-offset_top = 610.0
-offset_right = 920.0
-offset_bottom = 690.0
+offset_left = 760.0
+offset_top = 130.0
+offset_right = 840.0
+offset_bottom = 210.0
 upgrade_data = ExtResource("9_mnh8q")
 
 [node name="UpgradeSlotUI7" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1249264737 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1480.0
-offset_top = 290.0
-offset_right = 1560.0
-offset_bottom = 370.0
+offset_left = 920.0
+offset_top = 690.0
+offset_right = 1000.0
+offset_bottom = 770.0
 upgrade_data = ExtResource("6_ecoli")
 
 [node name="UpgradeSlotUI8" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1149455441 instance=ExtResource("2_slot")]
@@ -195,42 +195,42 @@ upgrade_data = ExtResource("4_w8oyu")
 
 [node name="UpgradeSlotUI24" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1558291527 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1480.0
-offset_top = 450.0
-offset_right = 1560.0
-offset_bottom = 530.0
+offset_left = -120.0
+offset_top = 130.0
+offset_right = -40.0
+offset_bottom = 210.0
 upgrade_data = ExtResource("10_o00n4")
 
 [node name="UpgradeSlotUI25" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=494767026 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1640.0
+offset_left = 1160.0
 offset_top = 450.0
-offset_right = 1720.0
+offset_right = 1240.0
 offset_bottom = 530.0
 upgrade_data = ExtResource("14_w8oyu")
 
 [node name="UpgradeSlotUI26" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=94134855 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1000.0
-offset_top = 130.0
-offset_right = 1080.0
-offset_bottom = 210.0
+offset_left = 1560.0
+offset_top = 450.0
+offset_right = 1640.0
+offset_bottom = 530.0
 upgrade_data = ExtResource("15_ecoli")
 
 [node name="UpgradeSlotUI31" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1681206854 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1480.0
-offset_top = 610.0
-offset_right = 1560.0
-offset_bottom = 690.0
+offset_left = 40.0
+offset_top = 290.0
+offset_right = 120.0
+offset_bottom = 370.0
 upgrade_data = ExtResource("15_8hhd3")
 
 [node name="UpgradeSlotUI32" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1771709401 instance=ExtResource("2_slot")]
 layout_mode = 0
-offset_left = 1640.0
-offset_top = 610.0
-offset_right = 1720.0
-offset_bottom = 690.0
+offset_left = 760.0
+offset_top = 770.0
+offset_right = 840.0
+offset_bottom = 850.0
 upgrade_data = ExtResource("12_60a4a")
 
 [node name="OptionsPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1848593920]

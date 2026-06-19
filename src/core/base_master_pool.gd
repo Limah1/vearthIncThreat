@@ -7,6 +7,7 @@ class_name BaseMasterPool
 
 var _pool: Array[Node3D] = []
 var _active_instances: Array[Node3D] = []
+var active_count: int = 0
 
 func _ready() -> void:
 	_initialize_pool()
@@ -62,6 +63,7 @@ func borrow_instance() -> Node3D:
 	if instance:
 		_active_instances.append(instance)
 		instance.process_mode = Node.PROCESS_MODE_INHERIT
+		active_count += 1
 		
 	return instance
 
@@ -71,6 +73,7 @@ func return_to_pool(instance: Node3D) -> void:
 		
 	if _active_instances.has(instance):
 		_active_instances.erase(instance)
+		active_count = max(0, active_count - 1)
 		
 	if instance.has_method("on_pool_deactivate"):
 		instance.on_pool_deactivate()

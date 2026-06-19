@@ -13,4 +13,4 @@ category = "DebrisUnlock"
 base_cost = 1.0
 value_increment = 0.2
 is_percentage = true
-unlocks = Array[String](["DebrisPiercing", "DebrisAmount"])
+unlocks = Array[String](["DA_UnlockSatellite_", "DebrisPiercing", "DebrisAmount"])

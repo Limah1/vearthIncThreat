@@ -41,18 +41,17 @@ func on_pool_activate(spawn_pos_3d: Vector3) -> void:
 	if randf() > 0.5:
 		orbit_speed = abs(orbit_speed)
 	else:
-		orbit_speed = -abs(orbit_speed)
+		orbit_speed = - abs(orbit_speed)
 		
 	fire_timer = randf() * fire_interval
 	active = true
 	visible = true
-	add_to_group("damageable")
+	GameManager.register_active_damageable(self)
 
 func on_pool_deactivate() -> void:
 	active = false
 	visible = false
-	if is_in_group("damageable"):
-		remove_from_group("damageable")
+	GameManager.unregister_active_damageable(self)
 
 func take_damage(amount: float) -> void:
 	if not active:
@@ -84,13 +83,13 @@ func _physics_process(delta: float) -> void:
 			current_angle = Vector2(global_position.x, global_position.z).angle()
 		else:
 			var velocity = to_center.normalized() * fly_in_speed
-			global_rotation.y = -Vector2(to_center.x, to_center.z).angle() + PI
+			global_rotation.y = - Vector2(to_center.x, to_center.z).angle() + PI
 			global_position += velocity * delta
 	else:
 		# Orbit rotation
 		current_angle += orbit_speed * delta
 		global_position = Vector3(cos(current_angle) * orbit_radius, 0.0, sin(current_angle) * orbit_radius)
-		global_rotation.y = -current_angle + PI / 2.0 # Face the planet center (adjusted for 3D orientation)
+		global_rotation.y = - current_angle + PI / 2.0 # Face the planet center (adjusted for 3D orientation)
 		
 		# Shoot loop
 		fire_timer += delta

@@ -23,8 +23,34 @@ var movement_direction: Vector3 = Vector3.ZERO
 var asteroid_type: String = "small"
 var radius: float = 24.0 # default radius for SMALL collision checks
 
+var fbx_small: Node3D = null
+var fbx_medium: Node3D = null
+var fbx_large: Node3D = null
+
 func _ready() -> void:
 	add_to_group("asteroid")
+	
+	# Pre-instantiate visual meshes to avoid runtime instantiations/disk loading
+	var scene_small = load("res://src/assets/3DAssets/meteoro_small.FBX")
+	if scene_small:
+		fbx_small = scene_small.instantiate() as Node3D
+		fbx_small.scale = Vector3(90.0, 90.0, 90.0)
+		fbx_small.visible = false
+		add_child(fbx_small)
+		
+	var scene_medium = load("res://src/assets/3DAssets/meteoro_medium.FBX")
+	if scene_medium:
+		fbx_medium = scene_medium.instantiate() as Node3D
+		fbx_medium.scale = Vector3(140.0, 140.0, 140.0)
+		fbx_medium.visible = false
+		add_child(fbx_medium)
+		
+	var scene_large = load("res://src/assets/3DAssets/meteoro_big.FBX")
+	if scene_large:
+		fbx_large = scene_large.instantiate() as Node3D
+		fbx_large.scale = Vector3(220.0, 220.0, 220.0)
+		fbx_large.visible = false
+		add_child(fbx_large)
 
 func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	global_position = spawn_pos_3d
@@ -33,13 +59,20 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	slowdown_timer = 0.0
 	active = true
 	visible = true
-	add_to_group("damageable")
+	GameManager.register_active_damageable(self)
+	
+	# Reset rotations of cached visual meshes
+	if fbx_small:
+		fbx_small.rotation = Vector3.ZERO
+	if fbx_medium:
+		fbx_medium.rotation = Vector3.ZERO
+	if fbx_large:
+		fbx_large.rotation = Vector3.ZERO
 
 func on_pool_deactivate() -> void:
 	active = false
 	visible = false
-	if is_in_group("damageable"):
-		remove_from_group("damageable")
+	GameManager.unregister_active_damageable(self)
 
 func set_asteroid_type(type: String) -> void:
 	asteroid_type = type
@@ -65,25 +98,13 @@ func set_asteroid_type(type: String) -> void:
 	hp = max_hp
 	current_move_speed = base_speed * (1.0 + (GameManager.current_zone - 1) * 0.05)
 	
-	# Rebuild 3D visual dynamically
-	for child in get_children():
-		child.queue_free()
-		
-	var fbx_scene: PackedScene = null
-	match type:
-		"small": fbx_scene = load("res://src/assets/3DAssets/meteoro_small.FBX")
-		"medium": fbx_scene = load("res://src/assets/3DAssets/meteoro_medium.FBX")
-		"large": fbx_scene = load("res://src/assets/3DAssets/meteoro_big.FBX")
-		
-	if fbx_scene:
-		var fbx_node = fbx_scene.instantiate()
-		var scale_val = 90.0
-		match type:
-			"small": scale_val = 90.0
-			"medium": scale_val = 140.0
-			"large": scale_val = 220.0
-		fbx_node.scale = Vector3(scale_val, scale_val, scale_val)
-		add_child(fbx_node)
+	# Toggle visibility instead of queue_free & load/instantiate at runtime
+	if fbx_small:
+		fbx_small.visible = (type == "small")
+	if fbx_medium:
+		fbx_medium.visible = (type == "medium")
+	if fbx_large:
+		fbx_large.visible = (type == "large")
 
 func take_damage(amount: float) -> void:
 	if not active:
@@ -113,11 +134,16 @@ func _physics_process(delta: float) -> void:
 	# Move node
 	global_position += movement_direction * speed * delta
 	
-	# Rotate the asteroid slowly on its child mesh
-	if get_child_count() > 0:
-		var mesh_node = get_child(0)
-		mesh_node.rotate_x(0.6 * delta)
-		mesh_node.rotate_z(0.3 * delta)
+	# Rotate the active mesh slowly
+	var active_mesh: Node3D = null
+	match asteroid_type:
+		"small": active_mesh = fbx_small
+		"medium": active_mesh = fbx_medium
+		"large": active_mesh = fbx_large
+		
+	if active_mesh and is_instance_valid(active_mesh):
+		active_mesh.rotate_x(0.6 * delta)
+		active_mesh.rotate_z(0.3 * delta)
 		
 	# Check for planet collision (planet is at center 0,0,0, radius ~ 45)
 	if global_position.length() < 45.0:
@@ -155,7 +181,7 @@ func _on_death() -> void:
 			
 		if roll_success:
 			_spawn_debris_burst()
-			GameManager.debris_chance = 0.20
+			GameManager.debris_chance = 1.0
 
 func _spawn_debris_burst() -> void:
 	var debris_master = get_tree().get_first_node_in_group("debris_master")

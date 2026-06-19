@@ -25,7 +25,7 @@ var decay_timer: float = 60.0
 var current_zone: int = 1
 
 var eliminated_threats: int = 0
-var debris_chance: float = 0.0
+var debris_chance: float = 1.0
 
 # Camera transition trigger from purchases
 var b_can_animate_camera: bool = false
@@ -36,6 +36,12 @@ var is_fully_loaded: bool = false
 
 var _popup_pool: Array[Label3D] = []
 var _popup_size: int = 80
+
+# Array rastreado de entidades ativas dañables — evita get_nodes_in_group todo frame
+var _active_damageable: Array = []
+
+# Buffer reutilizável para get_nearby_entities — evita alocação por chamada
+var _nearby_buffer: Array = []
 
 func _ready() -> void:
 	# Listen to upgrade purchases to trigger camera fly transitions
@@ -155,7 +161,7 @@ func _on_upgrade_purchased(upgrade_id: String, _new_level: int) -> void:
 		b_can_animate_camera = true
 		has_camera_animated_once = true
 	if upgrade_id == "DA_UnlockDebrie_T0":
-		debris_chance = 0.20
+		debris_chance = 1.0
 	save_game()
 
 func save_game() -> void:
@@ -167,10 +173,17 @@ func load_game() -> void:
 func register_eliminated_threat() -> void:
 	eliminated_threats += 1
 
-func get_active_actors() -> Array[Node]:
-	if not is_inside_tree():
-		return []
-	return get_tree().get_nodes_in_group("damageable")
+func get_active_actors() -> Array:
+	return _active_damageable
+
+## Registra entidade ativa no array rastreado (chamado no on_pool_activate / activate_at)
+func register_active_damageable(entity: Node) -> void:
+	if not _active_damageable.has(entity):
+		_active_damageable.append(entity)
+
+## Remove entidade do array rastreado (chamado no on_pool_deactivate / _recycle)
+func unregister_active_damageable(entity: Node) -> void:
+	_active_damageable.erase(entity)
 
 func _init_popup_pool() -> void:
 	for i in range(_popup_size):
@@ -253,20 +266,20 @@ func register_to_grid(entity: Node) -> void:
 func get_nearby_entities(pos_3d: Vector3) -> Array:
 	var cell_x = floor(pos_3d.x / cell_size)
 	var cell_z = floor(pos_3d.z / cell_size)
-	var nearby = []
+	# Reutiliza buffer pré-alocado — zero alocação por chamada
+	_nearby_buffer.clear()
 	for dx in range(-1, 2):
 		for dz in range(-1, 2):
 			var cell = Vector2i(cell_x + dx, cell_z + dz)
 			if spatial_grid.has(cell):
-				nearby.append_array(spatial_grid[cell])
-	return nearby
+				_nearby_buffer.append_array(spatial_grid[cell])
+	return _nearby_buffer
 
 func _physics_process(_delta: float) -> void:
 	if current_state != GameState.PLAYING:
 		return
-	# Rebuild 2D spatial grid for active damageable entities
+	# Rebuild spatial grid apenas com entidades ativas rastreadas — O(ativas) não O(pool total)
 	spatial_grid.clear()
-	var targets = get_tree().get_nodes_in_group("damageable")
-	for target in targets:
+	for target in _active_damageable:
 		if is_instance_valid(target) and target.active:
 			register_to_grid(target)

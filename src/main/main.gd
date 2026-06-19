@@ -27,7 +27,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	var game_mgr = get_node("/root/GameManager")
 	if game_mgr.current_state == game_mgr.GameState.PLAYING:
-		var active_targets = get_tree().get_nodes_in_group("damageable").size()
+		var active_targets = GameManager._active_damageable.size()
 		if not wave_active:
 			if active_targets > 5:
 				wave_active = true
