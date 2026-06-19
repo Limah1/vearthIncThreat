@@ -181,7 +181,7 @@ func _on_death() -> void:
 			
 		if roll_success:
 			_spawn_debris_burst()
-			GameManager.debris_chance = 1.0
+			GameManager.debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
 
 func _spawn_debris_burst() -> void:
 	var debris_master = get_tree().get_first_node_in_group("debris_master")

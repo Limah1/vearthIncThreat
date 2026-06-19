@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("2_script")
-upgrade_id = "DA_DebrisAmount_T0"
+upgrade_id = "DebrisAmount"
 upgrade_name = "Debris Amount"
 description = "Increases debris count per destroyed threat (+1 debris per level)."
 category = "DebrisAmount"

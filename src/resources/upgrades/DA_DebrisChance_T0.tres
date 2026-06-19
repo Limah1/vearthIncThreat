@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://debris_chance_t0"]
+
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+upgrade_id = "DebrisChance"
+upgrade_name = "Debris Chance"
+description = "Increases debris spawn chance (+10% per level)."
+category = "DebrisChance"
+base_cost = 15.0
+max_level = 8
+value_increment = 0.1
+is_percentage = true
+default_unlocked = false
+unlocks = Array[String]([])

@@ -17,6 +17,9 @@
 [ext_resource type="Resource" uid="uid://bckceaq4hq4l7" path="res://src/resources/upgrades/DA_UnlockDebrie_T0.tres" id="14_w8oyu"]
 [ext_resource type="Resource" uid="uid://bj2soxog64qp8" path="res://src/resources/upgrades/DA_GarbageAmmount_T2.tres" id="15_8hhd3"]
 [ext_resource type="Resource" uid="uid://dyuq75kda3e5y" path="res://src/resources/upgrades/DA_UnlockSatellite_.tres" id="15_ecoli"]
+[ext_resource type="Resource" uid="uid://debris_chance_t0" path="res://src/resources/upgrades/DA_DebrisChance_T0.tres" id="16_chance"]
+[ext_resource type="Resource" uid="uid://debris_piercing_t0" path="res://src/resources/upgrades/DA_DebrisPiercing_T0.tres" id="17_pierce"]
+[ext_resource type="Resource" uid="uid://dqo5affrkigry" path="res://src/resources/upgrades/DA_DebrisAmount_T0.tres" id="18_amount"]
 
 [node name="SkillTree" type="Control" unique_id=1201646280]
 layout_mode = 3
@@ -232,6 +235,30 @@ offset_top = 770.0
 offset_right = 840.0
 offset_bottom = 850.0
 upgrade_data = ExtResource("12_60a4a")
+
+[node name="UpgradeSlotUI44" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=987654321 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1360.0
+offset_top = 450.0
+offset_right = 1440.0
+offset_bottom = 530.0
+upgrade_data = ExtResource("16_chance")
+
+[node name="UpgradeSlotUI45" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=987654322 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1360.0
+offset_top = 290.0
+offset_right = 1440.0
+offset_bottom = 370.0
+upgrade_data = ExtResource("17_pierce")
+
+[node name="UpgradeSlotUI46" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=987654323 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 1360.0
+offset_top = 610.0
+offset_right = 1440.0
+offset_bottom = 690.0
+upgrade_data = ExtResource("18_amount")
 
 [node name="OptionsPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1848593920]
 visible = false

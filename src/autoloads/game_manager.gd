@@ -161,7 +161,10 @@ func _on_upgrade_purchased(upgrade_id: String, _new_level: int) -> void:
 		b_can_animate_camera = true
 		has_camera_animated_once = true
 	if upgrade_id == "DA_UnlockDebrie_T0":
-		debris_chance = 1.0
+		debris_chance = 0.8 + UpgradeManager.get_total_bonus("DebrisChance")
+	elif upgrade_id == "DebrisChance":
+		if UpgradeManager.get_upgrade_level("DA_UnlockDebrie_T0") > 0:
+			debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
 	save_game()
 
 func save_game() -> void:

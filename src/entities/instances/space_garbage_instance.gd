@@ -206,7 +206,7 @@ func _on_death() -> void:
 
 		if roll_success:
 			_spawn_debris_burst()
-			GameManager.debris_chance = 1.0
+			GameManager.debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
 
 ## Ativa debris em burst — borrow direto do DebrisMaster
 func _spawn_debris_burst() -> void:
