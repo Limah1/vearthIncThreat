@@ -17,7 +17,6 @@ var master_node: Node = null
 var movement_direction: Vector3 = Vector3.ZERO
 
 
-
 var lifetime_timer: float = 0.0
 
 func _ready() -> void:
