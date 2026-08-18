@@ -28,6 +28,7 @@ var movement_direction: Vector3 = Vector3.ZERO
 
 # --- Cache de PlayerPlanet: evita find_child() todo frame
 var _planet_ref: Node = null
+var _debris_master_ref: Node = null
 
 # --- Scale animation via lerp (sem Tween allocation)
 var _scale_timer: float = 0.0
@@ -72,6 +73,7 @@ func on_pool_activate(spawn_pos_3d: Vector3) -> void:
 	visible = true
 	GameManager.register_movement(self)
 	GameManager.register_active_damageable(self)
+	GameManager.register_multimesh_visual(self, "garbage")
 
 	# Calcular direção linear ao centro
 	var dir = (Vector3.ZERO - spawn_pos_3d)
@@ -128,6 +130,7 @@ func on_pool_deactivate() -> void:
 	visible = false
 	GameManager.unregister_movement(self)
 	GameManager.unregister_active_damageable(self)
+	GameManager.unregister_multimesh_visual(self, "garbage")
 
 func take_damage(amount: float) -> void:
 	if not active:
@@ -212,7 +215,9 @@ func _on_death() -> void:
 
 ## Ativa debris em burst — borrow direto do DebrisMaster
 func _spawn_debris_burst() -> void:
-	var debris_master = get_tree().get_first_node_in_group("debris_master")
+	if not is_instance_valid(_debris_master_ref):
+		_debris_master_ref = get_tree().get_first_node_in_group("debris_master")
+	var debris_master = _debris_master_ref
 	if not debris_master:
 		return
 

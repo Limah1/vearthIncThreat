@@ -12,9 +12,7 @@ material = SubResource("StandardMaterial3D_ship")
 size = Vector3(40.0, 48.0, 10.0)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_engine"]
-emission_enabled = true
-emission = Color(1, 0.1, 0.1, 1)
-emission_energy_multiplier = 2.0
+emission_enabled = false
 
 [sub_resource type="BoxMesh" id="BoxMesh_engine"]
 material = SubResource("StandardMaterial3D_engine")

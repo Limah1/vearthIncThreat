@@ -18,12 +18,13 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	global_position = spawn_pos_3d
 	movement_direction = dir_3d.normalized()
 	
-	var zone_scale = 1.0 + (get_node("/root/GameManager").current_zone - 1) * 0.08
+	var zone_scale = 1.0 + (GameManager.current_zone - 1) * 0.08
 	damage = 4.0 * zone_scale
 	
 	active = true
 	visible = true
 	GameManager.register_movement(self)
+	GameManager.register_multimesh_visual(self, "enemy_projectile")
 	
 	if movement_direction.length_squared() > 0.01:
 		global_rotation.y = -Vector2(movement_direction.x, movement_direction.z).angle()
@@ -32,6 +33,7 @@ func on_pool_deactivate() -> void:
 	active = false
 	visible = false
 	GameManager.unregister_movement(self)
+	GameManager.unregister_multimesh_visual(self, "enemy_projectile")
 
 func take_damage(_amount: float) -> void:
 	# Projectiles do not take damage
@@ -47,7 +49,7 @@ func _manager_move(delta: float) -> void:
 	# Check distance to planet
 	var dist = global_position.length()
 	if dist < 45.0:
-		var planet = get_tree().current_scene.find_child("PlayerPlanet", true, false)
+		var planet = GameManager.get_player_planet()
 		if planet:
 			planet.take_damage(damage)
 		_recycle()

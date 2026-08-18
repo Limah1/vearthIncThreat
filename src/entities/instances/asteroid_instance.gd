@@ -26,6 +26,7 @@ var radius: float = 24.0 # default radius for SMALL collision checks
 var fbx_small: Node3D = null
 var fbx_medium: Node3D = null
 var fbx_large: Node3D = null
+var _debris_master_ref: Node = null
 
 func _ready() -> void:
 	add_to_group("asteroid")
@@ -149,7 +150,7 @@ func _manager_move(delta: float) -> void:
 		
 	# Check for planet collision (planet is at center 0,0,0, radius ~ 45)
 	if global_position.length() < 45.0:
-		var planet = get_tree().current_scene.find_child("PlayerPlanet", true, false)
+		var planet = GameManager.get_player_planet()
 		if planet:
 			planet.take_damage(planet_damage)
 			
@@ -186,7 +187,9 @@ func _on_death() -> void:
 			GameManager.debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
 
 func _spawn_debris_burst() -> void:
-	var debris_master = get_tree().get_first_node_in_group("debris_master")
+	if not is_instance_valid(_debris_master_ref):
+		_debris_master_ref = get_tree().get_first_node_in_group("debris_master")
+	var debris_master = _debris_master_ref
 	if not debris_master:
 		return
 		

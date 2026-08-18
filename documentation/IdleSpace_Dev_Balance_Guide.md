@@ -4,20 +4,30 @@ This document unifies the **Developer Guide (Godot 4 & GDScript)** and the **Upg
 
 ---
 
-## PARTE 1: DEVELOPER GUIDE (GODOT 4 / GDSCRIPT)
+## PART 1: DEVELOPER GUIDE (GODOT 4 / GDSCRIPT)
 
 The project leverages Godot 4's lightweight scripting combined with custom autoload managers and dynamic resource definitions.
 
-### 1. Object Pooling (`ObjectPooler` & `Entity2D`)
+### 1. Object Pooling (`BaseMasterPool` & `Node3D` Instances)
 To maximize CPU performance and minimize memory fragmentation, dynamic gameplay nodes (such as Space Garbage, Asteroids, Enemy Spaceships, Debris, and Projectiles) **MUST NEVER** be created using `instantiate()` directly during gameplay loops or destroyed with `queue_free()`.
-* **Borrowing**: Call `ObjectPooler.borrow_from_pool(type, position_2d, velocity_2d)`.
-* **Returning**: Call `ObjectPooler.return_to_pool(type, node)` or call `die()` on the entity to recycle.
+* **Borrowing**: Call the relevant master pool's `borrow_instance()` or public spawn method.
+* **Returning**: Call the relevant master pool's `return_to_pool(instance)` or call the entity's `die()` / recycle method.
 * **Coding Protocol**:
-  - `on_pool_activate(spawn_pos_2d, initial_velocity)`: Reset physical parameters, health, visibility, and initialize 3D mesh instances.
-  - `on_pool_deactivate()`: Stop movement, clear visual markers, and remove from active physics groups.
-  - `take_damage(amount)`: Apply damage, spawn standard Label3D damage numbers, and trigger `die()` if health falls below zero.
+  - `on_pool_activate(spawn_pos_3d, ...)`: Reset physical parameters, health, visibility, timers, and manager registrations.
+  - `on_pool_deactivate()`: Stop movement, clear visual markers, unregister manager/grid/collision membership, and hide visuals.
+  - `_manager_move(delta)`: Keep active movement in `GameManager`'s centralized dispatcher.
+  - `_manager_collision()`: Keep collision sweeps separate from movement; use lower frequency where gameplay allows.
+  - `take_damage(amount)`: Apply damage, use pooled Label3D feedback, and trigger `die()` if health falls below zero.
 
-### 2. Workflow for Adding New Game Content
+### 2. High-count runtime rules
+The project targets hundreds of active objects. Keep per-entity work bounded:
+* Use `GameManager` movement/collision registration instead of one `_physics_process()` callback per threat.
+* Use the incremental spatial grid for nearby-target queries; update cells only when entities cross boundaries.
+* Use `MultiMeshRenderer` for repeated garbage, debris, and projectile visuals.
+* Avoid per-hit logging, per-frame scene-tree searches, dynamic popup/tween allocation, and per-ship pathfinding queries.
+* Keep glow, shadows, and material emission disabled unless a measured visual requirement justifies their GPU cost.
+
+### 3. Workflow for Adding New Game Content
 
 #### A. Adding a New Upgrade Resource
 1. In the FileSystem, create a new Resource (`.tres`) in [res://src/resources/upgrades/](file:///e:/GODOT/vearthIncThreat/src/resources/upgrades/).
@@ -36,13 +46,13 @@ To maximize CPU performance and minimize memory fragmentation, dynamic gameplay 
 
 #### B. Adding a New Spawner or Path Point
 1. Open the active scene `main.tscn`.
-2. Locate the `World2D/SpawnPath` node.
+2. Locate the relevant `SpawnPath` under `GarbageCircleSpawner` or `AsteoidsCircleSpawner` in `main.tscn`.
 3. Select `SpawnPath` and add points to the path to modify the spawning ring.
 4. If you want to configure spawners, they will automatically spawn along the Path2D points during startup.
 
 ---
 
-## PARTE 2: UPGRADES BALANCE & MATHEMATICS
+## PART 2: UPGRADES BALANCE & MATHEMATICS
 
 ### 1. Unified Multiplier Formula
 The system starts with a **Base Multiplier of `1.0` (100%)**.

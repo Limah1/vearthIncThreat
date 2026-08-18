@@ -7,6 +7,7 @@ class_name BaseMasterPool
 
 var _pool: Array[Node3D] = []
 var _active_instances: Array[Node3D] = []
+var _active_indices: Dictionary = {}
 var active_count: int = 0
 
 func _ready() -> void:
@@ -64,6 +65,7 @@ func borrow_instance() -> Node3D:
 				
 	if instance:
 		_active_instances.append(instance)
+		_active_indices[instance] = _active_instances.size() - 1
 		instance.process_mode = Node.PROCESS_MODE_INHERIT
 		active_count += 1
 		
@@ -73,9 +75,11 @@ func return_to_pool(instance: Node3D) -> void:
 	if not is_instance_valid(instance) or instance.is_queued_for_deletion():
 		return
 		
-	if _active_instances.has(instance):
-		_active_instances.erase(instance)
-		active_count = max(0, active_count - 1)
+	if not _active_indices.has(instance):
+		return
+
+	_remove_active_at(int(_active_indices[instance]))
+	active_count = max(0, active_count - 1)
 		
 	if instance.has_method("on_pool_deactivate"):
 		instance.on_pool_deactivate()
@@ -89,7 +93,20 @@ func return_to_pool(instance: Node3D) -> void:
 func return_all_active_to_pool() -> void:
 	var active_copy = _active_instances.duplicate()
 	for instance in active_copy:
-	return_to_pool(instance)
+		return_to_pool(instance)
+
+func _remove_active_at(index: int) -> void:
+	if index < 0 or index >= _active_instances.size():
+		return
+
+	var last_index = _active_instances.size() - 1
+	var removed = _active_instances[index]
+	if index != last_index:
+		var replacement = _active_instances[last_index]
+		_active_instances[index] = replacement
+		_active_indices[replacement] = index
+	_active_instances.pop_back()
+	_active_indices.erase(removed)
 
 func _disable_shadows_recursive(node: Node) -> void:
 	if node is GeometryInstance3D:

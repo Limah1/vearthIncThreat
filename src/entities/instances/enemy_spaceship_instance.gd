@@ -21,6 +21,7 @@ var active: bool = false
 var pool_type: String = "enemy"
 var master_node: Node = null
 var radius: float = 20.0 # Bounding radius for collision checks
+var _projectile_master_ref: Node = null
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -100,10 +101,11 @@ func _manager_move(delta: float) -> void:
 			_shoot_projectile()
 
 func _shoot_projectile() -> void:
-	var master_nodes = get_tree().get_nodes_in_group("enemy_proj_master")
-	if master_nodes.is_empty():
+	if not is_instance_valid(_projectile_master_ref):
+		_projectile_master_ref = get_tree().get_first_node_in_group("enemy_proj_master")
+	var master_node_proj = _projectile_master_ref
+	if not master_node_proj:
 		return
-	var master_node_proj = master_nodes[0]
 	
 	# Shoot towards center
 	var shoot_dir = (Vector3.ZERO - global_position).normalized()

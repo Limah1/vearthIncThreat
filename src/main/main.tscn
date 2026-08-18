@@ -27,6 +27,7 @@
 [ext_resource type="PackedScene" uid="uid://c6p50gcrw4w80" path="res://src/entities/visuals/satellite_projectile_3d.tscn" id="34_sat_proj_3d_scene"]
 [ext_resource type="Script" uid="uid://thblp3fg5u6u" path="res://src/entities/satellite_master.gd" id="35_satellite_master_script"]
 [ext_resource type="PackedScene" uid="uid://c6p50gcrw4w8p" path="res://src/entities/visuals/satellite_3d.tscn" id="36_satellite_3d_scene"]
+[ext_resource type="Script" path="res://src/core/multi_mesh_renderer.gd" id="37_multimesh_renderer"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_space_bg"]
 shader = ExtResource("16_bg_shader")
@@ -86,6 +87,9 @@ shadow_enabled = false
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 3, 0)
 far = 1000.0
 script = ExtResource("2_camera")
+
+[node name="MultiMeshRenderer" type="Node3D" parent="."]
+script = ExtResource("37_multimesh_renderer")
 
 [node name="SpaceGarbage" type="Node3D" parent="." unique_id=55555555]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

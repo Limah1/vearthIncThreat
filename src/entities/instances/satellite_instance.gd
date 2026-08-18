@@ -12,9 +12,19 @@ var fire_timer: float = 0.0
 var active: bool = false
 var pool_type: String = "satellite"
 var master_node: Node = null
+var _game_manager_ref: Node = null
+var _upgrade_manager_ref: Node = null
+var _sat_projectile_master_ref: Node = null
+var _speed_multiplier: float = 1.0
 
 func _ready() -> void:
 	add_to_group("satellites")
+	_game_manager_ref = get_node_or_null("/root/GameManager")
+	_upgrade_manager_ref = get_node_or_null("/root/UpgradeManager")
+	var upgrade_callback = Callable(self, "_on_upgrade_purchased")
+	if _upgrade_manager_ref and not _upgrade_manager_ref.is_connected("upgrade_purchased", upgrade_callback):
+		_upgrade_manager_ref.connect("upgrade_purchased", upgrade_callback)
+	_refresh_speed_multiplier()
 	
 	# Set default subnode scale
 	var body = find_child("Body", true, false)
@@ -53,14 +63,9 @@ func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:
 		return
 		
-	var game_mgr = get_node_or_null("/root/GameManager")
-	if game_mgr and game_mgr.current_state == game_mgr.GameState.PLAYING:
-		var upgrade_mgr = get_node_or_null("/root/UpgradeManager")
-		if upgrade_mgr:
-			var speed_mult = upgrade_mgr.get_multiplier("SatelliteSpeed")
-			orbit_speed = base_orbit_speed * speed_mult
-		else:
-			orbit_speed = base_orbit_speed
+	var game_mgr = _game_manager_ref
+	if game_mgr and game_mgr.get("current_state") == GameManager.GameState.PLAYING:
+		orbit_speed = base_orbit_speed * _speed_multiplier
 			
 		angle += orbit_speed * delta
 		
@@ -77,13 +82,21 @@ func _update_position() -> void:
 	global_rotation.y = -angle + PI / 2.0
 
 func _shoot() -> void:
-	var master_nodes = get_tree().get_nodes_in_group("sat_proj_master")
-	if master_nodes.is_empty():
+	if not is_instance_valid(_sat_projectile_master_ref):
+		_sat_projectile_master_ref = get_tree().get_first_node_in_group("sat_proj_master")
+	var master_node_proj = _sat_projectile_master_ref
+	if not master_node_proj:
 		return
-	var master_node_proj = master_nodes[0]
 	
 	var shoot_dir = Vector3(cos(angle), 0.0, sin(angle)).normalized()
 	master_node_proj.spawn_satellite_projectile(global_position, shoot_dir)
+
+func _refresh_speed_multiplier() -> void:
+	if _upgrade_manager_ref:
+		_speed_multiplier = UpgradeManager.get_multiplier("SatelliteSpeed")
+
+func _on_upgrade_purchased(_upgrade_id: String, _new_level: int) -> void:
+	_refresh_speed_multiplier()
 
 func animate_scale_down(duration: float) -> void:
 	var tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

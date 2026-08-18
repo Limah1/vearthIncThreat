@@ -31,6 +31,8 @@ func on_pool_deactivate() -> void:
 	active = false
 	visible = false
 	GameManager.unregister_movement(self)
+	GameManager.unregister_collision(self)
+	GameManager.unregister_multimesh_visual(self, "debris")
 
 ## Ativação de debris pre-slotted — chamado diretamente pelo SpaceGarbageInstance na morte
 func activate_at(pos: Vector3, dir: Vector3) -> void:
@@ -42,6 +44,8 @@ func activate_at(pos: Vector3, dir: Vector3) -> void:
 	active = true
 	visible = true
 	GameManager.register_movement(self)
+	GameManager.register_collision(self)
+	GameManager.register_multimesh_visual(self, "debris")
 
 	# Upgrades de dano e pierce — responsabilidade do DebrisInstance
 	var damage_mult = UpgradeManager.get_multiplier("DebrisDamage")
@@ -71,13 +75,18 @@ func _manager_move(delta: float) -> void:
 		_recycle()
 		return
 
-	# Sweep de dano: throttle a cada 2 physics frames (debris é rápido mas hit_radius grande)
-	if Engine.get_physics_frames() % 2 == 0:
-		_sweep_damage()
+
+func _manager_collision() -> void:
+	if not is_inside_tree() or not active:
+		return
+	_sweep_damage()
 
 func _sweep_damage() -> void:
 	var my_pos_2d = Vector2(global_position.x, global_position.z)
-	var targets = GameManager.get_nearby_entities(global_position)
+	var targets = GameManager.get_nearby_entities(
+		global_position,
+		hit_radius + GameManager.MAX_DAMAGEABLE_RADIUS
+	)
 
 	for target in targets:
 		if not is_instance_valid(target) or not target.active:

@@ -14,8 +14,12 @@ var mouse_circle_visual: Node3D
 var border_material_ref: StandardMaterial3D
 var inner_material_ref: StandardMaterial3D
 var camera: Camera3D
+var _game_manager_ref: Node = null
+var _upgrade_manager_ref: Node = null
 
 func _ready() -> void:
+	_game_manager_ref = get_node_or_null("/root/GameManager")
+	_upgrade_manager_ref = get_node_or_null("/root/UpgradeManager")
 	# Find current camera
 	camera = get_node_or_null("../CameraController")
 	if not camera:
@@ -68,12 +72,16 @@ func _ready() -> void:
 	get_node("/root/UpgradeManager").upgrade_purchased.connect(func(_id, _lvl): _recalculate_click_stats())
 
 func _recalculate_click_stats() -> void:
-	var upgrade_mgr = get_node("/root/UpgradeManager")
+	var upgrade_mgr = _upgrade_manager_ref
+	if not upgrade_mgr:
+		return
 	final_click_radius = base_click_radius + upgrade_mgr.get_total_bonus("ClickRadius")
 	click_damage = base_click_damage + upgrade_mgr.get_total_bonus("ClickDamage")
 
 func _input(event: InputEvent) -> void:
-	var game_mgr = get_node("/root/GameManager")
+	var game_mgr = _game_manager_ref
+	if not game_mgr:
+		return
 	if game_mgr.current_state != game_mgr.GameState.PLAYING:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -83,7 +91,9 @@ func _exit_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _process(delta: float) -> void:
-	var game_mgr = get_node("/root/GameManager")
+	var game_mgr = _game_manager_ref
+	if not game_mgr:
+		return
 	if game_mgr.current_state != game_mgr.GameState.PLAYING:
 		if mouse_circle_visual:
 			mouse_circle_visual.visible = false
@@ -122,7 +132,9 @@ func _process(delta: float) -> void:
 			inner_material_ref.albedo_color.a = 0.9 * alpha_factor
 			
 	# Automatic hover damage sweep tick loop (always active)
-	var upgrade_mgr = get_node("/root/UpgradeManager")
+	var upgrade_mgr = _upgrade_manager_ref
+	if not upgrade_mgr:
+		return
 	var rate_mult = upgrade_mgr.get_multiplier("AutoClickRate")
 	var auto_click_interval = base_auto_click_interval / rate_mult
 	auto_click_interval = max(0.05, auto_click_interval)
@@ -151,7 +163,10 @@ func project_mouse_to_plane() -> Vector2:
 func _perform_click_sweep() -> void:
 	var click_pos = project_mouse_to_plane()
 	# Query nearby grid cells instead of scanning every active target.
-	var targets = GameManager.get_nearby_entities(Vector3(click_pos.x, 0.0, click_pos.y))
+	var targets = GameManager.get_nearby_entities(
+		Vector3(click_pos.x, 0.0, click_pos.y),
+		final_click_radius + GameManager.MAX_DAMAGEABLE_RADIUS
+	)
 	
 	for target in targets:
 		if not target.active:

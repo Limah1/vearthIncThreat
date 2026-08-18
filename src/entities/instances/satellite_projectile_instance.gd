@@ -25,7 +25,7 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	global_position = spawn_pos_3d
 	movement_direction = dir_3d.normalized()
 	
-	var upgrade_mgr = get_node_or_null("/root/UpgradeManager")
+	var upgrade_mgr = UpgradeManager
 	var speed_mult = 1.0
 	var dmg_mult = 1.0
 	if upgrade_mgr:
@@ -40,6 +40,8 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	active = true
 	visible = true
 	GameManager.register_movement(self)
+	GameManager.register_collision(self)
+	GameManager.register_multimesh_visual(self, "satellite_projectile")
 	
 	if movement_direction.length_squared() > 0.01:
 		global_rotation.y = - Vector2(movement_direction.x, movement_direction.z).angle()
@@ -48,6 +50,8 @@ func on_pool_deactivate() -> void:
 	active = false
 	visible = false
 	GameManager.unregister_movement(self)
+	GameManager.unregister_collision(self)
+	GameManager.unregister_multimesh_visual(self, "satellite_projectile")
 
 func take_damage(_amount: float) -> void:
 	# Projectiles do not take damage
@@ -66,12 +70,18 @@ func _manager_move(delta: float) -> void:
 		_recycle()
 		return
 		
-	# Sweep and damage targets in path
+
+func _manager_collision() -> void:
+	if not is_inside_tree() or not active:
+		return
 	_sweep_damage()
 
 func _sweep_damage() -> void:
 	var my_pos_2d = Vector2(global_position.x, global_position.z)
-	var targets = GameManager.get_nearby_entities(global_position)
+	var targets = GameManager.get_nearby_entities(
+		global_position,
+		hit_radius + GameManager.MAX_DAMAGEABLE_RADIUS
+	)
 	
 	for target in targets:
 		if not is_instance_valid(target) or not target.active:

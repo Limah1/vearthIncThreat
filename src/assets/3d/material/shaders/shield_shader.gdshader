@@ -55,7 +55,7 @@ void fragment() {
     
     // material properties
     ALBEDO = final_color.rgb;
-    EMISSION = final_color.rgb * shield_intensity * 2.0;
+    EMISSION = vec3(0.0);
     ALPHA = clamp(shield_intensity * 1.5, 0.0, 1.0);
     ROUGHNESS = 0.1;
     METALLIC = 0.8;

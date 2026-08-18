@@ -4,9 +4,7 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_laser"]
 albedo_color = Color(1, 0.1, 0.1, 1)
-emission_enabled = true
-emission = Color(1, 0.0, 0.0, 1)
-emission_energy_multiplier = 3.0
+emission_enabled = false
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_laser"]
 material = SubResource("StandardMaterial3D_laser")
