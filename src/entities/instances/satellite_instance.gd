@@ -27,6 +27,7 @@ func _ready() -> void:
 func on_pool_activate() -> void:
 	active = true
 	visible = true
+	GameManager.register_movement(self)
 	_update_position()
 	
 	# Startup scale animation
@@ -39,6 +40,7 @@ func on_pool_activate() -> void:
 func on_pool_deactivate() -> void:
 	active = false
 	visible = false
+	GameManager.unregister_movement(self)
 
 func take_damage(_amount: float) -> void:
 	# Satellites do not take damage
@@ -47,7 +49,7 @@ func take_damage(_amount: float) -> void:
 func set_orbit_angle(new_angle: float) -> void:
 	angle = new_angle
 
-func _physics_process(delta: float) -> void:
+func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:
 		return
 		

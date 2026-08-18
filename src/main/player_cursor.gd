@@ -150,7 +150,8 @@ func project_mouse_to_plane() -> Vector2:
 # Apply damage sweep in a circle
 func _perform_click_sweep() -> void:
 	var click_pos = project_mouse_to_plane()
-	var targets = GameManager._active_damageable
+	# Query nearby grid cells instead of scanning every active target.
+	var targets = GameManager.get_nearby_entities(Vector3(click_pos.x, 0.0, click_pos.y))
 	
 	for target in targets:
 		if not target.active:
@@ -172,7 +173,6 @@ func _perform_click_sweep() -> void:
 		
 		# Hit if the hover circle overlaps anywhere with the target's physical shape bounds
 		if dist <= (final_click_radius + target_radius):
-			print("    -> HIT! Inflicting damage: ", click_damage)
 			if target.has_method("take_player_damage"):
 				target.take_player_damage(click_damage)
 			else:

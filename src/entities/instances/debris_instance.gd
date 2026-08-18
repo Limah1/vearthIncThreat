@@ -30,6 +30,7 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 func on_pool_deactivate() -> void:
 	active = false
 	visible = false
+	GameManager.unregister_movement(self)
 
 ## Ativação de debris pre-slotted — chamado diretamente pelo SpaceGarbageInstance na morte
 func activate_at(pos: Vector3, dir: Vector3) -> void:
@@ -40,6 +41,7 @@ func activate_at(pos: Vector3, dir: Vector3) -> void:
 	hit_targets.clear()
 	active = true
 	visible = true
+	GameManager.register_movement(self)
 
 	# Upgrades de dano e pierce — responsabilidade do DebrisInstance
 	var damage_mult = UpgradeManager.get_multiplier("DebrisDamage")
@@ -56,7 +58,7 @@ func take_damage(_amount: float) -> void:
 	# Debris não recebe dano
 	pass
 
-func _physics_process(delta: float) -> void:
+func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:
 		return
 

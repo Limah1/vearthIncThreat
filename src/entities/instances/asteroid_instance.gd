@@ -59,6 +59,7 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	slowdown_timer = 0.0
 	active = true
 	visible = true
+	GameManager.register_movement(self)
 	GameManager.register_active_damageable(self)
 	
 	# Reset rotations of cached visual meshes
@@ -72,6 +73,7 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 func on_pool_deactivate() -> void:
 	active = false
 	visible = false
+	GameManager.unregister_movement(self)
 	GameManager.unregister_active_damageable(self)
 
 func set_asteroid_type(type: String) -> void:
@@ -122,7 +124,7 @@ func take_player_damage(amount: float) -> void:
 	killed_by_player = true
 	take_damage(amount)
 
-func _physics_process(delta: float) -> void:
+func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:
 		return
 		

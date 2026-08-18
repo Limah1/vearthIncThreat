@@ -14,6 +14,7 @@ var object_pooler: Node = null
 
 var spatial_grid: Dictionary = {}
 var cell_size: float = 80.0
+var _entity_cells: Dictionary = {}
 
 
 var run_credits: float = 0.0
@@ -42,6 +43,11 @@ var _active_damageable: Array = []
 
 # Buffer reutilizável para get_nearby_entities — evita alocação por chamada
 var _nearby_buffer: Array = []
+
+# Central movement dispatcher. Active entities register once on activation;
+# one manager physics callback updates them instead of one callback per entity.
+var _movement_entities: Array[Node] = []
+var _movement_indices: Dictionary = {}
 
 func _ready() -> void:
 	# Listen to upgrade purchases to trigger camera fly transitions
@@ -183,13 +189,51 @@ func register_eliminated_threat() -> void:
 func get_active_actors() -> Array:
 	return _active_damageable
 
+func register_movement(entity: Node) -> void:
+	if not is_instance_valid(entity) or _movement_indices.has(entity):
+		return
+	_movement_indices[entity] = _movement_entities.size()
+	_movement_entities.append(entity)
+
+func unregister_movement(entity: Node) -> void:
+	if not _movement_indices.has(entity):
+		return
+	_remove_movement_at(int(_movement_indices[entity]))
+
+func _remove_movement_at(index: int) -> void:
+	if index < 0 or index >= _movement_entities.size():
+		return
+
+	var last_index = _movement_entities.size() - 1
+	var removed = _movement_entities[index]
+	if index != last_index:
+		var replacement = _movement_entities[last_index]
+		_movement_entities[index] = replacement
+		_movement_indices[replacement] = index
+	_movement_entities.pop_back()
+	_movement_indices.erase(removed)
+
+func _update_movement(delta: float) -> void:
+	# Iterate backwards so entities can unregister themselves during die/recycle.
+	for i in range(_movement_entities.size() - 1, -1, -1):
+		var entity = _movement_entities[i]
+		if not is_instance_valid(entity) or not entity.active:
+			_remove_movement_at(i)
+			continue
+		if entity.has_method("_manager_move"):
+			entity._manager_move(delta)
+		else:
+			_remove_movement_at(i)
+
 ## Registra entidade ativa no array rastreado (chamado no on_pool_activate / activate_at)
 func register_active_damageable(entity: Node) -> void:
 	if not _active_damageable.has(entity):
 		_active_damageable.append(entity)
+	_update_entity_grid_cell(entity)
 
 ## Remove entidade do array rastreado (chamado no on_pool_deactivate / _recycle)
 func unregister_active_damageable(entity: Node) -> void:
+	_remove_entity_from_grid(entity)
 	_active_damageable.erase(entity)
 
 func _init_popup_pool() -> void:
@@ -261,32 +305,69 @@ func add_credits_delayed(amount: float, global_pos: Vector3) -> void:
 	add_credits(amount)
 	spawn_popup_3d("+$" + str(int(scaled_amount)), Color(0.0, 1.0, 0.0), global_pos)
 
-func register_to_grid(entity: Node) -> void:
+func _get_entity_cell(entity: Node) -> Vector2i:
 	var pos = entity.global_position
 	var px = pos.x
 	var pz = pos.y if entity is Node2D else pos.z
-	var cell = Vector2i(floor(px / cell_size), floor(pz / cell_size))
-	if not spatial_grid.has(cell):
-		spatial_grid[cell] = []
-	spatial_grid[cell].append(entity)
+	return Vector2i(floor(px / cell_size), floor(pz / cell_size))
+
+func _update_entity_grid_cell(entity: Node) -> void:
+	if not is_instance_valid(entity):
+		return
+
+	var new_cell = _get_entity_cell(entity)
+	if _entity_cells.has(entity):
+		var old_cell: Vector2i = _entity_cells[entity]
+		if old_cell == new_cell:
+			return
+
+		if spatial_grid.has(old_cell):
+			var old_members: Array = spatial_grid[old_cell]
+			old_members.erase(entity)
+			if old_members.is_empty():
+				spatial_grid.erase(old_cell)
+
+	if not spatial_grid.has(new_cell):
+		spatial_grid[new_cell] = []
+	spatial_grid[new_cell].append(entity)
+	_entity_cells[entity] = new_cell
+
+func _remove_entity_from_grid(entity: Node) -> void:
+	if not _entity_cells.has(entity):
+		return
+
+	var cell: Vector2i = _entity_cells[entity]
+	if spatial_grid.has(cell):
+		var members: Array = spatial_grid[cell]
+		members.erase(entity)
+		if members.is_empty():
+			spatial_grid.erase(cell)
+	_entity_cells.erase(entity)
 
 func get_nearby_entities(pos_3d: Vector3) -> Array:
-	var cell_x = floor(pos_3d.x / cell_size)
-	var cell_z = floor(pos_3d.z / cell_size)
+	var center_cell = Vector2i(floor(pos_3d.x / cell_size), floor(pos_3d.z / cell_size))
 	# Reutiliza buffer pré-alocado — zero alocação por chamada
 	_nearby_buffer.clear()
 	for dx in range(-1, 2):
 		for dz in range(-1, 2):
-			var cell = Vector2i(cell_x + dx, cell_z + dz)
+			var cell = center_cell + Vector2i(dx, dz)
 			if spatial_grid.has(cell):
 				_nearby_buffer.append_array(spatial_grid[cell])
 	return _nearby_buffer
 
 func _physics_process(_delta: float) -> void:
-	if current_state != GameState.PLAYING:
+	# Preserve existing entity behavior outside hard pause/end-session states.
+	# Upgrade/transition states may still have active pooled entities.
+	if current_state == GameState.PAUSED or current_state == GameState.END_SESSION:
 		return
-	# Rebuild spatial grid apenas com entidades ativas rastreadas — O(ativas) não O(pool total)
-	spatial_grid.clear()
-	for target in _active_damageable:
-		if is_instance_valid(target) and target.active:
-			register_to_grid(target)
+	_update_movement(_delta)
+
+	# Incremental broadphase update. Most entities stay in same cell, so no full
+	# dictionary/array rebuild every physics tick.
+	for i in range(_active_damageable.size() - 1, -1, -1):
+		var target = _active_damageable[i]
+		if not is_instance_valid(target) or not target.active:
+			_remove_entity_from_grid(target)
+			_active_damageable.remove_at(i)
+			continue
+		_update_entity_grid_cell(target)

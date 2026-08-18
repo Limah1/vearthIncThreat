@@ -23,6 +23,7 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	
 	active = true
 	visible = true
+	GameManager.register_movement(self)
 	
 	if movement_direction.length_squared() > 0.01:
 		global_rotation.y = -Vector2(movement_direction.x, movement_direction.z).angle()
@@ -30,12 +31,13 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 func on_pool_deactivate() -> void:
 	active = false
 	visible = false
+	GameManager.unregister_movement(self)
 
 func take_damage(_amount: float) -> void:
 	# Projectiles do not take damage
 	pass
 
-func _physics_process(delta: float) -> void:
+func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:
 		return
 		

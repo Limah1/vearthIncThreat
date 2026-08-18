@@ -13,6 +13,10 @@ extends Node3D
 var wave_active: bool = false
 
 func _ready() -> void:
+	# Disable shadow casting on every current 3D geometry, including imported meshes.
+	# Deferred call includes visuals created by PlayerPlanet and PlayerCursor in _ready().
+	call_deferred("_disable_all_shadows")
+
 	# Trigger camera animation or start spawning directly
 	var game_mgr = get_node("/root/GameManager")
 	if game_mgr.b_can_animate_camera:
@@ -23,6 +27,16 @@ func _ready() -> void:
 		for spawner in spawners:
 			if spawner.has_method("start_spawning"):
 				spawner.start_spawning()
+
+func _disable_all_shadows() -> void:
+	_disable_shadows_recursive(self)
+
+func _disable_shadows_recursive(node: Node) -> void:
+	if node is GeometryInstance3D:
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+	for child in node.get_children():
+		_disable_shadows_recursive(child)
 
 func _process(_delta: float) -> void:
 	var game_mgr = get_node("/root/GameManager")

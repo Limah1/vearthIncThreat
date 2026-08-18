@@ -28,6 +28,7 @@ func _initialize_pool() -> void:
 			instance.visible = false
 			instance.position = Vector3(99999.0, 0.0, 99999.0)
 			add_child(instance)
+			_disable_shadows_recursive(instance)
 			
 			if instance.has_method("on_pool_deactivate"):
 				instance.on_pool_deactivate()
@@ -57,6 +58,7 @@ func borrow_instance() -> Node3D:
 			if "master_node" in instance:
 				instance.set("master_node", self)
 			add_child(instance)
+			_disable_shadows_recursive(instance)
 			if instance.has_method("on_pool_deactivate"):
 				instance.on_pool_deactivate()
 				
@@ -87,4 +89,11 @@ func return_to_pool(instance: Node3D) -> void:
 func return_all_active_to_pool() -> void:
 	var active_copy = _active_instances.duplicate()
 	for instance in active_copy:
-		return_to_pool(instance)
+	return_to_pool(instance)
+
+func _disable_shadows_recursive(node: Node) -> void:
+	if node is GeometryInstance3D:
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+	for child in node.get_children():
+		_disable_shadows_recursive(child)
