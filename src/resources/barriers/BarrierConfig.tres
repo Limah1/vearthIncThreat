@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="BarrierConfig" format=3 uid="uid://cv5snarnwmehv"]
+
+[ext_resource type="Script" uid="uid://bafmphjm5phc8" path="res://src/resources/barrier_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")

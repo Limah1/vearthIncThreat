@@ -45,6 +45,10 @@ func _manager_move(delta: float) -> void:
 		
 	# Move node
 	global_position += movement_direction * speed * delta
+
+	if GameManager.try_damage_barrier(global_position, damage, 5.0):
+		_recycle()
+		return
 	
 	# Check distance to planet
 	var dist = global_position.length()

@@ -3,6 +3,8 @@
 extends Path2D
 class_name SpawnPath
 
+const GENERIC_SPAWNER_GROUP: String = "spawn_point"
+
 @export var circle_radius: float = 650.0:
 	set(value):
 		circle_radius = value
@@ -16,7 +18,8 @@ class_name SpawnPath
 		if Engine.is_editor_hint():
 			_rebuild_spawners()
 
-@export_enum("garbage_spawner", "asteroid_spawner", "enemy_spawner") var spawner_group: String = "garbage_spawner":
+## Legacy editor category. Every point is also registered in the generic pool.
+@export_enum("asteroid_spawner", "enemy_spawner") var spawner_group: String = "asteroid_spawner":
 	set(value):
 		spawner_group = value
 		if Engine.is_editor_hint():
@@ -35,6 +38,7 @@ func _register_existing_spawners() -> void:
 		if child is PathFollow2D:
 			for sub_child in child.get_children():
 				if sub_child is Node2D and sub_child.name.begins_with("SpawnerPoint_"):
+					sub_child.add_to_group(GENERIC_SPAWNER_GROUP)
 					if not spawner_group.is_empty():
 						sub_child.add_to_group(spawner_group)
 
@@ -79,6 +83,7 @@ func _rebuild_spawners() -> void:
 		# Create a plain marker Node2D
 		var spawner = Node2D.new()
 		spawner.name = "SpawnerPoint_" + str(i)
+		spawner.add_to_group(GENERIC_SPAWNER_GROUP)
 		if not spawner_group.is_empty():
 			spawner.add_to_group(spawner_group) # Register in the group so spawner.gd finds it
 		pf.add_child(spawner)

@@ -5,7 +5,7 @@ signal state_changed(new_state: GameState)
 signal credits_changed(run_credits: float, lifetime_credits: float)
 signal trigger_camera_animation()
 
-enum GameState {PLAYING, PAUSED, UPGRADE_SCREEN, END_SESSION, VICTORY, TRANSITION}
+enum GameState {PLAYING, PREPARATION, PAUSED, UPGRADE_SCREEN, END_SESSION, VICTORY, TRANSITION}
 
 var current_state: GameState = GameState.PLAYING
 
@@ -21,7 +21,7 @@ var run_credits: float = 0.0
 var lifetime_credits: float = 0.0
 
 const DEFAULT_LEVEL_CONFIG_PATH: String = "res://src/resources/levels/FirstLevelConfig.tres"
-var selected_level_config: LevelConfig = preload(DEFAULT_LEVEL_CONFIG_PATH)
+var selected_level_config: LevelConfig = null
 var selected_level_config_path: String = DEFAULT_LEVEL_CONFIG_PATH
 
 var current_zone: int = 1
@@ -58,6 +58,9 @@ const COLLISION_INTERVAL_FRAMES: int = 2
 
 # Cached scene services. Lazy lookup survives scene reloads.
 var _player_planet_ref: Node = null
+var _barrier_ref: Node = null
+var _barriers_cache: Array[Node] = []
+var _barriers_cache_valid: bool = false
 var _multimesh_renderer: Node = null
 
 # Popup animation state. Reuses the fixed pool; no Tween/closure per hit.
@@ -86,7 +89,11 @@ func _input(event: InputEvent) -> void:
 
 func reset_game() -> void:
 	run_credits = 0.0
-	selected_level_config = preload(DEFAULT_LEVEL_CONFIG_PATH)
+	var default_resource: Resource = load(DEFAULT_LEVEL_CONFIG_PATH)
+	if default_resource is LevelConfig:
+		selected_level_config = default_resource as LevelConfig
+	else:
+		push_error("Default level config is not a valid LevelConfig: " + DEFAULT_LEVEL_CONFIG_PATH)
 	selected_level_config_path = DEFAULT_LEVEL_CONFIG_PATH
 	current_zone = 1
 	b_can_animate_camera = false
@@ -96,15 +103,27 @@ func reset_game() -> void:
 		debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
 	else:
 		debris_chance = 0.0
-	change_state(GameState.PLAYING, false)
+	change_state(get_initial_game_state(), false)
 	save_game()
+
+func requires_preparation() -> bool:
+	return UpgradeManager.get_upgrade_level("DA_UnlockTurret") > 0
+
+func get_initial_game_state() -> GameState:
+	return GameState.PREPARATION if requires_preparation() else GameState.PLAYING
+
+func begin_gameplay() -> void:
+	if current_state != GameState.PREPARATION:
+		return
+	get_tree().paused = false
+	change_state(GameState.PLAYING)
 
 func change_state(new_state: GameState, should_emit: bool = true) -> void:
 	current_state = new_state
 	if should_emit:
 		state_changed.emit(new_state)
 	
-	if new_state == GameState.PAUSED or new_state == GameState.END_SESSION:
+	if new_state == GameState.PAUSED or new_state == GameState.PREPARATION or new_state == GameState.END_SESSION:
 		for grp in ["garbage_master", "debris_master", "asteroid_master", "enemy_master", "enemy_proj_master", "sat_proj_master", "satellite_master"]:
 			var master_nodes = get_tree().get_nodes_in_group(grp)
 			for master in master_nodes:
@@ -143,16 +162,16 @@ func start_level(config: LevelConfig) -> void:
 	current_zone = maxi(config.level_number, 1)
 	run_credits = 0.0
 	credits_changed.emit(run_credits, lifetime_credits)
-	change_state(GameState.PLAYING, false)
+	change_state(get_initial_game_state(), false)
 	get_tree().reload_current_scene()
 
 func get_selected_level_config() -> LevelConfig:
 	if is_instance_valid(selected_level_config):
 		return selected_level_config
 
-	var loaded_config := load(selected_level_config_path) as LevelConfig
-	if loaded_config:
-		selected_level_config = loaded_config
+	var loaded_resource: Resource = load(selected_level_config_path)
+	if loaded_resource is LevelConfig:
+		selected_level_config = loaded_resource as LevelConfig
 	return selected_level_config
 
 func planet_destroyed() -> void:
@@ -228,6 +247,41 @@ func get_player_planet() -> Node:
 	if current_scene:
 		_player_planet_ref = current_scene.find_child("PlayerPlanet", true, false)
 	return _player_planet_ref
+
+func get_barrier() -> Node:
+	if is_instance_valid(_barrier_ref):
+		return _barrier_ref
+
+	var current_scene = get_tree().current_scene
+	if current_scene:
+		_barrier_ref = current_scene.find_child("Barrier", true, false)
+	return _barrier_ref
+
+func get_barriers() -> Array[Node]:
+	if _barriers_cache_valid:
+		return _barriers_cache
+	_barriers_cache.clear()
+	for node in get_tree().get_nodes_in_group("barrier"):
+		if is_instance_valid(node):
+			_barriers_cache.append(node)
+	_barriers_cache_valid = true
+	return _barriers_cache
+
+func register_barrier(barrier: Node) -> void:
+	if not is_instance_valid(barrier):
+		return
+	if not _barriers_cache.has(barrier):
+		_barriers_cache.append(barrier)
+	_barriers_cache_valid = true
+
+func unregister_barrier(barrier: Node) -> void:
+	_barriers_cache.erase(barrier)
+
+func try_damage_barrier(hit_position: Vector3, damage: float, impact_radius: float = 0.0) -> bool:
+	for barrier in get_barriers():
+		if barrier.has_method("try_handle_collision") and barrier.try_handle_collision(hit_position, damage, impact_radius):
+			return true
+	return false
 
 func set_multimesh_renderer(renderer: Node) -> void:
 	_multimesh_renderer = renderer
@@ -501,9 +555,9 @@ func get_nearby_entities(pos_3d: Vector3, query_radius: float = -1.0) -> Array:
 	return _nearby_buffer
 
 func _physics_process(_delta: float) -> void:
-	# Preserve existing entity behavior outside hard pause/end-session states.
+	# Preparation, pause, and end-session states hold all pooled movement.
 	# Upgrade/transition states may still have active pooled entities.
-	if current_state == GameState.PAUSED or current_state == GameState.END_SESSION:
+	if current_state == GameState.PAUSED or current_state == GameState.PREPARATION or current_state == GameState.END_SESSION:
 		return
 	_update_movement(_delta)
 	_update_collisions()

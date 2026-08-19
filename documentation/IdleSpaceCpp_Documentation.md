@@ -37,7 +37,7 @@ graph TD
 
 ### `GameManager` (`game_manager.gd`)
 Manages game state, run session credits, lifetime bank credits, game flow, centralized movement, collision phases, and the spatial broadphase.
-* **State Machine (`GameState`)**: `PLAYING`, `PAUSED`, `UPGRADE_SCREEN`, `END_SESSION`, `VICTORY`, `TRANSITION`.
+* **State Machine (`GameState`)**: `PLAYING`, `PREPARATION`, `PAUSED`, `UPGRADE_SCREEN`, `END_SESSION`, `VICTORY`, `TRANSITION`.
 * **Properties**:
   - `run_credits`: Credits accumulated in the current run.
   - `lifetime_credits`: Credits saved in the permanent bank (used to buy upgrades).
@@ -96,18 +96,18 @@ Groups repeated 3D visuals into `MultiMeshInstance3D` batches while gameplay ent
 * **Rendering policy**: Batched visuals cast no shadows; individual mesh children are hidden after registration.
 
 ### `LevelConfig` (`level_config.gd`)
-Resource describing one playable level. `Spawner.level_config` defaults to `res://src/resources/levels/FirstLevelConfig.tres` and can be replaced per level.
-* **Identity**: `level_number`, `level_name`, `description`, and optional `icon` (`Texture2D`).
+Resource describing one playable level. `Spawner.level_config` defaults to `res://src/resources/levels/FirstLevelConfig.tres` and can be replaced per level. The bootstrap loads the `level_scene` selected by this resource.
+* **Identity**: `level_number`, `level_name`, `description`, optional `icon` (`Texture2D`), and `level_scene` (`PackedScene`).
 * **Actor**: `actor_type` selects one pooled actor: `small_asteroid`, `medium_asteroid`, `large_asteroid`, `enemy`, or `garbage`.
-* **Batch data**: `total_enemies` is total actor count, `batch_size` is actors per batch, and `batch_interval` is seconds between batches.
-* **Example**: `actor_type = "small_asteroid"`, `total_enemies = 60`, `batch_size = 5`, and `batch_interval = 2.0` spawns 5 random-point asteroids immediately, then 5 more every 2 seconds until 60 exist.
-* **Level selection flow**: `SkillTree.NextZoneButton` scans this folder and creates one button per `.tres`; each button shows icon, actor type, and total count only. Selecting a button calls `GameManager.start_level(config)`, which keeps the resource through scene reload. `main.gd` applies it and calls `Spawner.start_level(config)`.
+* **Spawn data**: `total_enemies` is total actor count. All configured actors spawn immediately at level start.
+* **Example**: `actor_type = "small_asteroid"` and `total_enemies = 500` creates 500 asteroids at random asteroid spawn points when the wave starts.
+* **Level selection flow**: `SkillTree.NextZoneButton` scans this folder and creates one button per `.tres`; each button shows icon, actor type, and total count only. Selecting a button calls `GameManager.start_level(config)`, which keeps the resource through scene reload. `bootstrap.gd` instantiates the selected full scene; its `main.gd` applies the config and calls `Spawner.start_level(config)`.
 
 ### `Spawner` (`spawner.gd`)
 Reads one `LevelConfig`, chooses a random tagged spawn point for every actor, and calls the matching pooled actor master.
 * **Spawning Logic**:
   - Uses `asteroid_spawner`, `enemy_spawner`, or `garbage_spawner` groups based on `actor_type`.
-  - Spawns first batch immediately, then one batch every `batch_interval` seconds.
+  - Spawns all `total_enemies` actors in one pass when gameplay starts.
   - Stops permanently when `total_enemies` actors have been successfully borrowed from pools.
   - Does not read upgrade unlocks, zone timers, weighted asteroid chances, or automatic garbage-wave signals.
 
@@ -116,6 +116,21 @@ A customized `Path2D` that draws and generates a spawning ring around the planet
 * **Properties**:
   - `circle_radius` (default `650.0`): The distance from the center planet at which threats spawn.
   - `spawner_count` (default `40`): Number of marker spawn points generated.
+
+### `Barrier` (`barrier.gd`)
+Defensive actor authored directly inside the selected full level scene's `AllyShips` node.
+* **Data**: `BarrierConfig.tres` defines 10 base HP, 50x80 gameplay size, 80-unit center distance, and side.
+* **Availability**: Barriers are always available when authored in `AllyShips`; no barrier unlock upgrade is required.
+* **Collision**: Asteroids, garbage, and enemy projectiles query the barrier rectangle before planet collision. A hit applies that threat's normal planet damage and recycles the threat/projectile.
+* **Break behavior**: At 0 HP, barrier visual and collision disable; planet remains active.
+
+### Preparation phase and barrier turrets
+Once `DA_UnlockTurret` is purchased, a new `PREPARATION` state pauses movement and spawning before each run.
+* Each full level scene has an `AllyShips` node where barriers are placed manually in the editor. The scene also contains the planet and all first-level world systems, so barrier placement has the correct gameplay context.
+* The bottom preparation footer keeps the normal menu cursor visible and shows 4 turret slots, plus `RESET` and `START WAVE` controls.
+* Click the turret icon to attach a grey preview actor to the cursor. Left-click commits the placement; right-click cancels. Turrets must be placed inside a level barrier.
+* `Barrier` allows up to three non-overlapping turrets. Their calculated footprint radius is 7 units for the current 50x80 barrier, leaving a 2-unit gap when placed side-by-side.
+* `BarrierTurret` is a triangular prism that locks the nearest active asteroid and applies 1 damage every 0.35 seconds until that target is destroyed, then acquires the next nearest asteroid.
 
 ---
 
@@ -163,7 +178,7 @@ Hostile ships that orbit the planet.
 * **Key Features**:
   - Flies inward to reach `orbit_radius` (randomized approximately 160–240 units) and then revolves around the center.
   - Fires `EnemyProjectile` towards the planet on a cooldown interval.
-  - Barrier bypass and fixed attack-slot navigation is planned in [Barrier_Navigation_TODO.md](Barrier_Navigation_TODO.md).
+  - Barrier bypass and fixed attack-slot navigation remains planned in [Barrier_Navigation_TODO.md](Barrier_Navigation_TODO.md); current barrier collision handles asteroid, garbage, and projectile impacts.
 
 ### `SatelliteInstance` (`satellite_instance.gd`)
 Defensive satellites that orbit the planet.

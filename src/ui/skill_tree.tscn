@@ -21,6 +21,7 @@
 [ext_resource type="Resource" path="res://src/resources/upgrades/DA_DebrisChance_T0.tres" id="16_chance"]
 [ext_resource type="Resource" path="res://src/resources/upgrades/DA_DebrisPiercing_T0.tres" id="17_pierce"]
 [ext_resource type="Resource" uid="uid://dqo5affrkigry" path="res://src/resources/upgrades/DA_DebrisAmount_T0.tres" id="18_amount"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_UnlockTurret.tres" id="19_turret"]
 
 [node name="SkillTree" type="Control" unique_id=1201646280]
 layout_mode = 3
@@ -268,6 +269,14 @@ offset_top = 250.0
 offset_right = 880.0
 offset_bottom = 330.0
 upgrade_data = ExtResource("18_amount")
+
+[node name="UpgradeSlotUI47" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer" unique_id=1848593940 instance=ExtResource("2_slot")]
+layout_mode = 0
+offset_left = 800.0
+offset_top = 820.0
+offset_right = 880.0
+offset_bottom = 900.0
+upgrade_data = ExtResource("19_turret")
 
 [node name="OptionsPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1848593920]
 visible = false

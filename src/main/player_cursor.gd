@@ -98,6 +98,7 @@ func _process(delta: float) -> void:
 		if mouse_circle_visual:
 			mouse_circle_visual.visible = false
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 		return
 		
 	# Hide Windows mouse cursor during active gameplay

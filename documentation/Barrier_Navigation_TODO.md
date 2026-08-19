@@ -1,6 +1,6 @@
 # TODO: Barrier Bypass and Attack-Position Navigation
 
-Status: Planned
+Status: Partial — barrier actor/collision exists; ship bypass remains
 
 ## Goal
 
@@ -8,7 +8,7 @@ Enemy ships must route around a barrier, reach the same attack area used by the 
 
 ## Current behavior
 
-`EnemySpaceshipInstance` currently flies toward the planet center, switches to an orbit when it reaches its configured `orbit_radius`, and fires toward the center. No barrier path state or gameplay barrier collider exists yet; the shield is currently a visual effect.
+`EnemySpaceshipInstance` currently flies toward the planet center, switches to an orbit when it reaches its configured `orbit_radius`, and fires toward the center. `Barrier` now exists as a gameplay rectangle and blocks asteroid, garbage, and enemy-projectile impacts. Ships still need route state and attack-slot bypass logic.
 
 ## Recommended design
 
@@ -51,11 +51,11 @@ Create a fixed set of attack slots around the planet. Reserve one slot when a sh
 
 ## Implementation checklist
 
-- [ ] Add barrier configuration: center, radius, clearance margin, and active state.
+- [x] Add barrier configuration, active state, 10 HP, and rectangle collision.
 - [ ] Add ship route state and tangent/arc route generation.
 - [ ] Add clockwise/counter-clockwise side selection.
 - [ ] Add attack-slot reservation and release on recycle/death.
-- [ ] Define whether barrier blocks ships, projectiles, or both.
+- [x] Define current blocking set: asteroids, garbage, and enemy projectiles; ships remain TODO until bypass is implemented.
 - [ ] Add debug route/slot visualization.
 - [ ] Measure FPS and movement time with 200, 500, and 1,000 ships.
 

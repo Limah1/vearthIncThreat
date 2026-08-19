@@ -1,0 +1,18 @@
+[gd_scene load_steps=6 format=3 uid="uid://barrieractor"]
+
+[ext_resource type="Script" path="res://src/entities/barrier.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/resources/barriers/BarrierConfig.tres" id="2_config"]
+[ext_resource type="PackedScene" path="res://src/entities/visuals/barrier_3d.tscn" id="3_visual"]
+[ext_resource type="PackedScene" path="res://src/entities/barrier_turret.tscn" id="4_turret"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_barrier"]
+size = Vector2(50, 80)
+
+[node name="Barrier" type="Area2D"]
+script = ExtResource("1_script")
+barrier_config = ExtResource("2_config")
+visual_3d_scene = ExtResource("3_visual")
+turret_scene = ExtResource("4_turret")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_barrier")

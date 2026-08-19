@@ -28,7 +28,7 @@ The project targets hundreds of active objects. Keep per-entity work bounded:
 * Keep glow, shadows, and material emission disabled unless a measured visual requirement justifies their GPU cost.
 
 ### 3. Level data assets
-Create one `LevelConfig` resource per playable level under `res://src/resources/levels/`. Set `level_number`, `level_name`, `icon`, one `actor_type` (`small_asteroid`, `medium_asteroid`, `large_asteroid`, `enemy`, or `garbage`), `total_enemies`, `batch_size`, and `batch_interval`. Example first level: `small_asteroid`, total `60`, batch `5`, interval `2.0`. The upgrade screen's `SELECT LEVEL` button discovers these resources, shows icon/type/total, and starts the selected config.
+Create one `LevelConfig` resource per playable level under `res://src/resources/levels/`. Set `level_number`, `level_name`, `icon`, `level_scene` (a full playable scene copied from the first-level world, with planet, spawners, pools, camera, UI, and an `AllyShips` node for manually placed barriers), one `actor_type` (`small_asteroid`, `medium_asteroid`, `large_asteroid`, `enemy`, or `garbage`), and `total_enemies`. All configured actors spawn in one pass at random spawn points when the wave starts. Example first level: `small_asteroid`, total `500`. The upgrade screen's `SELECT LEVEL` button discovers these resources, shows icon/type/total, and starts the selected config.
 
 ### 4. Workflow for Adding New Game Content
 

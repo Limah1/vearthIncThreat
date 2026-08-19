@@ -55,16 +55,16 @@ func _create_groups_for_type(visual_type: String, definition: Dictionary) -> voi
 	_collect_mesh_nodes(prototype, mesh_nodes)
 	var groups: Array = []
 	var capacity = int(definition["capacity"])
-	var prototype_root_transform = prototype.global_transform
 
 	for mesh_node in mesh_nodes:
 		if not mesh_node.mesh:
 			continue
 
 		var group = VisualGroup.new()
-		group.prototype_transform = prototype_root_transform.affine_inverse() * mesh_node.global_transform
+		group.prototype_transform = _get_relative_transform(prototype, mesh_node)
 		group.multimesh = MultiMesh.new()
 		group.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		group.multimesh.mesh = mesh_node.mesh
 		group.multimesh.instance_count = max(1, capacity)
 		group.multimesh.custom_aabb = AABB(Vector3(-1000.0, -1000.0, -1000.0), Vector3(2000.0, 2000.0, 2000.0))
 
@@ -80,6 +80,14 @@ func _create_groups_for_type(visual_type: String, definition: Dictionary) -> voi
 	_groups_by_type[visual_type] = groups
 	remove_child(prototype)
 	prototype.free()
+
+func _get_relative_transform(root: Node3D, node: Node3D) -> Transform3D:
+	var relative := Transform3D.IDENTITY
+	var current: Node3D = node
+	while current and current != root:
+		relative = current.transform * relative
+		current = current.get_parent_node_3d()
+	return relative if current == root else Transform3D.IDENTITY
 
 func _collect_mesh_nodes(node: Node, output: Array[MeshInstance3D]) -> void:
 	if node is MeshInstance3D:

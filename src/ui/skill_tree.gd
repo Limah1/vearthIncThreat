@@ -200,9 +200,9 @@ func _load_level_configs() -> Array[LevelConfig]:
 	var file_name := directory.get_next()
 	while not file_name.is_empty():
 		if not directory.current_is_dir() and file_name.ends_with(".tres"):
-			var config := load(LEVEL_CONFIG_DIRECTORY + "/" + file_name) as LevelConfig
-			if config:
-				configs.append(config)
+			var loaded_resource: Resource = load(LEVEL_CONFIG_DIRECTORY + "/" + file_name)
+			if loaded_resource is LevelConfig:
+				configs.append(loaded_resource as LevelConfig)
 		file_name = directory.get_next()
 	directory.list_dir_end()
 	configs.sort_custom(_sort_level_configs)

@@ -15,7 +15,8 @@ func _ready() -> void:
 	# Deferred call includes visuals created by PlayerPlanet and PlayerCursor in _ready().
 	call_deferred("_disable_all_shadows")
 
-	# Apply selected level before camera transition or spawning.
+	# The bootstrap scene loads the selected full level scene before this node
+	# enters the tree. Configure its spawners before any wave starts.
 	var game_mgr = get_node("/root/GameManager")
 	var selected_level = game_mgr.get_selected_level_config()
 	var spawners = get_tree().get_nodes_in_group("spawner")
@@ -26,7 +27,7 @@ func _ready() -> void:
 	if game_mgr.b_can_animate_camera:
 		game_mgr.trigger_camera_animation.emit()
 		game_mgr.b_can_animate_camera = false
-	else:
+	elif game_mgr.current_state == game_mgr.GameState.PLAYING:
 		for spawner in spawners:
 			if selected_level and spawner.has_method("start_level"):
 				spawner.start_level(selected_level)
@@ -34,7 +35,11 @@ func _ready() -> void:
 				spawner.start_spawning()
 
 func _disable_all_shadows() -> void:
-	_disable_shadows_recursive(self)
+	var scene_root: Node = self
+	var tree: SceneTree = get_tree()
+	if tree and tree.current_scene:
+		scene_root = tree.current_scene
+	_disable_shadows_recursive(scene_root)
 
 func _disable_shadows_recursive(node: Node) -> void:
 	if node is GeometryInstance3D:

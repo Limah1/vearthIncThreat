@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3 uid="uid://barriervisual"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrier"]
+albedo_color = Color(0.12, 0.65, 0.95, 1)
+metallic = 0.15
+roughness = 0.35
+emission_enabled = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_barrier"]
+material = SubResource("StandardMaterial3D_barrier")
+size = Vector3(50, 6, 80)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_life_bar_background"]
+albedo_color = Color(0.04, 0.04, 0.06, 1)
+roughness = 0.8
+emission_enabled = false
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_life_bar_fill"]
+albedo_color = Color(0.1, 0.9, 0.35, 1)
+roughness = 0.55
+emission_enabled = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_life_bar_background"]
+material = SubResource("StandardMaterial3D_life_bar_background")
+size = Vector3(44, 1, 5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_life_bar_fill"]
+material = SubResource("StandardMaterial3D_life_bar_fill")
+size = Vector3(42, 1.2, 3)
+
+[node name="BarrierVisual" type="Node3D"]
+
+[node name="BarrierMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_barrier")
+cast_shadow = 0
+
+[node name="LifeBar" type="Node3D" parent="."]
+position = Vector3(0, 4, -46)
+
+[node name="LifeBarBackground" type="MeshInstance3D" parent="LifeBar"]
+mesh = SubResource("BoxMesh_life_bar_background")
+cast_shadow = 0
+
+[node name="LifeBarFill" type="MeshInstance3D" parent="LifeBar"]
+mesh = SubResource("BoxMesh_life_bar_fill")
+cast_shadow = 0

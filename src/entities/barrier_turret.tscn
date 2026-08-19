@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cwnyrmn1v5frt"]
+
+[ext_resource type="Script" path="res://src/entities/barrier_turret.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_turret"]
+shading_mode = 0
+albedo_color = Color(1, 0.38, 0.08, 1)
+roughness = 0.45
+emission_enabled = false
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_turret"]
+material = SubResource("StandardMaterial3D_turret")
+top_radius = 7.0
+bottom_radius = 7.0
+height = 3.0
+radial_segments = 3
+rings = 1
+
+[node name="BarrierTurret" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="TurretMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_turret")
+cast_shadow = 0

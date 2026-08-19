@@ -177,6 +177,11 @@ func _manager_move(delta: float) -> void:
 	if get_child_count() > 0:
 		get_child(0).rotate_object_local(Vector3.RIGHT, rotation_speed * delta)
 
+	if GameManager.try_damage_barrier(global_position, planet_damage, radius):
+		killed_by_player = false
+		die()
+		return
+
 	# --- Colisão com planeta (cacheado) ---
 	if global_position.length() < 45.0:
 		if is_instance_valid(_planet_ref):

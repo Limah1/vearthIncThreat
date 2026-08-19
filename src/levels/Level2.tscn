@@ -1,0 +1,408 @@
+[gd_scene format=3 uid="uid://1uu26jivsy8h"]
+
+[ext_resource type="PackedScene" uid="uid://btj50gcrw4w8b" path="res://src/main/main.tscn" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://barrieractor" path="res://src/entities/barrier.tscn" id="2_barrier"]
+
+[sub_resource type="Curve2D" id="Curve2D_q66yk"]
+_data = {
+"points": PackedVector2Array(0, 98.4914, 0, -98.4914, 750, 0, -37.69103, 90.99419, 37.69103, -90.99419, 692.9096, 287.0126, -69.643936, 69.643936, 69.643936, -69.643936, 530.3301, 530.3301, -90.99419, 37.69103, 90.99419, -37.69103, 287.01257, 692.9096, -98.4914, -4.305196e-06, 98.4914, 4.305196e-06, -3.278354e-05, 750, -90.994194, -37.691025, 90.994194, 37.691025, -287.01254, 692.90967, -69.643936, -69.643936, 69.643936, 69.643936, -530.3301, 530.3301, -37.691032, -90.99419, 37.691032, 90.99419, -692.9096, 287.0126, 8.610392e-06, -98.4914, -8.610392e-06, 98.4914, -750, -6.556708e-05, 37.69103, -90.99419, -37.69103, 90.99419, -692.9096, -287.01257, 69.64393, -69.64394, -69.64393, 69.64394, -530.33014, -530.33, 90.99419, -37.69104, -90.99419, 37.69104, -287.0127, -692.9096, 98.4914, 1.1744982e-06, -98.4914, -1.1744982e-06, 8.943661e-06, -750, 90.99418, 37.691044, -90.99418, -37.691044, 287.0127, -692.9096, 69.64395, 69.64393, -69.64395, -69.64393, 530.33, -530.33014, 37.69103, 90.994194, -37.69103, -90.994194, 692.90967, -287.01257, 0, 98.4914, 0, -98.4914, 750, 0)
+}
+point_count = 17
+
+[node name="Level2" unique_id=1527091893 instance=ExtResource("1_main")]
+
+[node name="SpawnPath" parent="AsteoidsCircleSpawner" parent_id_path=PackedInt32Array(1346267994) index="0" unique_id=1710708627]
+curve = SubResource("Curve2D_q66yk")
+
+[node name="@PathFollow2D@37303" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="0" unique_id=333104749]
+position = Vector2(750, 0)
+rotates = false
+
+[node name="SpawnerPoint_0" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37303" index="0" unique_id=407762903]
+
+[node name="@PathFollow2D@37305" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="1" unique_id=1881529206]
+position = Vector2(720.14844, 79.73499)
+progress = 110.748566
+rotates = false
+
+[node name="SpawnerPoint_1" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37305" index="0" unique_id=2051106987]
+
+[node name="@PathFollow2D@37307" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="2" unique_id=1042043425]
+position = Vector2(698.26843, 188.29681)
+progress = 221.49713
+rotates = false
+
+[node name="SpawnerPoint_2" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37307" index="0" unique_id=1772393490]
+
+[node name="@PathFollow2D@37309" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="3" unique_id=1657607198]
+position = Vector2(685.5215, 297.61505)
+progress = 332.2457
+rotates = false
+
+[node name="SpawnerPoint_3" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37309" index="0" unique_id=1158276921]
+
+[node name="@PathFollow2D@37311" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="4" unique_id=350135962]
+position = Vector2(642.8143, 337.94717)
+progress = 442.99426
+rotates = false
+
+[node name="SpawnerPoint_4" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37311" index="0" unique_id=1190697752]
+
+[node name="@PathFollow2D@37313" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="5" unique_id=774012335]
+position = Vector2(580.57947, 429.5573)
+progress = 553.74286
+rotates = false
+
+[node name="SpawnerPoint_5" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37313" index="0" unique_id=1607217952]
+
+[node name="@PathFollow2D@37315" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="6" unique_id=1708958054]
+position = Vector2(523.4255, 524.43146)
+progress = 664.4914
+rotates = false
+
+[node name="SpawnerPoint_6" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37315" index="0" unique_id=1564496790]
+
+[node name="@PathFollow2D@37317" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="7" unique_id=319816168]
+position = Vector2(476.3198, 550.9216)
+progress = 775.2399
+rotates = false
+
+[node name="SpawnerPoint_7" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37317" index="0" unique_id=2061663661]
+
+[node name="@PathFollow2D@37319" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="8" unique_id=1368266420]
+position = Vector2(383.4382, 611.23615)
+progress = 885.9885
+rotates = false
+
+[node name="SpawnerPoint_8" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37319" index="0" unique_id=2069399933]
+
+[node name="@PathFollow2D@37321" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="9" unique_id=1053585954]
+position = Vector2(293.54984, 675.9073)
+progress = 996.7371
+rotates = false
+
+[node name="SpawnerPoint_9" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37321" index="0" unique_id=193792770]
+
+[node name="@PathFollow2D@37323" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="10" unique_id=1902766049]
+position = Vector2(242.91971, 689.151)
+progress = 1107.4857
+rotates = false
+
+[node name="SpawnerPoint_10" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37323" index="0" unique_id=1483533149]
+
+[node name="@PathFollow2D@37325" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="11" unique_id=2105892859]
+position = Vector2(133.90671, 708.6792)
+progress = 1218.2343
+rotates = false
+
+[node name="SpawnerPoint_11" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37325" index="0" unique_id=1967666677]
+
+[node name="@PathFollow2D@37327" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="12" unique_id=1862305297]
+position = Vector2(25.88939, 733.102)
+progress = 1328.9828
+rotates = false
+
+[node name="SpawnerPoint_12" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37327" index="0" unique_id=182627130]
+
+[node name="@PathFollow2D@37329" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="13" unique_id=437565120]
+position = Vector2(-25.890139, 733.10175)
+progress = 1439.7313
+rotates = false
+
+[node name="SpawnerPoint_13" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37329" index="0" unique_id=95274438]
+
+[node name="@PathFollow2D@37331" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="14" unique_id=1113009520]
+position = Vector2(-133.9073, 708.67914)
+progress = 1550.4799
+rotates = false
+
+[node name="SpawnerPoint_14" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37331" index="0" unique_id=706480406]
+
+[node name="@PathFollow2D@37333" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="15" unique_id=1242186390]
+position = Vector2(-242.92041, 689.15106)
+progress = 1661.2285
+rotates = false
+
+[node name="SpawnerPoint_15" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37333" index="0" unique_id=1607606360]
+
+[node name="@PathFollow2D@37335" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="16" unique_id=738668508]
+position = Vector2(-293.55048, 675.907)
+progress = 1771.977
+rotates = false
+
+[node name="SpawnerPoint_16" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37335" index="0" unique_id=551154633]
+
+[node name="@PathFollow2D@37337" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="17" unique_id=1015378657]
+position = Vector2(-383.4389, 611.2358)
+progress = 1882.7256
+rotates = false
+
+[node name="SpawnerPoint_17" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37337" index="0" unique_id=347841258]
+
+[node name="@PathFollow2D@37339" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="18" unique_id=1317704405]
+position = Vector2(-476.3205, 550.92114)
+progress = 1993.4742
+rotates = false
+
+[node name="SpawnerPoint_18" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37339" index="0" unique_id=1683183026]
+
+[node name="@PathFollow2D@37341" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="19" unique_id=1632420216]
+position = Vector2(-523.42566, 524.43115)
+progress = 2104.2227
+rotates = false
+
+[node name="SpawnerPoint_19" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37341" index="0" unique_id=319217530]
+
+[node name="@PathFollow2D@37343" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="20" unique_id=918914804]
+position = Vector2(-580.5797, 429.55695)
+progress = 2214.9714
+rotates = false
+
+[node name="SpawnerPoint_20" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37343" index="0" unique_id=596134235]
+
+[node name="@PathFollow2D@37345" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="21" unique_id=1415089543]
+position = Vector2(-642.8145, 337.94675)
+progress = 2325.7197
+rotates = false
+
+[node name="SpawnerPoint_21" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37345" index="0" unique_id=168966631]
+
+[node name="@PathFollow2D@37347" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="22" unique_id=1918680196]
+position = Vector2(-685.5205, 297.61453)
+progress = 2436.4685
+rotates = false
+
+[node name="SpawnerPoint_22" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37347" index="0" unique_id=64401826]
+
+[node name="@PathFollow2D@37349" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="23" unique_id=1746295040]
+position = Vector2(-698.26874, 188.29567)
+progress = 2547.217
+rotates = false
+
+[node name="SpawnerPoint_23" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37349" index="0" unique_id=1946791755]
+
+[node name="@PathFollow2D@37351" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="24" unique_id=64786587]
+position = Vector2(-720.1485, 79.73345)
+progress = 2657.9656
+rotates = false
+
+[node name="SpawnerPoint_24" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37351" index="0" unique_id=217571432]
+
+[node name="@PathFollow2D@37353" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="25" unique_id=1926261158]
+position = Vector2(-750, 0.0013990907)
+progress = 2768.714
+rotates = false
+
+[node name="SpawnerPoint_25" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37353" index="0" unique_id=1964348211]
+
+[node name="@PathFollow2D@37355" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="26" unique_id=283764984]
+position = Vector2(-720.148, -79.736855)
+progress = 2879.4626
+rotates = false
+
+[node name="SpawnerPoint_26" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37355" index="0" unique_id=1392762677]
+
+[node name="@PathFollow2D@37357" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="27" unique_id=649763430]
+position = Vector2(-698.268, -188.29932)
+progress = 2990.2114
+rotates = false
+
+[node name="SpawnerPoint_27" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37357" index="0" unique_id=337515758]
+
+[node name="@PathFollow2D@37359" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="28" unique_id=259959252]
+position = Vector2(-685.5237, -297.6161)
+progress = 3100.9597
+rotates = false
+
+[node name="SpawnerPoint_28" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37359" index="0" unique_id=1134540284]
+
+[node name="@PathFollow2D@37361" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="29" unique_id=1735282837]
+position = Vector2(-642.81305, -337.9489)
+progress = 3211.7083
+rotates = false
+
+[node name="SpawnerPoint_29" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37361" index="0" unique_id=1392596464]
+
+[node name="@PathFollow2D@37363" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="30" unique_id=413369668]
+position = Vector2(-580.578, -429.5595)
+progress = 3322.457
+rotates = false
+
+[node name="SpawnerPoint_30" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37363" index="0" unique_id=1979845539]
+
+[node name="@PathFollow2D@37365" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="31" unique_id=434869345]
+position = Vector2(-523.42444, -524.4338)
+progress = 3433.2056
+rotates = false
+
+[node name="SpawnerPoint_31" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37365" index="0" unique_id=2099051499]
+
+[node name="@PathFollow2D@37367" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="32" unique_id=282243880]
+position = Vector2(-476.31747, -550.9229)
+progress = 3543.954
+rotates = false
+
+[node name="SpawnerPoint_32" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37367" index="0" unique_id=1302213428]
+
+[node name="@PathFollow2D@37369" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="33" unique_id=101593386]
+position = Vector2(-383.4356, -611.238)
+progress = 3654.703
+rotates = false
+
+[node name="SpawnerPoint_33" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37369" index="0" unique_id=1539227516]
+
+[node name="@PathFollow2D@37371" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="34" unique_id=1292781381]
+position = Vector2(-293.54724, -675.9095)
+progress = 3765.4512
+rotates = false
+
+[node name="SpawnerPoint_34" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37371" index="0" unique_id=1992448751]
+
+[node name="@PathFollow2D@37373" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="35" unique_id=1122902055]
+position = Vector2(-242.91632, -689.15155)
+progress = 3876.1997
+rotates = false
+
+[node name="SpawnerPoint_35" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37373" index="0" unique_id=1394300390]
+
+[node name="@PathFollow2D@37375" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="36" unique_id=816086024]
+position = Vector2(-133.90263, -708.68)
+progress = 3986.9485
+rotates = false
+
+[node name="SpawnerPoint_36" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37375" index="0" unique_id=2098240447]
+
+[node name="@PathFollow2D@37377" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="37" unique_id=1279058131]
+position = Vector2(-25.885511, -733.103)
+progress = 4097.697
+rotates = false
+
+[node name="SpawnerPoint_37" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37377" index="0" unique_id=1319946505]
+
+[node name="@PathFollow2D@37379" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="38" unique_id=2045052706]
+position = Vector2(25.893581, -733.1008)
+progress = 4208.4453
+rotates = false
+
+[node name="SpawnerPoint_38" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37379" index="0" unique_id=1322535122]
+
+[node name="@PathFollow2D@37381" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="39" unique_id=1071535321]
+position = Vector2(133.91066, -708.67847)
+progress = 4319.194
+rotates = false
+
+[node name="SpawnerPoint_39" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37381" index="0" unique_id=679873904]
+
+[node name="@PathFollow2D@37383" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="40" unique_id=1613146255]
+position = Vector2(242.92368, -689.1505)
+progress = 4429.943
+rotates = false
+
+[node name="SpawnerPoint_40" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37383" index="0" unique_id=396974175]
+
+[node name="@PathFollow2D@37385" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="41" unique_id=1368416646]
+position = Vector2(293.55206, -675.90564)
+progress = 4540.691
+rotates = false
+
+[node name="SpawnerPoint_41" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37385" index="0" unique_id=1878878078]
+
+[node name="@PathFollow2D@37387" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="42" unique_id=1316304577]
+position = Vector2(383.44055, -611.23474)
+progress = 4651.4395
+rotates = false
+
+[node name="SpawnerPoint_42" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37387" index="0" unique_id=2145153472]
+
+[node name="@PathFollow2D@37389" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="43" unique_id=488421275]
+position = Vector2(476.32193, -550.92035)
+progress = 4762.1885
+rotates = false
+
+[node name="SpawnerPoint_43" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37389" index="0" unique_id=1298542038]
+
+[node name="@PathFollow2D@37391" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="44" unique_id=826229014]
+position = Vector2(523.4265, -524.4294)
+progress = 4872.937
+rotates = false
+
+[node name="SpawnerPoint_44" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37391" index="0" unique_id=1297030161]
+
+[node name="@PathFollow2D@37393" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="45" unique_id=1427088613]
+position = Vector2(580.58014, -429.5561)
+progress = 4983.685
+rotates = false
+
+[node name="SpawnerPoint_45" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37393" index="0" unique_id=1694713070]
+
+[node name="@PathFollow2D@37395" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="46" unique_id=44026152]
+position = Vector2(642.81586, -337.94495)
+progress = 5094.434
+rotates = false
+
+[node name="SpawnerPoint_46" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37395" index="0" unique_id=511471454]
+
+[node name="@PathFollow2D@37397" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="47" unique_id=1490735290]
+position = Vector2(685.5206, -297.61456)
+progress = 5205.1826
+rotates = false
+
+[node name="SpawnerPoint_47" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37397" index="0" unique_id=2016909025]
+
+[node name="@PathFollow2D@37399" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="48" unique_id=728606185]
+position = Vector2(698.2687, -188.29634)
+progress = 5315.931
+rotates = false
+
+[node name="SpawnerPoint_48" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37399" index="0" unique_id=132952802]
+
+[node name="@PathFollow2D@37401" type="PathFollow2D" parent="AsteoidsCircleSpawner/SpawnPath" index="49" unique_id=1426594225]
+position = Vector2(720.1485, -79.734665)
+progress = 5426.6797
+rotates = false
+
+[node name="SpawnerPoint_49" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37401" index="0" unique_id=700786315]
+
+[node name="AllyShips" type="Node3D" parent="." index="20" unique_id=969316477]
+
+[node name="Barrier_01" parent="AllyShips" index="0" unique_id=1376109855 instance=ExtResource("2_barrier")]
+position = Vector2(-281, -2)
+
+[node name="Barrier_02" parent="AllyShips" index="1" unique_id=1414810138 instance=ExtResource("2_barrier")]
+position = Vector2(-281, 141)
+
+[node name="Barrier_03" parent="AllyShips" index="2" unique_id=1361555703 instance=ExtResource("2_barrier")]
+position = Vector2(-278, -144)
+
+[node name="Barrier_07" parent="AllyShips" index="3" unique_id=1656410445 instance=ExtResource("2_barrier")]
+position = Vector2(165, -2)
+
+[node name="Barrier_08" parent="AllyShips" index="4" unique_id=1006288809 instance=ExtResource("2_barrier")]
+position = Vector2(165, 141)
+
+[node name="Barrier_09" parent="AllyShips" index="5" unique_id=1255182362 instance=ExtResource("2_barrier")]
+position = Vector2(168, -144)
+
+[node name="Barrier_04" parent="AllyShips" index="6" unique_id=309557148 instance=ExtResource("2_barrier")]
+position = Vector2(-164, -249)
+rotation = 1.5707964
+
+[node name="Barrier_05" parent="AllyShips" index="7" unique_id=512802185 instance=ExtResource("2_barrier")]
+position = Vector2(-30, -250)
+rotation = 1.5707964
+
+[node name="Barrier_06" parent="AllyShips" index="8" unique_id=1535288472 instance=ExtResource("2_barrier")]
+position = Vector2(90, -250)
+rotation = 1.5707964
+
+[node name="Barrier_10" parent="AllyShips" index="9" unique_id=611166847 instance=ExtResource("2_barrier")]
+position = Vector2(-170, 189)
+rotation = 1.5707964
+
+[node name="Barrier_11" parent="AllyShips" index="10" unique_id=2047898853 instance=ExtResource("2_barrier")]
+position = Vector2(-36, 188)
+rotation = 1.5707964
+
+[node name="Barrier_12" parent="AllyShips" index="11" unique_id=109366358 instance=ExtResource("2_barrier")]
+position = Vector2(84, 188)
+rotation = 1.5707964

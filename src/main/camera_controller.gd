@@ -36,5 +36,6 @@ func _on_trigger_camera_animation() -> void:
 	tween.finished.connect(_on_transition_finished)
 
 func _on_transition_finished() -> void:
-	# Transition complete, start playing the new wave!
-	get_node("/root/GameManager").change_state(get_node("/root/GameManager").GameState.PLAYING)
+	# Transition complete. Unlocked turrets require preparation before the wave starts.
+	var game_mgr = get_node("/root/GameManager")
+	game_mgr.change_state(game_mgr.get_initial_game_state())

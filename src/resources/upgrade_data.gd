@@ -14,6 +14,7 @@ extends Resource
 	"AutoClickRate",
 	"PlanetHealth",
 	"ShieldHP",
+	"UnlockTurret",
 	"SatelliteAmount",
 	"SatelliteDamage",
 	"SatelliteSpeed",

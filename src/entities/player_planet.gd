@@ -110,6 +110,9 @@ func _sync_shield_visual() -> void:
 func _physics_process(_delta: float) -> void:
 	if not is_inside_tree():
 		return
+	var game_mgr = get_node_or_null("/root/GameManager")
+	if game_mgr and game_mgr.current_state != game_mgr.GameState.PLAYING:
+		return
 		
 	if visual_3d and visual_3d.is_inside_tree():
 		# Keep 3D visual locked at center

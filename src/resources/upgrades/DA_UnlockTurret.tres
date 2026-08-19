@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Texture2D" path="res://src/assets/UI/PreparationIcons/turret.svg" id="1_icon"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+upgrade_id = "DA_UnlockTurret"
+upgrade_name = "Barrier Turrets"
+description = "Unlocks turret deployment during the preparation phase. Barriers are authored per level in AllyShips scenes."
+icon = ExtResource("1_icon")
+category = "UnlockTurret"
+unlocks = Array[String]([])
+base_cost = 10.0
+max_level = 1
+value_increment = 0.0
+default_unlocked = true

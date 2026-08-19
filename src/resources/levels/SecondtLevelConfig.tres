@@ -2,14 +2,14 @@
 
 [ext_resource type="Script" uid="uid://ikgwhhg7fyul" path="res://src/resources/level_config.gd" id="1_vk0fk"]
 [ext_resource type="Texture2D" uid="uid://cgg7ke1b7rwm2" path="res://src/assets/UI/UpgradeIcons/T_MoreAsteroids.png" id="2_icon"]
+[ext_resource type="PackedScene" path="res://src/levels/Level2.tscn" id="3_level_scene"]
 
 [resource]
 script = ExtResource("1_vk0fk")
 level_number = 2
 level_name = "Level 2"
-description = "Asteroid batches"
+description = "Asteroids"
 icon = ExtResource("2_icon")
+level_scene = ExtResource("3_level_scene")
 actor_type = "small_asteroid"
-total_enemies = 150
-batch_size = 5
-batch_interval = 2.0
+total_enemies = 2000

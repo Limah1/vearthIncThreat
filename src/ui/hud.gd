@@ -4,11 +4,13 @@ class_name HUD
 
 @onready var credits_label: Label = $MarginContainer/VBoxContainer/BottomRow/BarsContainer/CreditsLabel
 @onready var fps_label: Label = $FPSLabel
+@onready var spawn_label: Label = $SpawnLabel
 
 @onready var hp_bar: ProgressBar = $MarginContainer/VBoxContainer/BottomRow/BarsContainer/HPBar
 @onready var shield_bar: ProgressBar = $MarginContainer/VBoxContainer/BottomRow/BarsContainer/ShieldBar
 
 var planet: PlayerPlanet
+var spawner: Spawner
 
 func _ready() -> void:
 	# Connect GameManager signals
@@ -20,18 +22,24 @@ func _ready() -> void:
 	
 	# Find player planet
 	planet = get_tree().current_scene.find_child("PlayerPlanet", true, false) as PlayerPlanet
+	spawner = get_tree().get_first_node_in_group("spawner") as Spawner
 
 func _process(_delta: float) -> void:
 	# Update FPS
 	if is_instance_valid(fps_label):
 		fps_label.text = "FPS: " + str(Engine.get_frames_per_second())
+	if is_instance_valid(spawn_label):
+		if not is_instance_valid(spawner):
+			spawner = get_tree().get_first_node_in_group("spawner") as Spawner
+		if is_instance_valid(spawner):
+			spawn_label.text = "ACTORS: %d/%d" % [spawner.get_spawned_actor_count(), spawner.get_spawn_total()]
 
 	# Periodically update planet health and shield bars
 	if planet and is_instance_valid(planet):
 		hp_bar.max_value = planet.max_hp
 		hp_bar.value = planet.hp
 		hp_bar.get_node("Label").text = "HP: %d/%d" % [int(planet.hp), int(planet.max_hp)]
-		
+
 		shield_bar.max_value = planet.max_shield
 		shield_bar.value = planet.shield
 		shield_bar.get_node("Label").text = "SHIELD: %d/%d" % [int(planet.shield), int(planet.max_shield)]

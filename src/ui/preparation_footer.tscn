@@ -1,0 +1,64 @@
+[gd_scene load_steps=3 format=3 uid="uid://preparationfooter"]
+
+[ext_resource type="Script" path="res://src/ui/preparation_footer.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://src/assets/UI/PreparationIcons/turret.svg" id="2_turret_icon"]
+
+[node name="PreparationFooter" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -150.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StatusLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Select the turret icon, then click a barrier to place it. Right-click cancels."
+horizontal_alignment = 1
+
+[node name="Controls" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="TurretButton" type="Button" parent="Panel/Margin/VBox/Controls"]
+custom_minimum_size = Vector2(190, 64)
+layout_mode = 2
+icon = ExtResource("2_turret_icon")
+text = "TURRET  4"
+alignment = 1
+
+[node name="ResetButton" type="Button" parent="Panel/Margin/VBox/Controls"]
+custom_minimum_size = Vector2(150, 48)
+layout_mode = 2
+text = "RESET"
+
+[node name="StartButton" type="Button" parent="Panel/Margin/VBox/Controls"]
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+text = "START WAVE"

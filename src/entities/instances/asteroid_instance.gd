@@ -4,12 +4,12 @@ class_name AsteroidInstance
 
 @export var base_speed: float = 85.0 # --- VELOCIDADE DE MOVIMENTO (MAIS ALTO = MAIS RAPIDO)
 @export var base_value: float = 5.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
-@export var base_planet_damage: float = 20.0 # --- DANO CAUSADO AO COLIDIR NO PLANETA
+@export var base_planet_damage: float = 0.0 # --- STRESS TEST: ASTEROIDS DO NOT DAMAGE THE PLANET
 @export var base_small_max_hp: float = 3.0 # --- VIDA TESTE DO ASTEROIDE PEQUENO
 
 var current_move_speed: float = 85.0
 var current_value: float = 5.0
-var planet_damage: float = 20.0
+var planet_damage: float = 0.0
 
 var killed_by_player: bool = false
 var slowdown_timer: float = 0.0
@@ -31,28 +31,14 @@ var _debris_master_ref: Node = null
 
 func _ready() -> void:
 	add_to_group("asteroid")
-	
-	# Pre-instantiate visual meshes to avoid runtime instantiations/disk loading
-	var scene_small = load("res://src/assets/3d/meteoro_small.FBX")
-	if scene_small:
-		fbx_small = scene_small.instantiate() as Node3D
-		fbx_small.scale = Vector3(90.0, 90.0, 90.0)
+
+	# The pooled scene already contains the small asteroid mesh. Reuse it and
+	# lazily create medium/large visuals only if a level actually needs them.
+	# Creating three FBX trees for every pooled asteroid made a 500-object level
+	# unnecessarily slow and could look like spawning had stalled.
+	fbx_small = get_node_or_null("meteoro_small") as Node3D
+	if fbx_small:
 		fbx_small.visible = false
-		add_child(fbx_small)
-		
-	var scene_medium = load("res://src/assets/3d/meteoro_medium.FBX")
-	if scene_medium:
-		fbx_medium = scene_medium.instantiate() as Node3D
-		fbx_medium.scale = Vector3(140.0, 140.0, 140.0)
-		fbx_medium.visible = false
-		add_child(fbx_medium)
-		
-	var scene_large = load("res://src/assets/3d/meteoro_big.FBX")
-	if scene_large:
-		fbx_large = scene_large.instantiate() as Node3D
-		fbx_large.scale = Vector3(220.0, 220.0, 220.0)
-		fbx_large.visible = false
-		add_child(fbx_large)
 
 func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	global_position = spawn_pos_3d
@@ -80,6 +66,7 @@ func on_pool_deactivate() -> void:
 
 func set_asteroid_type(type: String) -> void:
 	asteroid_type = type
+	_ensure_visual_for_type(type)
 	var zone_scale = 1.0 + (GameManager.current_zone - 1) * 0.1
 	
 	match type:
@@ -109,6 +96,32 @@ func set_asteroid_type(type: String) -> void:
 		fbx_medium.visible = (type == "medium")
 	if fbx_large:
 		fbx_large.visible = (type == "large")
+
+func _ensure_visual_for_type(type: String) -> void:
+	if type == "small":
+		return
+	if type == "medium" and not fbx_medium:
+		var scene_medium := load("res://src/assets/3d/meteoro_medium.FBX") as PackedScene
+		if scene_medium:
+			fbx_medium = scene_medium.instantiate() as Node3D
+			fbx_medium.scale = Vector3(140.0, 140.0, 140.0)
+			fbx_medium.visible = false
+			add_child(fbx_medium)
+			_disable_shadows_recursive(fbx_medium)
+	elif type == "large" and not fbx_large:
+		var scene_large := load("res://src/assets/3d/meteoro_big.FBX") as PackedScene
+		if scene_large:
+			fbx_large = scene_large.instantiate() as Node3D
+			fbx_large.scale = Vector3(220.0, 220.0, 220.0)
+			fbx_large.visible = false
+			add_child(fbx_large)
+			_disable_shadows_recursive(fbx_large)
+
+func _disable_shadows_recursive(node: Node) -> void:
+	if node is GeometryInstance3D:
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for child in node.get_children():
+		_disable_shadows_recursive(child)
 
 func take_damage(amount: float) -> void:
 	if not active:
@@ -148,6 +161,11 @@ func _manager_move(delta: float) -> void:
 	if active_mesh and is_instance_valid(active_mesh):
 		active_mesh.rotate_x(0.6 * delta)
 		active_mesh.rotate_z(0.3 * delta)
+
+	if GameManager.try_damage_barrier(global_position, planet_damage, radius):
+		killed_by_player = false
+		die()
+		return
 		
 	# Check for planet collision (planet is at center 0,0,0, radius ~ 45)
 	if global_position.length() < 45.0:
