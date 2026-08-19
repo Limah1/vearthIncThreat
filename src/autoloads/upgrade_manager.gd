@@ -107,6 +107,18 @@ func get_multiplier(category_name: String) -> float:
 	
 	return 1.0 + sum_bonuses
 
+# Multiplies each upgrade's calculated multiplier in a category.
+# Used by test click damage scaling: 3 base damage, then x3 per level.
+func get_compound_multiplier(category_name: String) -> float:
+	var result = 1.0
+	for upgrade in upgrades_list:
+		if upgrade.category != category_name:
+			continue
+		var level = get_upgrade_level(upgrade.upgrade_id)
+		if level > 0:
+			result *= upgrade.calculate_multiplier(level)
+	return result
+
 # Sums the raw values of all purchased upgrades in a category
 func get_total_bonus(category_name: String) -> float:
 	var total = 0.0

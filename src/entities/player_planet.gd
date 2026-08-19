@@ -8,12 +8,11 @@ var visual_3d: Node3D
 @export var satellite_scene: PackedScene
 var satellites: Array[Node3D] = []
 
-@export var base_hp: float = 100.0
+@export var base_hp: float = 50.0
 @export var base_shield: float = 50.0
-@export var decay_rate: float = 0.0
 
-var max_hp: float = 100.0
-var hp: float = 100.0
+var max_hp: float = 50.0
+var hp: float = 50.0
 
 var max_shield: float = 50.0
 var shield: float = 50.0
@@ -117,10 +116,6 @@ func _physics_process(_delta: float) -> void:
 		visual_3d.global_position = Vector3.ZERO
 		# Slow rotation for visual aesthetic
 		visual_3d.rotate_y(0.005)
-		
-	# Planet health decay
-	if decay_rate > 0.0:
-		take_damage(decay_rate * _delta)
 		
 func animate_scale_down(duration: float) -> void:
 	var tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

@@ -44,18 +44,25 @@ func _create_groups_for_type(visual_type: String, definition: Dictionary) -> voi
 		push_warning("[MultiMeshRenderer] Missing visual scene for " + visual_type)
 		return
 
-	var prototype = packed_scene.instantiate()
+	var prototype = packed_scene.instantiate() as Node3D
+	if not prototype:
+		push_warning("[MultiMeshRenderer] Visual scene root is not Node3D for " + visual_type)
+		return
+	prototype.visible = false
+	prototype.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(prototype)
 	var mesh_nodes: Array[MeshInstance3D] = []
 	_collect_mesh_nodes(prototype, mesh_nodes)
 	var groups: Array = []
 	var capacity = int(definition["capacity"])
+	var prototype_root_transform = prototype.global_transform
 
 	for mesh_node in mesh_nodes:
 		if not mesh_node.mesh:
 			continue
 
 		var group = VisualGroup.new()
-		group.prototype_transform = mesh_node.global_transform
+		group.prototype_transform = prototype_root_transform.affine_inverse() * mesh_node.global_transform
 		group.multimesh = MultiMesh.new()
 		group.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		group.multimesh.instance_count = max(1, capacity)
@@ -63,7 +70,7 @@ func _create_groups_for_type(visual_type: String, definition: Dictionary) -> voi
 
 		group.multimesh_instance = MultiMeshInstance3D.new()
 		group.multimesh_instance.multimesh = group.multimesh
-		group.multimesh_instance.visible_instance_count = 0
+		group.multimesh.visible_instance_count = 0
 		group.multimesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		if mesh_node.material_override:
 			group.multimesh_instance.material_override = mesh_node.material_override
@@ -71,6 +78,7 @@ func _create_groups_for_type(visual_type: String, definition: Dictionary) -> voi
 		groups.append(group)
 
 	_groups_by_type[visual_type] = groups
+	remove_child(prototype)
 	prototype.free()
 
 func _collect_mesh_nodes(node: Node, output: Array[MeshInstance3D]) -> void:
@@ -105,8 +113,8 @@ func _register_in_group(group: VisualGroup, entity: Node3D) -> void:
 	group.indices[entity] = index
 	group.entities.append(entity)
 	_ensure_capacity(group, index + 1)
-	group.multimesh.set_instance_transform_3d(index, entity.global_transform * group.prototype_transform)
-	group.multimesh_instance.visible_instance_count = group.entities.size()
+	group.multimesh.set_instance_transform(index, entity.global_transform * group.prototype_transform)
+	group.multimesh.visible_instance_count = group.entities.size()
 
 func _remove_from_group(group: VisualGroup, index: int) -> void:
 	if index < 0 or index >= group.entities.size():
@@ -120,7 +128,7 @@ func _remove_from_group(group: VisualGroup, index: int) -> void:
 		group.indices[replacement] = index
 	group.entities.pop_back()
 	group.indices.erase(removed)
-	group.multimesh_instance.visible_instance_count = group.entities.size()
+	group.multimesh.visible_instance_count = group.entities.size()
 
 func _ensure_capacity(group: VisualGroup, required: int) -> void:
 	if required <= group.multimesh.instance_count:
@@ -144,4 +152,4 @@ func _process(_delta: float) -> void:
 				if not bool(entity.get("active")):
 					_remove_from_group(group, i)
 					continue
-				group.multimesh.set_instance_transform_3d(i, entity.global_transform * group.prototype_transform)
+				group.multimesh.set_instance_transform(i, entity.global_transform * group.prototype_transform)

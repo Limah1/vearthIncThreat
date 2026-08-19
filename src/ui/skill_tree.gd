@@ -3,7 +3,7 @@ extends Control
 class_name SkillTree
 
 @onready var balance_label: Label = $MarginContainer/VBoxContainer/Header/RightContainer/BalanceLabel
-@onready var close_button: Button = $MarginContainer/VBoxContainer/Header/RightContainer/CloseButton
+@onready var next_zone_button: Button = $MarginContainer/VBoxContainer/Header/RightContainer/NextZoneButton
 @onready var grid_container: Control = $MarginContainer/VBoxContainer/ScrollContainer/GridContainer
 @onready var scroll_container: ScrollContainer = $MarginContainer/VBoxContainer/ScrollContainer
 @onready var options_button: Button = $MarginContainer/VBoxContainer/Header/RightContainer/OptionsButton
@@ -16,6 +16,12 @@ class_name SkillTree
 @onready var tooltip_title: Label = $TooltipPopup/Margin/VBox/TooltipTitle
 @onready var tooltip_details: Label = $TooltipPopup/Margin/VBox/TooltipDetails
 @onready var tooltip_desc: Label = $TooltipPopup/Margin/VBox/TooltipDesc
+@onready var level_selection_overlay: ColorRect = $LevelSelectionOverlay
+@onready var level_selection_panel: PanelContainer = $LevelSelectionPanel
+@onready var level_list: VBoxContainer = $LevelSelectionPanel/Margin/VBox/LevelScroll/LevelList
+@onready var level_cancel_button: Button = $LevelSelectionPanel/Margin/VBox/CancelButton
+
+const LEVEL_CONFIG_DIRECTORY: String = "res://src/resources/levels"
 
 var active_line_animations: Array = []
 var connection_progress: Dictionary = {}
@@ -36,8 +42,9 @@ func _ready() -> void:
 	# Redraw when upgrades are purchased (to update affordability of others)
 	get_node("/root/UpgradeManager").upgrade_purchased.connect(_on_upgrade_purchased)
 	
-	# Close button
-	close_button.pressed.connect(_on_close_pressed)
+	# Level selection button
+	next_zone_button.pressed.connect(_on_next_zone_pressed)
+	level_cancel_button.pressed.connect(_on_level_selection_cancelled)
 	
 	# Connect options actions
 	options_button.pressed.connect(_on_options_pressed)
@@ -61,20 +68,22 @@ func _on_state_changed(state: int) -> void:
 	var game_mgr = get_node("/root/GameManager")
 	if state == game_mgr.GameState.UPGRADE_SCREEN:
 		visible = true
+		_hide_level_selection()
 		if options_panel:
 			options_panel.visible = false
 		if scroll_container:
 			scroll_container.visible = true
 		if options_button:
 			options_button.disabled = false
-		if close_button:
-			close_button.disabled = false
+		if next_zone_button:
+			next_zone_button.disabled = false
 		_update_options_ui_states()
 		_initialize_connection_progress()
 		_update_balance()
 		_populate_slots()
 	else:
 		visible = false
+		_hide_level_selection()
 		hide_tooltip()
 		active_line_animations.clear()
 		is_dragging = false
@@ -121,9 +130,89 @@ func _on_upgrade_purchased(id: String, _lvl: int) -> void:
 		_start_line_animation_from(id)
 	)
 
-func _on_close_pressed() -> void:
-	# Resumes and moves to the next zone/wave
-	get_node("/root/GameManager").start_next_round()
+func _on_next_zone_pressed() -> void:
+	hide_tooltip()
+	_populate_level_list()
+	if scroll_container:
+		scroll_container.visible = false
+	if options_panel:
+		options_panel.visible = false
+	if options_button:
+		options_button.disabled = true
+	if next_zone_button:
+		next_zone_button.disabled = true
+	if level_selection_overlay:
+		level_selection_overlay.visible = true
+	if level_selection_panel:
+		level_selection_panel.visible = true
+
+func _on_level_selection_cancelled() -> void:
+	_hide_level_selection()
+
+func _hide_level_selection() -> void:
+	if level_selection_overlay:
+		level_selection_overlay.visible = false
+	if level_selection_panel:
+		level_selection_panel.visible = false
+	if scroll_container and visible:
+		scroll_container.visible = true
+	if options_button and visible:
+		options_button.disabled = false
+	if next_zone_button and visible:
+		next_zone_button.disabled = false
+
+func _populate_level_list() -> void:
+	for child in level_list.get_children():
+		child.queue_free()
+
+	var level_configs = _load_level_configs()
+	if level_configs.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "NO LEVEL CONFIGS FOUND"
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		level_list.add_child(empty_label)
+		return
+
+	for config in level_configs:
+		var level_button := Button.new()
+		level_button.custom_minimum_size = Vector2(0.0, 100.0)
+		level_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		level_button.add_theme_font_size_override("font_size", 20)
+		level_button.text = "LEVEL %d\n%s\n%s | %d TOTAL" % [
+			config.level_number,
+			config.level_name,
+			config.get_actor_display_name(),
+			config.get_total_configured_enemies()
+		]
+		if config.icon:
+			level_button.icon = config.icon
+		level_button.tooltip_text = config.description
+		level_button.pressed.connect(_on_level_selected.bind(config))
+		level_list.add_child(level_button)
+
+func _load_level_configs() -> Array[LevelConfig]:
+	var configs: Array[LevelConfig] = []
+	var directory := DirAccess.open(LEVEL_CONFIG_DIRECTORY)
+	if not directory:
+		return configs
+
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while not file_name.is_empty():
+		if not directory.current_is_dir() and file_name.ends_with(".tres"):
+			var config := load(LEVEL_CONFIG_DIRECTORY + "/" + file_name) as LevelConfig
+			if config:
+				configs.append(config)
+		file_name = directory.get_next()
+	directory.list_dir_end()
+	configs.sort_custom(_sort_level_configs)
+	return configs
+
+func _sort_level_configs(first: LevelConfig, second: LevelConfig) -> bool:
+	return first.level_number < second.level_number
+
+func _on_level_selected(config: LevelConfig) -> void:
+	get_node("/root/GameManager").start_level(config)
 
 # Called by child slots when mouse enters
 func show_tooltip(upgrade: UpgradeData, slot_global_pos: Vector2) -> void:
@@ -145,7 +234,9 @@ func show_tooltip(upgrade: UpgradeData, slot_global_pos: Vector2) -> void:
 	# Bonus string
 	var val = upgrade.value_increment
 	var bonus_text = ""
-	if upgrade.is_percentage:
+	if upgrade.category == "ClickDamage":
+		bonus_text = "x%d" % int(upgrade.calculate_multiplier(1))
+	elif upgrade.is_percentage:
 		bonus_text = "+%d%%" % int(val * 100.0)
 	else:
 		bonus_text = "+%d" % int(val)
@@ -454,14 +545,14 @@ func _on_options_pressed() -> void:
 	scroll_container.visible = false
 	options_panel.visible = true
 	options_button.disabled = true
-	close_button.disabled = true
+	next_zone_button.disabled = true
 	_update_options_ui_states()
 
 func _on_options_back_pressed() -> void:
 	scroll_container.visible = true
 	options_panel.visible = false
 	options_button.disabled = false
-	close_button.disabled = false
+	next_zone_button.disabled = false
 
 func _on_volume_changed(val: float) -> void:
 	var master_bus_idx = AudioServer.get_bus_index("Master")

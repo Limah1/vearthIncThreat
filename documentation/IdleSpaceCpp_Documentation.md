@@ -41,8 +41,9 @@ Manages game state, run session credits, lifetime bank credits, game flow, centr
 * **Properties**:
   - `run_credits`: Credits accumulated in the current run.
   - `lifetime_credits`: Credits saved in the permanent bank (used to buy upgrades).
+  - `selected_level_config` / `selected_level_config_path`: Level resource retained across gameplay scene reloads.
   - `current_zone`: The current round / difficulty level.
-  - `decay_timer` / `decay_time_limit`: Controls planet health decay progression.
+  - Planet HP changes only through `PlayerPlanet.take_damage`; timer-based life decay is disabled.
   - `debris_chance`: The current probability of spawning debris projectile on threat death.
   - `spatial_grid`: Incremental XZ broadphase for nearby-target queries.
   - `_movement_entities`: Central movement-dispatch array.
@@ -50,9 +51,9 @@ Manages game state, run session credits, lifetime bank credits, game flow, centr
   - `_active_damageable`: O(1)-indexed active target list used by cursor and projectile queries.
 * **Key Methods**:
   - [change_state](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L57): Updates game state and handles cleanup (recycles all active actors on PAUSED or END_SESSION).
-  - [add_credits](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L68): Adds credits to `run_credits` scaled by the `ResourceMultiplier` upgrade.
+  - [add_credits](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L68): Adds rewards directly to `run_credits`; no resource payout multiplier is applied.
   - [spend_lifetime_credits](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L75): Deducts credits from permanent bank for purchases.
-  - [start_next_round](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L90): Increments `current_zone`, resets `run_credits`, and reloads the active scene to start a new wave.
+  - [start_level](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L135): Stores selected `LevelConfig`, resets run credits, and reloads the active scene.
   - [reset_game](file:///e:/GODOT/vearthIncThreat/src/autoloads/game_manager.gd#L48): Resets run statistics, zeroes credits, and starts a fresh run.
   - `register_movement` / `unregister_movement`: Adds or removes an active instance from the centralized movement loop.
   - `register_collision` / `unregister_collision`: Adds or removes an instance from the lower-frequency collision phase.
@@ -94,13 +95,21 @@ Groups repeated 3D visuals into `MultiMeshInstance3D` batches while gameplay ent
 * **Lifecycle**: Entities register/unregister on pool activation/deactivation. The renderer updates transforms and visible instance counts from the active group arrays.
 * **Rendering policy**: Batched visuals cast no shadows; individual mesh children are hidden after registration.
 
+### `LevelConfig` (`level_config.gd`)
+Resource describing one playable level. `Spawner.level_config` defaults to `res://src/resources/levels/FirstLevelConfig.tres` and can be replaced per level.
+* **Identity**: `level_number`, `level_name`, `description`, and optional `icon` (`Texture2D`).
+* **Actor**: `actor_type` selects one pooled actor: `small_asteroid`, `medium_asteroid`, `large_asteroid`, `enemy`, or `garbage`.
+* **Batch data**: `total_enemies` is total actor count, `batch_size` is actors per batch, and `batch_interval` is seconds between batches.
+* **Example**: `actor_type = "small_asteroid"`, `total_enemies = 60`, `batch_size = 5`, and `batch_interval = 2.0` spawns 5 random-point asteroids immediately, then 5 more every 2 seconds until 60 exist.
+* **Level selection flow**: `SkillTree.NextZoneButton` scans this folder and creates one button per `.tres`; each button shows icon, actor type, and total count only. Selecting a button calls `GameManager.start_level(config)`, which keeps the resource through scene reload. `main.gd` applies it and calls `Spawner.start_level(config)`.
+
 ### `Spawner` (`spawner.gd`)
-Orchestrates wave progression, spawning garbage resources, asteroids, and enemy spaceships.
+Reads one `LevelConfig`, chooses a random tagged spawn point for every actor, and calls the matching pooled actor master.
 * **Spawning Logic**:
-  - Locates path-followers under `SpawnPath` to determine spawn coordinates.
-  - Rolls against a random weighted spawn table to decide entity types.
-  - Controls spawning rate, limits maximum active entity counts, and increments difficulty based on `current_zone`.
-  - Spawns orbit garbage in chunks matching the number of available spawn points (e.g., 50). If the total garbage count exceeds the number of spawn points, it cascades the remaining garbage in chunks of the same size, delayed by 1.0 second per chunk.
+  - Uses `asteroid_spawner`, `enemy_spawner`, or `garbage_spawner` groups based on `actor_type`.
+  - Spawns first batch immediately, then one batch every `batch_interval` seconds.
+  - Stops permanently when `total_enemies` actors have been successfully borrowed from pools.
+  - Does not read upgrade unlocks, zone timers, weighted asteroid chances, or automatic garbage-wave signals.
 
 ### `SpawnPath` (`spawn_path.gd`)
 A customized `Path2D` that draws and generates a spawning ring around the planet.
@@ -205,7 +214,8 @@ Manipulates the 3D orthographic camera view.
 ### `SkillTree` (`skill_tree.gd`)
 Handles drawing of nodes, connector paths, and buying mechanics.
 * **Methods**:
-  - [_on_close_pressed](file:///e:/GODOT/vearthIncThreat/src/ui/skill_tree.gd#L124): Resumes playing and progresses to the next wave.
+  - [_on_next_zone_pressed](file:///e:/GODOT/vearthIncThreat/src/ui/skill_tree.gd#L133): Opens level list built from `LevelConfig` resources.
+  - [_on_level_selected](file:///e:/GODOT/vearthIncThreat/src/ui/skill_tree.gd#L213): Passes selected config to `GameManager.start_level`.
   - [show_tooltip](file:///e:/GODOT/vearthIncThreat/src/ui/skill_tree.gd#L129): Renders details card showing upgrade prices, current bonuses, and labels.
 
 ### `UpgradeSlotUI` (`upgrade_slot_ui.gd`)

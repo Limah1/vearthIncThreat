@@ -30,7 +30,7 @@ func _process(_delta: float) -> void:
 	if planet and is_instance_valid(planet):
 		hp_bar.max_value = planet.max_hp
 		hp_bar.value = planet.hp
-		hp_bar.get_node("Label").text = "HP: %d/%d (-%.1f/s)" % [int(planet.hp), int(planet.max_hp), planet.decay_rate]
+		hp_bar.get_node("Label").text = "HP: %d/%d" % [int(planet.hp), int(planet.max_hp)]
 		
 		shield_bar.max_value = planet.max_shield
 		shield_bar.value = planet.shield

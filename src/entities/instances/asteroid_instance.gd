@@ -3,11 +3,12 @@ extends Node3D
 class_name AsteroidInstance
 
 @export var base_speed: float = 85.0 # --- VELOCIDADE DE MOVIMENTO (MAIS ALTO = MAIS RAPIDO)
-@export var base_value: float = 30.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
+@export var base_value: float = 5.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
 @export var base_planet_damage: float = 20.0 # --- DANO CAUSADO AO COLIDIR NO PLANETA
+@export var base_small_max_hp: float = 3.0 # --- VIDA TESTE DO ASTEROIDE PEQUENO
 
 var current_move_speed: float = 85.0
-var current_value: float = 30.0
+var current_value: float = 5.0
 var planet_damage: float = 20.0
 
 var killed_by_player: bool = false
@@ -83,18 +84,18 @@ func set_asteroid_type(type: String) -> void:
 	
 	match type:
 		"small":
-			max_hp = base_max_hp * zone_scale
-			current_value = base_value * zone_scale
+			max_hp = base_small_max_hp * zone_scale
+			current_value = base_value
 			planet_damage = base_planet_damage * zone_scale
 			radius = 24.0
 		"medium":
 			max_hp = (base_max_hp * (100.0 / 35.0)) * zone_scale
-			current_value = (base_value * 3.0) * zone_scale
+			current_value = base_value
 			planet_damage = (base_planet_damage * 2.5) * zone_scale
 			radius = 45.0
 		"large":
 			max_hp = (base_max_hp * (300.0 / 35.0)) * zone_scale
-			current_value = (base_value * 8.0) * zone_scale
+			current_value = base_value
 			planet_damage = (base_planet_damage * 6.0) * zone_scale
 			radius = 70.0
 			

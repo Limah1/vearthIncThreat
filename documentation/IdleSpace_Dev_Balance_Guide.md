@@ -27,7 +27,10 @@ The project targets hundreds of active objects. Keep per-entity work bounded:
 * Avoid per-hit logging, per-frame scene-tree searches, dynamic popup/tween allocation, and per-ship pathfinding queries.
 * Keep glow, shadows, and material emission disabled unless a measured visual requirement justifies their GPU cost.
 
-### 3. Workflow for Adding New Game Content
+### 3. Level data assets
+Create one `LevelConfig` resource per playable level under `res://src/resources/levels/`. Set `level_number`, `level_name`, `icon`, one `actor_type` (`small_asteroid`, `medium_asteroid`, `large_asteroid`, `enemy`, or `garbage`), `total_enemies`, `batch_size`, and `batch_interval`. Example first level: `small_asteroid`, total `60`, batch `5`, interval `2.0`. The upgrade screen's `SELECT LEVEL` button discovers these resources, shows icon/type/total, and starts the selected config.
+
+### 4. Workflow for Adding New Game Content
 
 #### A. Adding a New Upgrade Resource
 1. In the FileSystem, create a new Resource (`.tres`) in [res://src/resources/upgrades/](file:///e:/GODOT/vearthIncThreat/src/resources/upgrades/).
@@ -79,7 +82,7 @@ This design prevents compounding multipliers from making individual upgrades exc
 
 | Upgrade Category | Sizing / Scale Mode | Sug. Increment (`value_increment`) | Tuning Rationale |
 | :--- | :---: | :---: | :--- |
-| **Click Damage** (`ClickDamage`) | Linear / Compound | Linear: `0.5 - 1.0`<br>Compound: `0.15 - 0.20` | Use compound scaling if health values scale high in later waves. |
+| **Click Damage** (`ClickDamage`) | Compound test | `2.0` (`x3`) | Temporary test tuning: base click damage `3`, each purchased ClickDamage level multiplies total by `3`. |
 | **Auto Clicker Rate** (`AutoClickRate`) | Compound (Rec.) | `0.10 - 0.15` | Capped at a minimum click interval of **0.05s** (20 clicks/sec) to protect processing speed. |
 | **Click Radius** (`ClickRadius`) | Linear | `0.10 - 0.15` | Keep max levels low (e.g. 5-10) to avoid sweep coverage consuming the entire screen. |
 | **Planet Health / Shield** | Compound | `0.20 - 0.30` | High level runs have intense incoming threat damage, requiring compound scaling to keep up. |

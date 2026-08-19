@@ -3,11 +3,11 @@ extends Node3D
 class_name PlayerCursor
 
 @export var base_click_radius: float = 15.0
-@export var base_click_damage: float = 5.0
+@export var base_click_damage: float = 3.0
 @export var base_auto_click_interval: float = 1.5
 
 var final_click_radius: float = 15.0
-var click_damage: float = 2.0
+var click_damage: float = 3.0
 var auto_click_timer: float = 0.0
 
 var mouse_circle_visual: Node3D
@@ -76,7 +76,7 @@ func _recalculate_click_stats() -> void:
 	if not upgrade_mgr:
 		return
 	final_click_radius = base_click_radius + upgrade_mgr.get_total_bonus("ClickRadius")
-	click_damage = base_click_damage + upgrade_mgr.get_total_bonus("ClickDamage")
+	click_damage = base_click_damage * upgrade_mgr.get_compound_multiplier("ClickDamage")
 
 func _input(event: InputEvent) -> void:
 	var game_mgr = _game_manager_ref

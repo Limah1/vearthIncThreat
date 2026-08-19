@@ -100,12 +100,12 @@ size_flags_vertical = 4
 theme_override_font_sizes/font_size = 16
 text = "OPTIONS"
 
-[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/Header/RightContainer" unique_id=70993994]
+[node name="NextZoneButton" type="Button" parent="MarginContainer/VBoxContainer/Header/RightContainer" unique_id=70993994]
 custom_minimum_size = Vector2(220, 40)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_font_sizes/font_size = 16
-text = "START NEXT ZONE"
+text = "SELECT LEVEL"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer" unique_id=2050321563]
 clip_contents = false
@@ -316,6 +316,75 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 16
 text = "BACK"
+
+[node name="LevelSelectionOverlay" type="ColorRect" parent="." unique_id=1848593930]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.72)
+
+[node name="LevelSelectionPanel" type="PanelContainer" parent="." unique_id=1848593931]
+visible = false
+custom_minimum_size = Vector2(840, 760)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -380.0
+offset_right = 420.0
+offset_bottom = 380.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="LevelSelectionPanel" unique_id=1848593932]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="LevelSelectionPanel/Margin" unique_id=1848593933]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="LevelSelectionPanel/Margin/VBox" unique_id=1848593934]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "SELECT LEVEL"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="LevelSelectionPanel/Margin/VBox" unique_id=1848593935]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+text = "Choose threat type and total quantity"
+horizontal_alignment = 1
+
+[node name="LevelScroll" type="ScrollContainer" parent="LevelSelectionPanel/Margin/VBox" unique_id=1848593936]
+custom_minimum_size = Vector2(0, 560)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LevelList" type="VBoxContainer" parent="LevelSelectionPanel/Margin/VBox/LevelScroll" unique_id=1848593937]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="CancelButton" type="Button" parent="LevelSelectionPanel/Margin/VBox" unique_id=1848593938]
+custom_minimum_size = Vector2(200, 45)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 16
+text = "CANCEL"
 
 [node name="TooltipPopup" type="Control" parent="." unique_id=1351641327]
 visible = false

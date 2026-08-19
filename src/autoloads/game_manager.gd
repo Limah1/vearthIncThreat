@@ -3,7 +3,6 @@ extends Node
 
 signal state_changed(new_state: GameState)
 signal credits_changed(run_credits: float, lifetime_credits: float)
-signal timer_updated(time_left: float)
 signal trigger_camera_animation()
 
 enum GameState {PLAYING, PAUSED, UPGRADE_SCREEN, END_SESSION, VICTORY, TRANSITION}
@@ -21,8 +20,9 @@ const MAX_DAMAGEABLE_RADIUS: float = 70.0
 var run_credits: float = 0.0
 var lifetime_credits: float = 0.0
 
-var decay_time_limit: float = 60.0
-var decay_timer: float = 60.0
+const DEFAULT_LEVEL_CONFIG_PATH: String = "res://src/resources/levels/FirstLevelConfig.tres"
+var selected_level_config: LevelConfig = preload(DEFAULT_LEVEL_CONFIG_PATH)
+var selected_level_config_path: String = DEFAULT_LEVEL_CONFIG_PATH
 
 var current_zone: int = 1
 
@@ -86,8 +86,9 @@ func _input(event: InputEvent) -> void:
 
 func reset_game() -> void:
 	run_credits = 0.0
+	selected_level_config = preload(DEFAULT_LEVEL_CONFIG_PATH)
+	selected_level_config_path = DEFAULT_LEVEL_CONFIG_PATH
 	current_zone = 1
-	decay_timer = decay_time_limit
 	b_can_animate_camera = false
 	has_camera_animated_once = false
 	eliminated_threats = 0
@@ -111,11 +112,9 @@ func change_state(new_state: GameState, should_emit: bool = true) -> void:
 					master.return_all_active_to_pool()
 
 
-# Add credits scaled by ResourceMultiplier upgrade
+# Add credits directly; no resource payout multiplier.
 func add_credits(amount: float) -> void:
-	var multiplier = UpgradeManager.get_multiplier("ResourceMultiplier")
-	var scaled_amount = round(amount * multiplier)
-	run_credits += scaled_amount
+	run_credits += amount
 	credits_changed.emit(run_credits, lifetime_credits)
 
 # Spends lifetime bank credits for purchases
@@ -133,13 +132,28 @@ func end_round() -> void:
 	credits_changed.emit(run_credits, lifetime_credits)
 	save_game()
 
-# Launch next wave, increment difficulty and reload scene to trigger spawners
-func start_next_round() -> void:
-	current_zone += 1
+# Select level resource, preserve it in this autoload, and reload gameplay scene.
+func start_level(config: LevelConfig) -> void:
+	if not is_instance_valid(config):
+		return
+
+	selected_level_config = config
+	if not config.resource_path.is_empty():
+		selected_level_config_path = config.resource_path
+	current_zone = maxi(config.level_number, 1)
 	run_credits = 0.0
 	credits_changed.emit(run_credits, lifetime_credits)
 	change_state(GameState.PLAYING, false)
 	get_tree().reload_current_scene()
+
+func get_selected_level_config() -> LevelConfig:
+	if is_instance_valid(selected_level_config):
+		return selected_level_config
+
+	var loaded_config := load(selected_level_config_path) as LevelConfig
+	if loaded_config:
+		selected_level_config = loaded_config
+	return selected_level_config
 
 func planet_destroyed() -> void:
 	# Change state to TRANSITION to stop spawning and cursor sweep immediately
@@ -431,12 +445,8 @@ func add_credits_delayed(amount: float, global_pos: Vector3) -> void:
 	if not is_inside_tree():
 		return
 		
-	# Calculate scaled amount for the green popup
-	var multiplier = UpgradeManager.get_multiplier("ResourceMultiplier")
-	var scaled_amount = round(amount * multiplier)
-	
 	add_credits(amount)
-	spawn_popup_3d("+$" + str(int(scaled_amount)), Color(0.0, 1.0, 0.0), global_pos)
+	spawn_popup_3d("+$" + str(int(round(amount))), Color(0.0, 1.0, 0.0), global_pos)
 
 func _get_entity_cell(entity: Node) -> Vector2i:
 	var pos = entity.global_position

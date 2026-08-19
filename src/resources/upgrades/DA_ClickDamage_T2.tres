@@ -6,10 +6,11 @@
 [resource]
 script = ExtResource("2_w7tfm")
 upgrade_id = "DA_ClickDamage_T2"
-upgrade_name = "Click Damage"
-description = "Gain + 1 damage."
+upgrade_name = "Click Damage x3"
+description = "Multiply click damage by 3."
 icon = ExtResource("1_h0vyk")
 category = "ClickDamage"
 base_cost = 20.0
-value_increment = 1.0
+value_increment = 2.0
+is_percentage = true
 unlocks = Array[String]([])

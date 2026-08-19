@@ -21,7 +21,6 @@ extends Resource
 	"SatelliteUnlock",
 	"GarbageAmount",
 	"GarbageQuality",
-	"ResourceMultiplier",
 	"UnlockSmallAsteroid",
 	"UnlockMediumAsteroid",
 	"UnlockLargeAsteroid",
