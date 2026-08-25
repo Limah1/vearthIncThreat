@@ -2,6 +2,8 @@
 extends Node3D
 class_name SpaceGarbageInstance
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var base_speed: float = 30.0 # --- VELOCIDADE DE MOVIMENTO
 @export var base_value: float = 1.0 # --- CRÉDITOS NA DESTRUIÇÃO PELO JOGADOR
 @export var base_planet_damage: float = 1.0 # --- DANO AO COLIDIR NO PLANETA
@@ -185,7 +187,7 @@ func _manager_move(delta: float) -> void:
 	# --- Colisão com planeta (cacheado) ---
 	if global_position.length() < 45.0:
 		if is_instance_valid(_planet_ref):
-			_planet_ref.take_damage(planet_damage)
+			DamageSystemScript.apply(_planet_ref, planet_damage, DamageSystemScript.Team.ENEMY)
 		killed_by_player = false
 		die()
 

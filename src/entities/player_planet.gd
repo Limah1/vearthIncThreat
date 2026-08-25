@@ -2,6 +2,8 @@
 extends Area2D
 class_name PlayerPlanet
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var visual_3d_scene: PackedScene
 var visual_3d: Node3D
 
@@ -72,7 +74,17 @@ func recalculate_stats(reset_current: bool = false) -> void:
 			
 	_sync_shield_visual()
 
+func receive_damage(amount: float, source_team: int) -> bool:
+	if source_team != DamageSystemScript.Team.ENEMY:
+		return false
+	_apply_damage(amount)
+	return true
+
 func take_damage(amount: float) -> void:
+	# Compatibility for older enemy sources.
+	receive_damage(amount, DamageSystemScript.Team.ENEMY)
+
+func _apply_damage(amount: float) -> void:
 	var game_mgr = get_node("/root/GameManager")
 	if game_mgr.current_state != game_mgr.GameState.PLAYING:
 		return

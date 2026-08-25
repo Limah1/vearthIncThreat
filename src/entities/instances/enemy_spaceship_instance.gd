@@ -2,6 +2,8 @@
 extends Node3D
 class_name EnemySpaceshipInstance
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var base_hp: float = 12.0 # --- VIDA INICIAL DO INIMIGO
 @export var base_value: float = 20.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
 @export var fly_in_speed: float = 120.0 # --- VELOCIDADE DE ENTRADA (MAIS ALTO = MAIS RAPIDO)
@@ -56,7 +58,17 @@ func on_pool_deactivate() -> void:
 	GameManager.unregister_movement(self)
 	GameManager.unregister_active_damageable(self)
 
+func receive_damage(amount: float, source_team: int) -> bool:
+	if source_team != DamageSystemScript.Team.ALLY:
+		return false
+	killed_by_player = true
+	_apply_damage(amount)
+	return true
+
 func take_damage(amount: float) -> void:
+	receive_damage(amount, DamageSystemScript.Team.NEUTRAL)
+
+func _apply_damage(amount: float) -> void:
 	if not active:
 		return
 	hp -= amount
@@ -68,8 +80,7 @@ func take_damage(amount: float) -> void:
 		die()
 
 func take_player_damage(amount: float) -> void:
-	killed_by_player = true
-	take_damage(amount)
+	receive_damage(amount, DamageSystemScript.Team.ALLY)
 
 func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:

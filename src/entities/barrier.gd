@@ -1,6 +1,8 @@
 extends Area2D
 class_name Barrier
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 signal health_changed(current_hp: float, maximum_hp: float)
 signal deployment_changed(world_position: Vector2)
 
@@ -116,6 +118,7 @@ func set_deployment_world_position(world_position: Vector3) -> void:
 	world_plane_y = world_position.y
 	global_position = Vector2(world_position.x, world_position.z)
 	_sync_visual_transform()
+	GameManager.update_avoidance_obstacle(self)
 	deployment_changed.emit(global_position)
 
 func set_placed(value: bool) -> void:
@@ -140,6 +143,8 @@ func _sync_placement_state() -> void:
 	for turret in turrets:
 		if is_instance_valid(turret) and turret.has_method("set_deployment_active"):
 			turret.set_deployment_active(active)
+	if is_inside_tree():
+		GameManager.update_avoidance_obstacle(self)
 
 func _apply_preview_visual() -> void:
 	if not visual_3d:
@@ -286,7 +291,17 @@ func _sync_life_bar() -> void:
 	life_bar_fill.scale.x = ratio
 	life_bar_fill.position.x = -life_bar_width * 0.5 * (1.0 - ratio)
 
+func receive_damage(amount: float, source_team: int) -> bool:
+	if source_team != DamageSystemScript.Team.ENEMY:
+		return false
+	_apply_damage(amount)
+	return true
+
 func take_damage(amount: float) -> void:
+	# Compatibility for older enemy sources.
+	receive_damage(amount, DamageSystemScript.Team.ENEMY)
+
+func _apply_damage(amount: float) -> void:
 	if not active or amount <= 0.0:
 		return
 
@@ -297,6 +312,7 @@ func take_damage(amount: float) -> void:
 
 	if hp <= 0.0:
 		active = false
+		GameManager.update_avoidance_obstacle(self)
 		if collision_shape:
 			collision_shape.disabled = true
 		if visual_3d:
@@ -305,7 +321,7 @@ func take_damage(amount: float) -> void:
 			if is_instance_valid(turret) and turret.has_method("set_deployment_active"):
 				turret.set_deployment_active(false)
 
-func try_handle_collision(hit_position: Vector3, damage: float, impact_radius: float = 0.0) -> bool:
+func contains_collision(hit_position: Vector3, impact_radius: float = 0.0) -> bool:
 	if not active or not barrier_config:
 		return false
 
@@ -318,9 +334,31 @@ func try_handle_collision(hit_position: Vector3, damage: float, impact_radius: f
 	)
 	if point.distance_squared_to(closest) > impact_radius * impact_radius:
 		return false
+	return true
 
-	take_damage(damage)
+func try_handle_collision(
+	hit_position: Vector3,
+	damage: float,
+	impact_radius: float = 0.0,
+	damage_team: int = DamageSystemScript.Team.ENEMY
+) -> bool:
+	if not contains_collision(hit_position, impact_radius):
+		return false
+	DamageSystemScript.apply(self, damage, damage_team)
 	return true
 
 func get_world_position() -> Vector3:
 	return Vector3(global_position.x, world_plane_y, global_position.y)
+
+func is_avoidance_active() -> bool:
+	return active
+
+func get_avoidance_center() -> Vector2:
+	return global_position
+
+func get_avoidance_radius() -> float:
+	if not barrier_config:
+		return 0.0
+	# Circular broadphase volume encloses the full 50x80 rectangle. Asteroids
+	# therefore avoid its corners as well as its center.
+	return barrier_config.size.length() * 0.5

@@ -1,12 +1,14 @@
 extends Node3D
-class_name BarrierTurret
+class_name DefenseBlaster
 
-## Lightweight barrier-mounted turret. It locks the nearest asteroid and
-## applies one hit per cooldown until that asteroid is destroyed.
-@export var base_damage: float = 1.0
-@export var fire_interval: float = 0.35
-@export var attack_range: float = 700.0
+const DEFAULT_CONFIG_PATH := "res://src/resources/turrets/DefaultTurretConfig.tres"
+
+@export var turret_config: TurretConfig
 @export var turret_height: float = 4.5
+@export var turret_type_id: String = "defense_blaster"
+@export var turret_display_name: String = "Defense Blaster"
+@export var damage_upgrade_category: String = "TurretDamage"
+@export var fire_rate_upgrade_category: String = "TurretAttackSpeed"
 
 var active: bool = false
 var previewing: bool = false
@@ -15,12 +17,53 @@ var barrier_ref: Barrier = null
 var local_offset: Vector2 = Vector2.ZERO
 var target: Node = null
 var cooldown: float = 0.0
-var tracer_timer: float = 0.0
-var tracer: MeshInstance3D = null
+var _sat_projectile_master_ref: Node = null
+
+## Per-instance aiming values selected during preparation.
+var center_yaw: float = 0.0
+var cone_angle: float = -1.0
+var current_aim_yaw: float = 0.0
+var sweep_phase: float = 0.0
+var target_refresh_timer: float = 0.0
+var effective_damage: float = 1.0
+var effective_fire_rate: float = 1.0
 
 func _ready() -> void:
-	add_to_group("barrier_turret")
-	_create_tracer()
+	if not turret_type_id.is_empty():
+		add_to_group(turret_type_id)
+	add_to_group("barrier_turret") # Compatibility with existing debug/tools code.
+	if not turret_config:
+		var default_resource: Resource = load(DEFAULT_CONFIG_PATH)
+		if default_resource is TurretConfig:
+			turret_config = default_resource as TurretConfig
+	if turret_config:
+		if cone_angle < 0.0:
+			cone_angle = turret_config.get_clamped_cone_angle(turret_config.default_cone_angle)
+		target_refresh_timer = (
+			float(get_instance_id() % 11) / 11.0
+		) * turret_config.target_refresh_interval
+	current_aim_yaw = center_yaw
+	sweep_phase = float(get_instance_id() % 31) / 31.0 * TAU
+	if not UpgradeManager.upgrade_purchased.is_connected(_on_upgrade_purchased):
+		UpgradeManager.upgrade_purchased.connect(_on_upgrade_purchased)
+	_refresh_upgrade_stats()
+
+func _on_upgrade_purchased(_upgrade_id: String, _new_level: int) -> void:
+	_refresh_upgrade_stats()
+
+func _refresh_upgrade_stats() -> void:
+	if not turret_config:
+		effective_damage = 1.0
+		effective_fire_rate = 1.0
+		return
+	effective_damage = turret_config.damage + UpgradeManager.get_total_bonus(damage_upgrade_category)
+	effective_fire_rate = turret_config.fire_rate * UpgradeManager.get_multiplier(fire_rate_upgrade_category)
+
+func get_turret_type_id() -> String:
+	return turret_type_id
+
+func get_turret_display_name() -> String:
+	return turret_display_name
 
 func assign_to_barrier(new_barrier: Barrier, new_local_offset: Vector2, new_radius: float) -> void:
 	barrier_ref = new_barrier
@@ -30,7 +73,55 @@ func assign_to_barrier(new_barrier: Barrier, new_local_offset: Vector2, new_radi
 	active = true
 	cooldown = 0.0
 	target = null
+	current_aim_yaw = center_yaw
 	sync_from_barrier()
+
+func set_aim_configuration(new_center_yaw: float, new_cone_angle: float) -> void:
+	center_yaw = wrapf(new_center_yaw, -PI, PI)
+	if turret_config:
+		cone_angle = turret_config.get_clamped_cone_angle(new_cone_angle)
+	else:
+		cone_angle = clampf(new_cone_angle, 1.0, 179.0)
+	target = null
+	target_refresh_timer = 0.0
+
+func set_aim_direction(direction: Vector2) -> void:
+	if direction.is_zero_approx():
+		return
+	set_aim_configuration(atan2(direction.x, direction.y), get_cone_angle())
+
+func get_center_yaw() -> float:
+	return center_yaw
+
+func get_cone_angle() -> float:
+	if cone_angle >= 0.0:
+		return cone_angle
+	return turret_config.default_cone_angle if turret_config else 90.0
+
+func get_aim_forward_2d() -> Vector2:
+	return Vector2(sin(center_yaw), cos(center_yaw))
+
+func get_handle_distance() -> float:
+	if not turret_config:
+		return 60.0
+	return turret_config.get_handle_distance_for_cone_angle(get_cone_angle())
+
+func update_aim_from_handle(world_point: Vector2) -> void:
+	if not turret_config:
+		return
+	var turret_position := Vector2(global_position.x, global_position.z)
+	var handle_delta: Vector2 = world_point - turret_position
+	if handle_delta.length_squared() <= 0.001:
+		return
+	var handle_distance: float = clampf(
+		handle_delta.length(),
+		turret_config.minimum_handle_distance,
+		turret_config.maximum_handle_distance
+	)
+	set_aim_configuration(
+		atan2(handle_delta.x, handle_delta.y),
+		turret_config.get_cone_angle_for_handle_distance(handle_distance)
+	)
 
 func set_footprint_radius(new_radius: float) -> void:
 	footprint_radius = maxf(new_radius, 2.0)
@@ -58,8 +149,6 @@ func set_deployment_active(value: bool) -> void:
 	visible = value or previewing
 	if not active:
 		target = null
-		if tracer:
-			tracer.visible = false
 
 func set_preview(value: bool) -> void:
 	previewing = value
@@ -91,89 +180,104 @@ func contains_world_point(world_point: Vector2) -> bool:
 	return turret_position.distance_squared_to(world_point) <= footprint_radius * footprint_radius
 
 func _process(delta: float) -> void:
-	if tracer_timer > 0.0:
-		tracer_timer -= delta
-		if tracer_timer <= 0.0 and tracer:
-			tracer.visible = false
-
-	if not active or not is_instance_valid(barrier_ref):
+	if not active or not is_instance_valid(barrier_ref) or not turret_config:
 		return
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		return
 
 	if cooldown > 0.0:
 		cooldown -= delta
+	target_refresh_timer -= delta
 	if not _is_valid_target(target):
+		target = null
+	if not is_instance_valid(target) and target_refresh_timer <= 0.0:
 		target = _find_nearest_asteroid()
+		target_refresh_timer = turret_config.target_refresh_interval
+
+	sweep_phase = fmod(sweep_phase + delta * turret_config.sweep_speed * TAU, TAU)
+	var desired_aim_yaw: float
+	if is_instance_valid(target):
+		var target_position: Vector3 = target.get("global_position")
+		var target_direction := Vector2(
+			target_position.x - global_position.x,
+			target_position.z - global_position.z
+		)
+		desired_aim_yaw = atan2(target_direction.x, target_direction.y)
+	else:
+		var half_cone_radians: float = deg_to_rad(get_cone_angle() * 0.5)
+		desired_aim_yaw = center_yaw + sin(sweep_phase) * half_cone_radians
+	current_aim_yaw = lerp_angle(
+		current_aim_yaw,
+		desired_aim_yaw,
+		clampf(delta * 10.0, 0.0, 1.0)
+	)
+	var turret_mesh := get_node_or_null("TurretMesh") as MeshInstance3D
+	if turret_mesh:
+		turret_mesh.rotation.y = current_aim_yaw
+
 	if is_instance_valid(target) and cooldown <= 0.0:
 		_fire_at_target()
-		cooldown = fire_interval
+		cooldown = 1.0 / maxf(effective_fire_rate, 0.05)
 
 func _find_nearest_asteroid() -> Node:
 	var nearest: Node = null
-	var nearest_distance_sq := attack_range * attack_range
-	var candidates: Array = GameManager.get_nearby_entities(global_position, attack_range)
+	if not turret_config:
+		return nearest
+	var nearest_distance_sq: float = turret_config.attack_range * turret_config.attack_range
+	var candidates: Array = GameManager.get_nearby_entities(global_position, turret_config.attack_range)
 	for candidate in candidates:
-		if not is_instance_valid(candidate) or not candidate.is_in_group("asteroid"):
+		if not _is_hostile_candidate(candidate):
 			continue
 		if not bool(candidate.get("active")):
 			continue
-		var candidate_position: Vector3 = Vector3(candidate.get("global_position"))
-		var distance_sq := global_position.distance_squared_to(candidate_position)
+		var candidate_position: Vector3 = candidate.get("global_position")
+		if not is_world_position_in_action_cone(candidate_position):
+			continue
+		var distance_sq: float = global_position.distance_squared_to(candidate_position)
 		if distance_sq < nearest_distance_sq:
 			nearest_distance_sq = distance_sq
 			nearest = candidate
 	return nearest
 
 func _is_valid_target(candidate: Node) -> bool:
-	if not is_instance_valid(candidate) or not bool(candidate.get("active")):
+	if not _is_hostile_candidate(candidate):
 		return false
-	var candidate_position: Vector3 = Vector3(candidate.get("global_position"))
-	return global_position.distance_squared_to(candidate_position) <= attack_range * attack_range
+	if not bool(candidate.get("active")):
+		return false
+	var candidate_position: Vector3 = candidate.get("global_position")
+	return is_world_position_in_action_cone(candidate_position)
+
+func _is_hostile_candidate(candidate: Node) -> bool:
+	return is_instance_valid(candidate) and candidate.is_in_group("asteroid")
+
+func is_world_position_in_action_cone(world_position: Vector3) -> bool:
+	if not turret_config:
+		return false
+	var to_target := Vector2(
+		world_position.x - global_position.x,
+		world_position.z - global_position.z
+	)
+	return turret_config.contains_offset_in_action_cone(
+		to_target,
+		get_aim_forward_2d(),
+		get_cone_angle()
+	)
 
 func _fire_at_target() -> void:
-	if not is_instance_valid(target):
+	if not is_instance_valid(target) or not turret_config:
 		return
-	var target_position: Vector3 = Vector3(target.get("global_position"))
-	var damage := base_damage
-	if target.has_method("take_player_damage"):
-		target.take_player_damage(damage)
-	else:
-		target.take_damage(damage)
-	_show_tracer(target_position)
-	if not _is_valid_target(target):
-		target = null
-
-func _create_tracer() -> void:
-	tracer = MeshInstance3D.new()
-	tracer.name = "TurretTracer"
-	var beam_mesh := BoxMesh.new()
-	beam_mesh.size = Vector3(0.8, 0.5, 1.0)
-	var beam_material := StandardMaterial3D.new()
-	beam_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	beam_material.albedo_color = Color(1.0, 0.75, 0.2, 0.9)
-	beam_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	beam_material.no_depth_test = true
-	beam_material.emission_enabled = false
-	beam_material.render_priority = 90
-	beam_mesh.material = beam_material
-	tracer.mesh = beam_mesh
-	tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	tracer.visible = false
-	add_child(tracer)
-
-func _show_tracer(target_position: Vector3) -> void:
-	if not tracer:
+	if not is_instance_valid(_sat_projectile_master_ref):
+		_sat_projectile_master_ref = get_tree().get_first_node_in_group("sat_proj_master")
+	if not is_instance_valid(_sat_projectile_master_ref):
 		return
-	var start_position := global_position + Vector3(0.0, 1.0, 0.0)
-	var direction := target_position - start_position
-	var distance := direction.length()
-	if distance <= 0.01:
+	var target_position: Vector3 = target.get("global_position")
+	var shot_origin := global_position + Vector3(0.0, 1.0, 0.0)
+	var shot_direction: Vector3 = target_position - shot_origin
+	shot_direction.y = 0.0
+	if shot_direction.length_squared() <= 0.0001:
 		return
-	tracer.global_position = start_position + direction * 0.5
-	tracer.global_rotation = Vector3.ZERO
-	tracer.rotation.y = atan2(direction.x, direction.z)
-	tracer.scale = Vector3.ONE
-	tracer.scale.z = distance
-	tracer.visible = true
-	tracer_timer = 0.08
+	_sat_projectile_master_ref.spawn_satellite_projectile(
+		shot_origin,
+		shot_direction.normalized(),
+		effective_damage
+	)

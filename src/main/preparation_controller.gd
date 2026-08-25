@@ -1,9 +1,17 @@
 extends Node3D
 class_name PreparationController
 
-enum PlacementMode { NONE, TURRET }
+const TurretAimGizmoScript = preload("res://src/main/turret_aim_gizmo.gd")
+const DefenseBlasterScene = preload("res://src/entities/defense_blaster.tscn")
+const LaserTurretScene = preload("res://src/entities/laser_turret.tscn")
+const TurretMinerScene = preload("res://src/entities/turret_miner.tscn")
+
+enum PlacementMode { NONE, POSITIONING, AIMING }
+enum TurretType { DEFENSE_BLASTER, LASER_TURRET, TURRET_MINER }
 
 const STARTING_TURRETS: int = 4
+const STARTING_LASER_TURRETS: int = 1
+const STARTING_TURRET_MINERS: int = 2
 
 var ally_ships: Node = null
 var footer: Control = null
@@ -11,8 +19,16 @@ var camera: Camera3D = null
 var game_manager: Node = null
 var active: bool = false
 var placement_mode: PlacementMode = PlacementMode.NONE
-var preview_turret: BarrierTurret = null
+var preview_turret: DefenseBlaster = null
+var aiming_turret: DefenseBlaster = null
+var aim_gizmo: TurretAimGizmo = null
+var dragging_aim_handle: bool = false
+var aiming_is_new_turret: bool = false
+var original_center_yaw: float = 0.0
+var original_cone_angle: float = 90.0
 var available_turrets: int = STARTING_TURRETS
+var selected_turret_type: TurretType = TurretType.DEFENSE_BLASTER
+var available_by_type: Dictionary = {}
 var barriers: Array[Barrier] = []
 
 func _ready() -> void:
@@ -29,11 +45,20 @@ func _initialize() -> void:
 		ally_ships = current_scene.find_child("AllyShips", true, false)
 		footer = current_scene.find_child("PreparationFooter", true, false) as Control
 		camera = current_scene.find_child("CameraController", true, false) as Camera3D
+		_create_aim_gizmo(current_scene)
 	_refresh_barriers()
 	if not camera:
 		camera = get_viewport().get_camera_3d()
 	_reset_inventory()
 	_on_state_changed(game_manager.current_state if game_manager else 0)
+
+func _create_aim_gizmo(current_scene: Node) -> void:
+	if is_instance_valid(aim_gizmo):
+		return
+	aim_gizmo = TurretAimGizmoScript.new() as TurretAimGizmo
+	if aim_gizmo:
+		current_scene.add_child(aim_gizmo)
+		aim_gizmo.name = "TurretAimGizmo"
 
 func _refresh_barriers() -> void:
 	barriers.clear()
@@ -53,7 +78,7 @@ func _on_state_changed(new_state: int) -> void:
 		if barriers.is_empty():
 			_set_status("No barriers found in AllyShips. Add barriers to the selected level scene.")
 		else:
-			_set_status("Select a turret icon, then click a barrier to place it. Right-click cancels.")
+			_set_status("Place unlocked turrets, configure their cones, then left-click to confirm. R returns all turrets.")
 	else:
 		_cancel_placement()
 		_set_footer_visible(false)
@@ -61,59 +86,106 @@ func _on_state_changed(new_state: int) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 
 func _process(_delta: float) -> void:
-	if not active or placement_mode != PlacementMode.TURRET or not preview_turret:
+	if not active:
 		return
-	var pointer_world := project_mouse_to_world()
-	var pointer := Vector2(pointer_world.x, pointer_world.z)
-	var preview_height: float = preview_turret.turret_height
-	var target_barrier := _find_barrier_at(pointer)
-	if target_barrier:
-		preview_height = target_barrier.get_turret_height()
-	elif not barriers.is_empty() and is_instance_valid(barriers[0]):
-		preview_height = barriers[0].get_turret_height()
-	preview_turret.global_position = Vector3(pointer_world.x, preview_height, pointer_world.z)
+	if placement_mode == PlacementMode.POSITIONING and is_instance_valid(preview_turret):
+		var pointer_world := project_mouse_to_world()
+		var pointer := Vector2(pointer_world.x, pointer_world.z)
+		var preview_height: float = preview_turret.turret_height
+		var target_barrier := _find_barrier_at(pointer)
+		if target_barrier:
+			preview_height = target_barrier.get_turret_height()
+		elif not barriers.is_empty() and is_instance_valid(barriers[0]):
+			preview_height = barriers[0].get_turret_height()
+		preview_turret.global_position = Vector3(pointer_world.x, preview_height, pointer_world.z)
+	elif placement_mode == PlacementMode.AIMING and dragging_aim_handle and is_instance_valid(aim_gizmo):
+		var pointer_world := project_mouse_to_world()
+		aim_gizmo.update_from_pointer(Vector2(pointer_world.x, pointer_world.z))
 
 func _input(event: InputEvent) -> void:
-	if not active or not event is InputEventMouseButton:
+	if not active:
 		return
-	var mouse_event := event as InputEventMouseButton
-	if _handle_mouse_event(mouse_event):
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_R:
+			return_all_turrets()
+			get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton:
+		if _handle_mouse_event(event as InputEventMouseButton):
+			get_viewport().set_input_as_handled()
+	elif event is InputEventMouseMotion and dragging_aim_handle:
+		var pointer_world := project_mouse_to_world()
+		if is_instance_valid(aim_gizmo):
+			aim_gizmo.update_from_pointer(Vector2(pointer_world.x, pointer_world.z))
 		get_viewport().set_input_as_handled()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not active or not event is InputEventMouseButton:
 		return
-	var mouse_event := event as InputEventMouseButton
-	if _handle_mouse_event(mouse_event):
+	if _handle_mouse_event(event as InputEventMouseButton):
 		get_viewport().set_input_as_handled()
 
 func _handle_mouse_event(mouse_event: InputEventMouseButton) -> bool:
 	if mouse_event.button_index == MOUSE_BUTTON_RIGHT and mouse_event.pressed:
 		_cancel_placement()
-		_set_status("Placement cancelled. Select the turret icon to try again.")
+		_set_status("Action cancelled. Select a turret to continue. R returns all turrets.")
 		return true
-	if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed and placement_mode == PlacementMode.TURRET and not _is_pointer_over_footer(mouse_event.position):
-		var pointer_world := project_mouse_to_world()
-		_commit_turret(Vector2(pointer_world.x, pointer_world.z))
+	if mouse_event.button_index != MOUSE_BUTTON_LEFT:
+		return false
+	# Always finish a handle drag, even when the release lands over the footer.
+	# Otherwise the gizmo would remain attached to the cursor.
+	if placement_mode == PlacementMode.AIMING and not mouse_event.pressed and dragging_aim_handle:
+		dragging_aim_handle = false
+		if not _is_pointer_over_footer(mouse_event.position):
+			var release_world := project_mouse_to_world()
+			if is_instance_valid(aim_gizmo):
+				aim_gizmo.update_from_pointer(Vector2(release_world.x, release_world.z))
+		_set_status("Cone updated. Left-click outside the handle to confirm; right-click cancels.")
 		return true
+	if _is_pointer_over_footer(mouse_event.position):
+		return false
+
+	var pointer_world := project_mouse_to_world()
+	var pointer := Vector2(pointer_world.x, pointer_world.z)
+	if placement_mode == PlacementMode.POSITIONING and mouse_event.pressed:
+		_commit_turret(pointer)
+		return true
+	if placement_mode == PlacementMode.AIMING:
+		if mouse_event.pressed:
+			if is_instance_valid(aim_gizmo) and aim_gizmo.is_handle_hit(pointer):
+				dragging_aim_handle = true
+				aim_gizmo.update_from_pointer(pointer)
+			else:
+				_confirm_turret_aim()
+			return true
+	if placement_mode == PlacementMode.NONE and mouse_event.pressed:
+		var selected_turret := _find_turret_at(pointer)
+		if selected_turret:
+			_begin_turret_aim(selected_turret, false)
+			return true
 	return false
 
-func begin_turret_placement() -> void:
+func begin_turret_placement(turret_type: TurretType = TurretType.DEFENSE_BLASTER) -> void:
 	if not active:
 		return
-	if available_turrets <= 0:
-		_set_status("No turrets remaining.")
+	if not is_turret_type_unlocked(turret_type):
+		_set_status("%s is locked. Purchase its unlock in the skill tree first." % get_turret_type_name(turret_type))
+		return
+	if get_available_turrets_for_type(turret_type) <= 0:
+		_set_status("No %s units remaining." % get_turret_type_name(turret_type))
 		return
 	_refresh_barriers()
-	var source_barrier := _get_turret_source_barrier()
-	if not source_barrier:
-		_set_status("No barrier with a turret scene found in AllyShips.")
+	if barriers.is_empty():
+		_set_status("No barrier found in AllyShips.")
 		return
 	_cancel_placement()
+	selected_turret_type = turret_type
 
-	preview_turret = source_barrier.turret_scene.instantiate() as BarrierTurret
+	var turret_scene: PackedScene = _get_scene_for_type(turret_type)
+	preview_turret = turret_scene.instantiate() as DefenseBlaster if turret_scene else null
 	if not preview_turret:
-		_set_status("Could not create a turret preview.")
+		_set_status("Could not create a %s preview." % get_turret_type_name(turret_type))
 		return
 	var current_scene := get_tree().current_scene
 	if not current_scene:
@@ -121,21 +193,35 @@ func begin_turret_placement() -> void:
 		preview_turret = null
 		return
 	current_scene.add_child(preview_turret)
-	preview_turret.set_footprint_radius(source_barrier.get_turret_radius())
+	preview_turret.set_footprint_radius(barriers[0].get_turret_radius())
 	preview_turret.set_preview(true)
-	placement_mode = PlacementMode.TURRET
-	_set_status("Turret preview attached to cursor. Click a barrier to place it; right-click cancels.")
+	placement_mode = PlacementMode.POSITIONING
+	_set_status("%s attached to cursor. Click a barrier to position it; right-click cancels." % get_turret_type_name(turret_type))
+
+func begin_laser_turret_placement() -> void:
+	begin_turret_placement(TurretType.LASER_TURRET)
+
+func begin_turret_miner_placement() -> void:
+	begin_turret_placement(TurretType.TURRET_MINER)
 
 func reset_layout() -> void:
 	if not active:
 		return
+	_return_all_turrets("Turret layout reset. All turrets returned to inventory.")
+
+func return_all_turrets() -> void:
+	if not active:
+		return
+	_return_all_turrets("R pressed: all deployed turrets returned to inventory.")
+
+func _return_all_turrets(status_message: String) -> void:
 	_cancel_placement()
 	_refresh_barriers()
 	for current_barrier in barriers:
 		if is_instance_valid(current_barrier):
 			current_barrier.clear_turrets()
 	_reset_inventory()
-	_set_status("Turret layout reset. Select the turret icon to deploy again.")
+	_set_status(status_message)
 
 func start_wave() -> void:
 	if not active:
@@ -144,11 +230,44 @@ func start_wave() -> void:
 	if barriers.is_empty():
 		_set_status("Add at least one barrier to AllyShips before starting the wave.")
 		return
-	_cancel_placement()
+	if placement_mode == PlacementMode.AIMING:
+		_confirm_turret_aim()
+	elif placement_mode == PlacementMode.POSITIONING:
+		_cancel_placement()
 	game_manager.begin_gameplay()
 
 func get_available_turrets() -> int:
-	return available_turrets
+	return get_available_turrets_for_type(TurretType.DEFENSE_BLASTER)
+
+func get_available_laser_turrets() -> int:
+	return get_available_turrets_for_type(TurretType.LASER_TURRET)
+
+func get_available_turret_miners() -> int:
+	return get_available_turrets_for_type(TurretType.TURRET_MINER)
+
+func is_defense_blaster_unlocked() -> bool:
+	return is_turret_type_unlocked(TurretType.DEFENSE_BLASTER)
+
+func is_laser_turret_unlocked() -> bool:
+	return is_turret_type_unlocked(TurretType.LASER_TURRET)
+
+func is_turret_miner_unlocked() -> bool:
+	return is_turret_type_unlocked(TurretType.TURRET_MINER)
+
+func get_available_turrets_for_type(turret_type: TurretType) -> int:
+	return int(available_by_type.get(turret_type, 0))
+
+func is_turret_type_unlocked(turret_type: TurretType) -> bool:
+	return UpgradeManager.get_upgrade_level(_get_unlock_upgrade_id(turret_type)) > 0
+
+func get_turret_type_name(turret_type: TurretType) -> String:
+	match turret_type:
+		TurretType.LASER_TURRET:
+			return "Laser Turret"
+		TurretType.TURRET_MINER:
+			return "Turret Miner"
+		_:
+			return "Defense Blaster"
 
 func get_barrier_count() -> int:
 	_refresh_barriers()
@@ -169,15 +288,46 @@ func _commit_turret(world_point: Vector2) -> void:
 		return
 	var target_barrier := _find_barrier_at(world_point)
 	if not target_barrier:
-		_set_status("Click inside a barrier from AllyShips to place the turret.")
+		_set_status("Click inside a barrier from AllyShips to place the %s." % get_turret_type_name(selected_turret_type))
 		return
 	if not target_barrier.attach_turret(preview_turret, world_point):
-		_set_status("Invalid turret position: keep it inside and avoid overlap.")
+		_set_status("Invalid %s position: keep it inside and avoid overlap." % get_turret_type_name(selected_turret_type))
 		return
-	available_turrets -= 1
+
+	available_by_type[selected_turret_type] = get_available_turrets_for_type(selected_turret_type) - 1
+	available_turrets = get_available_turrets()
+	var placed_turret: DefenseBlaster = preview_turret
 	preview_turret = null
+	var outward_direction := Vector2(placed_turret.global_position.x, placed_turret.global_position.z).normalized()
+	if outward_direction.is_zero_approx():
+		outward_direction = Vector2(0.0, 1.0)
+	placed_turret.set_aim_direction(outward_direction)
+	_begin_turret_aim(placed_turret, true)
+
+func _begin_turret_aim(turret: DefenseBlaster, is_new_turret: bool) -> void:
+	if not is_instance_valid(turret):
+		return
+	aiming_turret = turret
+	selected_turret_type = _get_type_for_turret(turret)
+	aiming_is_new_turret = is_new_turret
+	original_center_yaw = turret.get_center_yaw()
+	original_cone_angle = turret.get_cone_angle()
+	dragging_aim_handle = false
+	placement_mode = PlacementMode.AIMING
+	if is_instance_valid(aim_gizmo):
+		aim_gizmo.show_for_turret(turret)
+	_set_status("Drag the center handle: farther is narrower, closer is wider. Left-click outside it to confirm.")
+
+func _confirm_turret_aim() -> void:
+	if placement_mode != PlacementMode.AIMING:
+		return
+	if is_instance_valid(aim_gizmo):
+		aim_gizmo.hide_gizmo()
+	aiming_turret = null
+	aiming_is_new_turret = false
+	dragging_aim_handle = false
 	placement_mode = PlacementMode.NONE
-	_set_status("Turret placed. Select another turret or start the wave.")
+	_set_status("%s angle confirmed. Select another turret, edit a placed turret, or start the wave." % get_turret_type_name(selected_turret_type))
 
 func _get_turret_source_barrier() -> Barrier:
 	for current_barrier in barriers:
@@ -191,14 +341,86 @@ func _find_barrier_at(world_point: Vector2) -> Barrier:
 			return current_barrier
 	return null
 
+func _find_turret_at(world_point: Vector2) -> DefenseBlaster:
+	for current_barrier in barriers:
+		if not is_instance_valid(current_barrier):
+			continue
+		for turret_variant in current_barrier.turrets:
+			var turret := turret_variant as DefenseBlaster
+			if is_instance_valid(turret) and turret.contains_world_point(world_point):
+				return turret
+	return null
+
 func _cancel_placement() -> void:
-	placement_mode = PlacementMode.NONE
-	if preview_turret:
+	if is_instance_valid(preview_turret):
 		preview_turret.queue_free()
-		preview_turret = null
+	preview_turret = null
+
+	if is_instance_valid(aiming_turret):
+		if aiming_is_new_turret:
+			var owner_barrier: Barrier = aiming_turret.barrier_ref
+			if is_instance_valid(owner_barrier):
+				owner_barrier.remove_turret(aiming_turret)
+			else:
+				aiming_turret.queue_free()
+			var maximum: int = _get_maximum_for_type(selected_turret_type)
+			available_by_type[selected_turret_type] = mini(
+				get_available_turrets_for_type(selected_turret_type) + 1,
+				maximum
+			)
+			available_turrets = get_available_turrets()
+		else:
+			aiming_turret.set_aim_configuration(original_center_yaw, original_cone_angle)
+	aiming_turret = null
+	aiming_is_new_turret = false
+	dragging_aim_handle = false
+	if is_instance_valid(aim_gizmo):
+		aim_gizmo.hide_gizmo()
+	placement_mode = PlacementMode.NONE
 
 func _reset_inventory() -> void:
-	available_turrets = STARTING_TURRETS
+	available_by_type[TurretType.DEFENSE_BLASTER] = STARTING_TURRETS if is_turret_type_unlocked(TurretType.DEFENSE_BLASTER) else 0
+	available_by_type[TurretType.LASER_TURRET] = STARTING_LASER_TURRETS if is_turret_type_unlocked(TurretType.LASER_TURRET) else 0
+	available_by_type[TurretType.TURRET_MINER] = STARTING_TURRET_MINERS if is_turret_type_unlocked(TurretType.TURRET_MINER) else 0
+	available_turrets = get_available_turrets()
+
+func _get_scene_for_type(turret_type: TurretType) -> PackedScene:
+	match turret_type:
+		TurretType.LASER_TURRET:
+			return LaserTurretScene
+		TurretType.TURRET_MINER:
+			return TurretMinerScene
+		_:
+			return DefenseBlasterScene
+
+func _get_unlock_upgrade_id(turret_type: TurretType) -> String:
+	match turret_type:
+		TurretType.LASER_TURRET:
+			return "DA_UnlockLaserTurret"
+		TurretType.TURRET_MINER:
+			return "DA_UnlockTurretMiner"
+		_:
+			return "DA_UnlockTurret"
+
+func _get_maximum_for_type(turret_type: TurretType) -> int:
+	match turret_type:
+		TurretType.LASER_TURRET:
+			return STARTING_LASER_TURRETS
+		TurretType.TURRET_MINER:
+			return STARTING_TURRET_MINERS
+		_:
+			return STARTING_TURRETS
+
+func _get_type_for_turret(turret: DefenseBlaster) -> TurretType:
+	if not is_instance_valid(turret):
+		return TurretType.DEFENSE_BLASTER
+	match turret.get_turret_type_id():
+		"laser_turret":
+			return TurretType.LASER_TURRET
+		"turret_miner":
+			return TurretType.TURRET_MINER
+		_:
+			return TurretType.DEFENSE_BLASTER
 
 func project_mouse_to_world() -> Vector3:
 	if not camera:

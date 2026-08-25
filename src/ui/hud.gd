@@ -32,7 +32,20 @@ func _process(_delta: float) -> void:
 		if not is_instance_valid(spawner):
 			spawner = get_tree().get_first_node_in_group("spawner") as Spawner
 		if is_instance_valid(spawner):
-			spawn_label.text = "ACTORS: %d/%d" % [spawner.get_spawned_actor_count(), spawner.get_spawn_total()]
+			var game_mgr = get_node("/root/GameManager")
+			var total: int = spawner.get_spawn_total()
+			if game_mgr.is_current_level_complete():
+				spawn_label.text = "LEVEL COMPLETE — ELIMINATED: %d/%d" % [
+					game_mgr.eliminated_threats,
+					total
+				]
+			else:
+				spawn_label.text = "SPAWNED: %d/%d | ELIMINATED: %d/%d" % [
+					spawner.get_spawned_actor_count(),
+					total,
+					game_mgr.eliminated_threats,
+					total
+				]
 
 	# Periodically update planet health and shield bars
 	if planet and is_instance_valid(planet):

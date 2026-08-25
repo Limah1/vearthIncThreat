@@ -2,6 +2,8 @@
 extends Node3D
 class_name DebrisInstance
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var base_speed: float = 240.0 # --- VELOCIDADE DO DEBRIS (MAIS ALTO = MAIS RAPIDO)
 @export var base_damage: float = 3.0 # --- DANO DO DEBRIS AOS INIMIGOS/LIXOS
 @export var hit_radius: float = 20.0 # --- RAIO DE COLISÃO DO DEBRIS
@@ -100,10 +102,7 @@ func _sweep_damage() -> void:
 
 		var target_dist_sq = my_pos_2d.distance_squared_to(target_pos_2d)
 		if target_dist_sq <= (hit_radius * hit_radius):
-			if target.has_method("take_player_damage"):
-				target.take_player_damage(damage)
-			else:
-				target.take_damage(damage)
+			DamageSystemScript.apply(target, damage, DamageSystemScript.Team.ALLY)
 
 			hit_targets[target] = true
 

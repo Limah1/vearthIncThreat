@@ -2,21 +2,32 @@
 extends Node3D
 class_name AsteroidInstance
 
+const AvoidanceMathUtil = preload("res://src/core/avoidance_math.gd")
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var base_speed: float = 85.0 # --- VELOCIDADE DE MOVIMENTO (MAIS ALTO = MAIS RAPIDO)
-@export var base_value: float = 5.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
-@export var base_planet_damage: float = 0.0 # --- STRESS TEST: ASTEROIDS DO NOT DAMAGE THE PLANET
-@export var base_small_max_hp: float = 3.0 # --- VIDA TESTE DO ASTEROIDE PEQUENO
+@export var base_value: float = 1.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
+@export var base_planet_damage: float = 1.0 # --- DANO AO ATINGIR O PLANETA
+@export_range(1, 5, 1) var minimum_spawn_hp: int = 1
+@export_range(1, 5, 1) var maximum_spawn_hp: int = 5
+
+@export_group("Ally Avoidance")
+@export var avoidance_enabled: bool = true
+@export_range(25.0, 500.0, 1.0) var avoidance_lookahead: float = 150.0
+@export_range(0.0, 100.0, 1.0) var avoidance_clearance: float = 8.0
+@export_range(0.1, 20.0, 0.1) var avoidance_turn_speed: float = 6.5
+@export_range(0.0, 50.0, 1.0) var avoidance_release_margin: float = 4.0
+@export_range(0.02, 1.0, 0.01) var avoidance_query_interval: float = 0.1
 
 var current_move_speed: float = 85.0
-var current_value: float = 5.0
-var planet_damage: float = 0.0
+var current_value: float = 1.0
+var planet_damage: float = 1.0
 
 var killed_by_player: bool = false
 var slowdown_timer: float = 0.0
-@export var base_max_hp: float = 35.0 # --- VIDA INICIAL DO ASTEROIDE
 
-var max_hp: float = 35.0
-var hp: float = 35.0
+var max_hp: float = 1.0
+var hp: float = 1.0
 var active: bool = false
 var pool_type: String = "asteroid"
 var master_node: Node = null
@@ -28,6 +39,10 @@ var fbx_small: Node3D = null
 var fbx_medium: Node3D = null
 var fbx_large: Node3D = null
 var _debris_master_ref: Node = null
+var _avoidance_obstacle: Node = null
+var _avoidance_side: float = 0.0
+var _avoidance_query_timer: float = 0.0
+var _barrier_contact: Node = null
 
 func _ready() -> void:
 	add_to_group("asteroid")
@@ -45,6 +60,13 @@ func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
 	movement_direction = dir_3d.normalized()
 	killed_by_player = false
 	slowdown_timer = 0.0
+	_avoidance_obstacle = null
+	_avoidance_side = 0.0
+	# Stagger pooled actors so thousands of obstacle queries do not land on one frame.
+	_avoidance_query_timer = (
+		float(get_instance_id() % 17) / 17.0
+	) * avoidance_query_interval
+	_barrier_contact = null
 	active = true
 	visible = true
 	GameManager.register_movement(self)
@@ -63,25 +85,29 @@ func on_pool_deactivate() -> void:
 	visible = false
 	GameManager.unregister_movement(self)
 	GameManager.unregister_active_damageable(self)
+	_avoidance_obstacle = null
+	_avoidance_side = 0.0
+	_avoidance_query_timer = 0.0
+	_barrier_contact = null
 
 func set_asteroid_type(type: String) -> void:
 	asteroid_type = type
 	_ensure_visual_for_type(type)
 	var zone_scale = 1.0 + (GameManager.current_zone - 1) * 0.1
+	var health_minimum: int = mini(minimum_spawn_hp, maximum_spawn_hp)
+	var health_maximum: int = maxi(minimum_spawn_hp, maximum_spawn_hp)
+	max_hp = float(randi_range(health_minimum, health_maximum))
 	
 	match type:
 		"small":
-			max_hp = base_small_max_hp * zone_scale
 			current_value = base_value
 			planet_damage = base_planet_damage * zone_scale
 			radius = 24.0
 		"medium":
-			max_hp = (base_max_hp * (100.0 / 35.0)) * zone_scale
 			current_value = base_value
 			planet_damage = (base_planet_damage * 2.5) * zone_scale
 			radius = 45.0
 		"large":
-			max_hp = (base_max_hp * (300.0 / 35.0)) * zone_scale
 			current_value = base_value
 			planet_damage = (base_planet_damage * 6.0) * zone_scale
 			radius = 70.0
@@ -123,7 +149,18 @@ func _disable_shadows_recursive(node: Node) -> void:
 	for child in node.get_children():
 		_disable_shadows_recursive(child)
 
+func receive_damage(amount: float, source_team: int) -> bool:
+	if source_team != DamageSystemScript.Team.ALLY:
+		return false
+	killed_by_player = true
+	_apply_damage(amount)
+	return true
+
 func take_damage(amount: float) -> void:
+	# Untyped damage is neutral and cannot destroy an enemy asteroid.
+	receive_damage(amount, DamageSystemScript.Team.NEUTRAL)
+
+func _apply_damage(amount: float) -> void:
 	if not active:
 		return
 	slowdown_timer = 0.4
@@ -136,45 +173,156 @@ func take_damage(amount: float) -> void:
 		die()
 
 func take_player_damage(amount: float) -> void:
-	killed_by_player = true
-	take_damage(amount)
+	# Compatibility entry point: player damage belongs to the ALLY team.
+	receive_damage(amount, DamageSystemScript.Team.ALLY)
 
 func _manager_move(delta: float) -> void:
 	if not is_inside_tree() or not active:
 		return
-		
-	var speed = current_move_speed
+
+	_update_avoidance(delta)
+
+	var speed: float = current_move_speed
 	if slowdown_timer > 0.0:
 		slowdown_timer -= delta
 		speed = current_move_speed * 0.8
-		
+
 	# Move node
 	global_position += movement_direction * speed * delta
-	
+
 	# Rotate the active mesh slowly
 	var active_mesh: Node3D = null
 	match asteroid_type:
 		"small": active_mesh = fbx_small
 		"medium": active_mesh = fbx_medium
 		"large": active_mesh = fbx_large
-		
+
 	if active_mesh and is_instance_valid(active_mesh):
 		active_mesh.rotate_x(0.6 * delta)
 		active_mesh.rotate_z(0.3 * delta)
 
-	if GameManager.try_damage_barrier(global_position, planet_damage, radius):
-		killed_by_player = false
-		die()
-		return
-		
+	var collided_barrier: Node = GameManager.get_barrier_collision(global_position, radius)
+	if is_instance_valid(collided_barrier):
+		if collided_barrier != _barrier_contact:
+			DamageSystemScript.apply(
+				collided_barrier,
+				planet_damage,
+				DamageSystemScript.Team.ENEMY
+			)
+		_barrier_contact = collided_barrier
+		_recover_avoidance_from_collision(collided_barrier)
+	else:
+		_barrier_contact = null
+
 	# Check for planet collision (planet is at center 0,0,0, radius ~ 45)
 	if global_position.length() < 45.0:
 		var planet = GameManager.get_player_planet()
 		if planet:
-			planet.take_damage(planet_damage)
-			
-		killed_by_player = false
-		die()
+			DamageSystemScript.apply(planet, planet_damage, DamageSystemScript.Team.ENEMY)
+		_recycle_after_planet_impact()
+		return
+
+func _update_avoidance(delta: float) -> void:
+	if not avoidance_enabled:
+		return
+	_avoidance_query_timer -= delta
+
+	var target_position := Vector3.ZERO
+	var position_2d := Vector2(global_position.x, global_position.z)
+	var target_2d := Vector2(target_position.x, target_position.z)
+
+	if is_instance_valid(_avoidance_obstacle):
+		if not GameManager.is_avoidance_obstacle_active(_avoidance_obstacle):
+			_avoidance_obstacle = null
+			_avoidance_side = 0.0
+			_avoidance_query_timer = 0.0
+
+	if is_instance_valid(_avoidance_obstacle):
+		var center: Vector2 = GameManager.get_avoidance_obstacle_center(_avoidance_obstacle)
+		var safe_radius: float = GameManager.get_avoidance_safe_radius(
+			_avoidance_obstacle,
+			radius,
+			avoidance_clearance
+		)
+		var has_cleared_obstacle: bool = GameManager.is_avoidance_path_clear(
+			global_position,
+			target_position,
+			_avoidance_obstacle,
+			radius,
+			avoidance_clearance
+		) and position_2d.distance_to(center) > safe_radius + avoidance_release_margin
+		if has_cleared_obstacle:
+			_avoidance_obstacle = null
+			_avoidance_side = 0.0
+			_avoidance_query_timer = 0.0
+
+	if not is_instance_valid(_avoidance_obstacle) and _avoidance_query_timer <= 0.0:
+		_avoidance_query_timer = avoidance_query_interval
+		_avoidance_obstacle = GameManager.find_avoidance_obstacle(
+			global_position,
+			movement_direction,
+			radius,
+			avoidance_lookahead,
+			avoidance_clearance
+		)
+		if is_instance_valid(_avoidance_obstacle):
+			_avoidance_side = AvoidanceMathUtil.choose_side(
+				position_2d,
+				target_2d,
+				GameManager.get_avoidance_obstacle_center(_avoidance_obstacle),
+				get_instance_id()
+			)
+
+	var desired_direction_2d: Vector2 = (target_2d - position_2d).normalized()
+	if is_instance_valid(_avoidance_obstacle):
+		desired_direction_2d = AvoidanceMathUtil.circle_avoidance_direction(
+			position_2d,
+			target_2d,
+			GameManager.get_avoidance_obstacle_center(_avoidance_obstacle),
+			GameManager.get_avoidance_safe_radius(_avoidance_obstacle, radius, avoidance_clearance),
+			_avoidance_side
+		)
+	if desired_direction_2d.is_zero_approx():
+		return
+
+	var desired_direction := Vector3(desired_direction_2d.x, 0.0, desired_direction_2d.y)
+	var turn_weight: float = clampf(avoidance_turn_speed * delta, 0.0, 1.0)
+	movement_direction = movement_direction.lerp(desired_direction, turn_weight).normalized()
+
+func _recover_avoidance_from_collision(obstacle: Node) -> void:
+	if not is_instance_valid(obstacle):
+		return
+	var obstacle_changed: bool = obstacle != _avoidance_obstacle
+	_avoidance_obstacle = obstacle
+	_avoidance_query_timer = avoidance_query_interval
+	var position_2d := Vector2(global_position.x, global_position.z)
+	var center: Vector2 = GameManager.get_avoidance_obstacle_center(obstacle)
+	if obstacle_changed or is_zero_approx(_avoidance_side):
+		_avoidance_side = AvoidanceMathUtil.choose_side(
+			position_2d,
+			Vector2.ZERO,
+			center,
+			get_instance_id()
+		)
+	var recovery_direction: Vector2 = AvoidanceMathUtil.circle_avoidance_direction(
+		position_2d,
+		Vector2.ZERO,
+		center,
+		GameManager.get_avoidance_safe_radius(obstacle, radius, avoidance_clearance),
+		_avoidance_side
+	)
+	if not recovery_direction.is_zero_approx():
+		var recovery_3d := Vector3(recovery_direction.x, 0.0, recovery_direction.y)
+		movement_direction = movement_direction.lerp(recovery_3d, 0.5).normalized()
+
+func _recycle_after_planet_impact() -> void:
+	# Reaching the planet is not an ALLY kill: no credits, debris, or eliminated
+	# threat count.
+	active = false
+	if master_node and master_node.has_method("return_to_pool"):
+		master_node.return_to_pool(self)
+	else:
+		queue_free()
 
 func stop_movement() -> void:
 	current_move_speed = 0.0

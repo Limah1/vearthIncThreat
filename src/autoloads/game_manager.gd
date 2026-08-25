@@ -1,9 +1,13 @@
 # res://src/autoloads/game_manager.gd
 extends Node
 
+const AvoidanceMathUtil = preload("res://src/core/avoidance_math.gd")
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 signal state_changed(new_state: GameState)
 signal credits_changed(run_credits: float, lifetime_credits: float)
 signal trigger_camera_animation()
+signal level_completed(level_number: int, next_level_number: int)
 
 enum GameState {PLAYING, PREPARATION, PAUSED, UPGRADE_SCREEN, END_SESSION, VICTORY, TRANSITION}
 
@@ -27,6 +31,9 @@ var selected_level_config_path: String = DEFAULT_LEVEL_CONFIG_PATH
 var current_zone: int = 1
 
 var eliminated_threats: int = 0
+var highest_unlocked_level: int = 1
+var completed_levels: Dictionary = {}
+var current_level_completed: bool = false
 var debris_chance: float = 0.0
 
 # Camera transition trigger from purchases
@@ -62,6 +69,15 @@ var _barrier_ref: Node = null
 var _barriers_cache: Array[Node] = []
 var _barriers_cache_valid: bool = false
 var _multimesh_renderer: Node = null
+
+# Static/dynamic allied obstacles live in a separate spatial hash. Asteroids
+# query only cells crossed by their look-ahead segment instead of scanning all
+# AllyShips nodes every physics frame.
+const AVOIDANCE_CELL_SIZE: float = 128.0
+var _avoidance_grid: Dictionary = {}
+var _avoidance_cells_by_obstacle: Dictionary = {}
+var _avoidance_query_stamps: Dictionary = {}
+var _avoidance_query_serial: int = 0
 
 # Popup animation state. Reuses the fixed pool; no Tween/closure per hit.
 var _active_popup_labels: Array[Label3D] = []
@@ -99,6 +115,7 @@ func reset_game() -> void:
 	b_can_animate_camera = false
 	has_camera_animated_once = false
 	eliminated_threats = 0
+	current_level_completed = false
 	if UpgradeManager.get_upgrade_level("DA_UnlockDebrie_T0") > 0:
 		debris_chance = 0.2 + UpgradeManager.get_total_bonus("DebrisChance")
 	else:
@@ -107,7 +124,11 @@ func reset_game() -> void:
 	save_game()
 
 func requires_preparation() -> bool:
-	return UpgradeManager.get_upgrade_level("DA_UnlockTurret") > 0
+	return (
+		UpgradeManager.get_upgrade_level("DA_UnlockTurret") > 0
+		or UpgradeManager.get_upgrade_level("DA_UnlockLaserTurret") > 0
+		or UpgradeManager.get_upgrade_level("DA_UnlockTurretMiner") > 0
+	)
 
 func get_initial_game_state() -> GameState:
 	return GameState.PREPARATION if requires_preparation() else GameState.PLAYING
@@ -155,12 +176,20 @@ func end_round() -> void:
 func start_level(config: LevelConfig) -> void:
 	if not is_instance_valid(config):
 		return
+	if not is_level_unlocked(config.level_number):
+		push_warning("Level %d is locked. Clear level %d first." % [
+			config.level_number,
+			maxi(config.level_number - 1, 1)
+		])
+		return
 
 	selected_level_config = config
 	if not config.resource_path.is_empty():
 		selected_level_config_path = config.resource_path
 	current_zone = maxi(config.level_number, 1)
 	run_credits = 0.0
+	eliminated_threats = 0
+	current_level_completed = false
 	credits_changed.emit(run_credits, lifetime_credits)
 	change_state(get_initial_game_state(), false)
 	get_tree().reload_current_scene()
@@ -235,6 +264,35 @@ func load_game() -> void:
 
 func register_eliminated_threat() -> void:
 	eliminated_threats += 1
+	var config: LevelConfig = get_selected_level_config()
+	if not is_instance_valid(config):
+		return
+	var total_enemies: int = config.get_total_configured_enemies()
+	if total_enemies <= 0 or eliminated_threats < total_enemies:
+		return
+
+	eliminated_threats = total_enemies
+	if current_level_completed:
+		return
+	current_level_completed = true
+	completed_levels[config.level_number] = true
+	var next_level_number: int = config.level_number + 1
+	highest_unlocked_level = maxi(highest_unlocked_level, next_level_number)
+	level_completed.emit(config.level_number, next_level_number)
+	save_game()
+
+func is_level_unlocked(level_number: int) -> bool:
+	return level_number <= highest_unlocked_level
+
+func is_level_completed(level_number: int) -> bool:
+	return bool(completed_levels.get(level_number, false))
+
+func is_current_level_complete() -> bool:
+	return current_level_completed
+
+func get_current_level_total_enemies() -> int:
+	var config: LevelConfig = get_selected_level_config()
+	return config.get_total_configured_enemies() if is_instance_valid(config) else 0
 
 func get_active_actors() -> Array:
 	return _active_damageable
@@ -276,12 +334,222 @@ func register_barrier(barrier: Node) -> void:
 
 func unregister_barrier(barrier: Node) -> void:
 	_barriers_cache.erase(barrier)
+	unregister_avoidance_obstacle(barrier)
 
-func try_damage_barrier(hit_position: Vector3, damage: float, impact_radius: float = 0.0) -> bool:
-	for barrier in get_barriers():
-		if barrier.has_method("try_handle_collision") and barrier.try_handle_collision(hit_position, damage, impact_radius):
-			return true
-	return false
+func register_avoidance_obstacle(obstacle: Node) -> void:
+	if not is_instance_valid(obstacle):
+		return
+	update_avoidance_obstacle(obstacle)
+
+func update_avoidance_obstacle(obstacle: Node) -> void:
+	if not is_instance_valid(obstacle):
+		return
+	_remove_avoidance_obstacle_from_grid(obstacle)
+	if not _is_avoidance_obstacle_active(obstacle):
+		return
+
+	var center: Vector2 = get_avoidance_obstacle_center(obstacle)
+	var obstacle_radius: float = get_avoidance_obstacle_radius(obstacle)
+	if obstacle_radius <= 0.0:
+		return
+
+	var minimum_cell := Vector2i(
+		floori((center.x - obstacle_radius) / AVOIDANCE_CELL_SIZE),
+		floori((center.y - obstacle_radius) / AVOIDANCE_CELL_SIZE)
+	)
+	var maximum_cell := Vector2i(
+		floori((center.x + obstacle_radius) / AVOIDANCE_CELL_SIZE),
+		floori((center.y + obstacle_radius) / AVOIDANCE_CELL_SIZE)
+	)
+	var occupied_cells: Array[Vector2i] = []
+	for cell_x in range(minimum_cell.x, maximum_cell.x + 1):
+		for cell_y in range(minimum_cell.y, maximum_cell.y + 1):
+			var cell := Vector2i(cell_x, cell_y)
+			if not _avoidance_grid.has(cell):
+				_avoidance_grid[cell] = []
+			var members: Array = _avoidance_grid[cell]
+			members.append(obstacle)
+			occupied_cells.append(cell)
+	_avoidance_cells_by_obstacle[obstacle] = occupied_cells
+
+func unregister_avoidance_obstacle(obstacle: Node) -> void:
+	_remove_avoidance_obstacle_from_grid(obstacle)
+	_avoidance_query_stamps.erase(obstacle)
+
+func _remove_avoidance_obstacle_from_grid(obstacle: Node) -> void:
+	if not _avoidance_cells_by_obstacle.has(obstacle):
+		return
+	var occupied_cells: Array = _avoidance_cells_by_obstacle[obstacle]
+	for cell_variant in occupied_cells:
+		var cell: Vector2i = cell_variant
+		if not _avoidance_grid.has(cell):
+			continue
+		var members: Array = _avoidance_grid[cell]
+		members.erase(obstacle)
+		if members.is_empty():
+			_avoidance_grid.erase(cell)
+	_avoidance_cells_by_obstacle.erase(obstacle)
+
+func _is_avoidance_obstacle_active(obstacle: Node) -> bool:
+	if not is_instance_valid(obstacle):
+		return false
+	if obstacle.has_method("is_avoidance_active"):
+		return bool(obstacle.call("is_avoidance_active"))
+	return true
+
+func is_avoidance_obstacle_active(obstacle: Node) -> bool:
+	return _is_avoidance_obstacle_active(obstacle)
+
+func get_avoidance_obstacle_center(obstacle: Node) -> Vector2:
+	if is_instance_valid(obstacle) and obstacle.has_method("get_avoidance_center"):
+		var custom_center: Vector2 = obstacle.call("get_avoidance_center")
+		return custom_center
+	if obstacle is Node2D:
+		return (obstacle as Node2D).global_position
+	if obstacle is Node3D:
+		var position_3d: Vector3 = (obstacle as Node3D).global_position
+		return Vector2(position_3d.x, position_3d.z)
+	return Vector2.ZERO
+
+func get_avoidance_obstacle_radius(obstacle: Node) -> float:
+	if is_instance_valid(obstacle) and obstacle.has_method("get_avoidance_radius"):
+		return maxf(float(obstacle.call("get_avoidance_radius")), 0.0)
+	return 0.0
+
+func get_avoidance_safe_radius(obstacle: Node, actor_radius: float, clearance: float) -> float:
+	return get_avoidance_obstacle_radius(obstacle) + maxf(actor_radius, 0.0) + maxf(clearance, 0.0)
+
+func is_avoidance_path_clear(
+	segment_start: Vector3,
+	segment_end: Vector3,
+	obstacle: Node,
+	actor_radius: float,
+	clearance: float
+) -> bool:
+	if not _is_avoidance_obstacle_active(obstacle):
+		return true
+	var start_2d := Vector2(segment_start.x, segment_start.z)
+	var end_2d := Vector2(segment_end.x, segment_end.z)
+	var safe_radius: float = get_avoidance_safe_radius(obstacle, actor_radius, clearance)
+	return AvoidanceMathUtil.segment_circle_hit_fraction(
+		start_2d,
+		end_2d,
+		get_avoidance_obstacle_center(obstacle),
+		safe_radius
+	) < 0.0
+
+func find_avoidance_obstacle(
+	origin: Vector3,
+	direction: Vector3,
+	actor_radius: float,
+	lookahead: float,
+	clearance: float
+) -> Node:
+	var direction_2d := Vector2(direction.x, direction.z).normalized()
+	if direction_2d.is_zero_approx() or lookahead <= 0.0:
+		return null
+
+	var segment_start := Vector2(origin.x, origin.z)
+	var segment_end: Vector2 = segment_start + direction_2d * lookahead
+	var query_expansion: float = maxf(actor_radius + clearance, 0.0)
+	var minimum := Vector2(
+		minf(segment_start.x, segment_end.x) - query_expansion,
+		minf(segment_start.y, segment_end.y) - query_expansion
+	)
+	var maximum := Vector2(
+		maxf(segment_start.x, segment_end.x) + query_expansion,
+		maxf(segment_start.y, segment_end.y) + query_expansion
+	)
+	var minimum_cell := Vector2i(
+		floori(minimum.x / AVOIDANCE_CELL_SIZE),
+		floori(minimum.y / AVOIDANCE_CELL_SIZE)
+	)
+	var maximum_cell := Vector2i(
+		floori(maximum.x / AVOIDANCE_CELL_SIZE),
+		floori(maximum.y / AVOIDANCE_CELL_SIZE)
+	)
+
+	var query_stamp: int = _begin_avoidance_query()
+	var nearest_obstacle: Node = null
+	var nearest_fraction: float = INF
+
+	for cell_x in range(minimum_cell.x, maximum_cell.x + 1):
+		for cell_y in range(minimum_cell.y, maximum_cell.y + 1):
+			var cell := Vector2i(cell_x, cell_y)
+			if not _avoidance_grid.has(cell):
+				continue
+			var members: Array = _avoidance_grid[cell]
+			for obstacle_variant in members:
+				var obstacle := obstacle_variant as Node
+				if not is_instance_valid(obstacle):
+					continue
+				if _avoidance_query_stamps.get(obstacle, 0) == query_stamp:
+					continue
+				_avoidance_query_stamps[obstacle] = query_stamp
+				if not _is_avoidance_obstacle_active(obstacle):
+					continue
+				var safe_radius: float = get_avoidance_safe_radius(obstacle, actor_radius, clearance)
+				var hit_fraction: float = AvoidanceMathUtil.segment_circle_hit_fraction(
+					segment_start,
+					segment_end,
+					get_avoidance_obstacle_center(obstacle),
+					safe_radius
+				)
+				if hit_fraction >= 0.0 and hit_fraction < nearest_fraction:
+					nearest_fraction = hit_fraction
+					nearest_obstacle = obstacle
+	return nearest_obstacle
+
+func get_barrier_collision(hit_position: Vector3, impact_radius: float = 0.0) -> Node:
+	var point := Vector2(hit_position.x, hit_position.z)
+	var query_radius: float = maxf(impact_radius, 0.0)
+	var minimum_cell := Vector2i(
+		floori((point.x - query_radius) / AVOIDANCE_CELL_SIZE),
+		floori((point.y - query_radius) / AVOIDANCE_CELL_SIZE)
+	)
+	var maximum_cell := Vector2i(
+		floori((point.x + query_radius) / AVOIDANCE_CELL_SIZE),
+		floori((point.y + query_radius) / AVOIDANCE_CELL_SIZE)
+	)
+	var query_stamp: int = _begin_avoidance_query()
+	for cell_x in range(minimum_cell.x, maximum_cell.x + 1):
+		for cell_y in range(minimum_cell.y, maximum_cell.y + 1):
+			var cell := Vector2i(cell_x, cell_y)
+			if not _avoidance_grid.has(cell):
+				continue
+			var members: Array = _avoidance_grid[cell]
+			for obstacle_variant in members:
+				var barrier := obstacle_variant as Node
+				if not is_instance_valid(barrier):
+					continue
+				if _avoidance_query_stamps.get(barrier, 0) == query_stamp:
+					continue
+				_avoidance_query_stamps[barrier] = query_stamp
+				if barrier.has_method("contains_collision") and barrier.contains_collision(
+					hit_position,
+					impact_radius
+				):
+					return barrier
+	return null
+
+func try_damage_barrier(
+	hit_position: Vector3,
+	damage: float,
+	impact_radius: float = 0.0,
+	damage_team: int = DamageSystemScript.Team.ENEMY
+) -> bool:
+	var barrier: Node = get_barrier_collision(hit_position, impact_radius)
+	if not is_instance_valid(barrier):
+		return false
+	DamageSystemScript.apply(barrier, damage, damage_team)
+	return true
+
+func _begin_avoidance_query() -> int:
+	_avoidance_query_serial += 1
+	if _avoidance_query_serial >= 2147483647:
+		_avoidance_query_serial = 1
+		_avoidance_query_stamps.clear()
+	return _avoidance_query_serial
 
 func set_multimesh_renderer(renderer: Node) -> void:
 	_multimesh_renderer = renderer

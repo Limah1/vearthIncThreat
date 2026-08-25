@@ -2,6 +2,10 @@
 extends Control
 class_name SkillTree
 
+const UPGRADE_SLOT_SCENE := preload("res://src/ui/upgrade_slot_ui.tscn")
+
+@export var skill_tree_config: SkillTreeConfig
+
 @onready var balance_label: Label = $MarginContainer/VBoxContainer/Header/RightContainer/BalanceLabel
 @onready var next_zone_button: Button = $MarginContainer/VBoxContainer/Header/RightContainer/NextZoneButton
 @onready var grid_container: Control = $MarginContainer/VBoxContainer/ScrollContainer/GridContainer
@@ -25,6 +29,7 @@ const LEVEL_CONFIG_DIRECTORY: String = "res://src/resources/levels"
 
 var active_line_animations: Array = []
 var connection_progress: Dictionary = {}
+var children_by_parent_id: Dictionary = {}
 
 var is_dragging: bool = false
 var drag_start_mouse_pos: Vector2 = Vector2.ZERO
@@ -55,6 +60,10 @@ func _ready() -> void:
 	
 	# Connect to grid container draw for rendering connection lines
 	grid_container.draw.connect(_on_grid_container_draw)
+
+	if not is_instance_valid(skill_tree_config):
+		skill_tree_config = game_mgr.get_node("/root/UpgradeManager").skill_tree_config
+	_build_tree_from_config()
 	
 	# Set scrollable canvas size based on slot positions dynamically
 	_update_canvas_size()
@@ -63,6 +72,42 @@ func _ready() -> void:
 	grid_container.gui_input.connect(_on_grid_container_gui_input)
 	
 	_on_state_changed(game_mgr.current_state)
+
+func _build_tree_from_config() -> void:
+	# Remove legacy scene-authored slots. The data asset is now the only runtime
+	# source for which upgrades exist and where they are positioned.
+	for child in grid_container.get_children():
+		if child is UpgradeSlotUI:
+			grid_container.remove_child(child)
+			child.queue_free()
+
+	children_by_parent_id.clear()
+	if not is_instance_valid(skill_tree_config):
+		push_error("SkillTree has no SkillTreeConfig assigned.")
+		return
+
+	for node_data in skill_tree_config.nodes:
+		if not is_instance_valid(node_data) or not is_instance_valid(node_data.upgrade):
+			continue
+		var slot := UPGRADE_SLOT_SCENE.instantiate() as UpgradeSlotUI
+		if not slot:
+			continue
+		slot.name = "Upgrade_" + node_data.upgrade.upgrade_id
+		slot.upgrade_data = node_data.upgrade
+		grid_container.add_child(slot)
+		slot.position = skill_tree_config.grid_to_canvas(node_data.grid_position)
+		slot.setup(node_data.upgrade)
+
+		for prerequisite in node_data.prerequisites:
+			if not is_instance_valid(prerequisite):
+				continue
+			if not children_by_parent_id.has(prerequisite.upgrade_id):
+				children_by_parent_id[prerequisite.upgrade_id] = []
+			var children: Array = children_by_parent_id[prerequisite.upgrade_id]
+			children.append(node_data.upgrade.upgrade_id)
+
+func _get_child_ids(parent_id: String) -> Array:
+	return children_by_parent_id.get(parent_id, [])
 
 func _on_state_changed(state: int) -> void:
 	var game_mgr = get_node("/root/GameManager")
@@ -174,8 +219,10 @@ func _populate_level_list() -> void:
 		return
 
 	for config in level_configs:
+		var game_mgr = get_node("/root/GameManager")
+		var is_unlocked: bool = game_mgr.is_level_unlocked(config.level_number)
 		var level_button := Button.new()
-		level_button.custom_minimum_size = Vector2(0.0, 100.0)
+		level_button.custom_minimum_size = Vector2(0.0, 120.0)
 		level_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		level_button.add_theme_font_size_override("font_size", 20)
 		level_button.text = "LEVEL %d\n%s\n%s | %d TOTAL" % [
@@ -184,9 +231,15 @@ func _populate_level_list() -> void:
 			config.get_actor_display_name(),
 			config.get_total_configured_enemies()
 		]
+		if not is_unlocked:
+			level_button.text += "\nLOCKED — CLEAR LEVEL %d WITH 100%% ELIMINATED" % maxi(
+				config.level_number - 1,
+				1
+			)
+			level_button.disabled = true
 		if config.icon:
 			level_button.icon = config.icon
-		level_button.tooltip_text = config.description
+		level_button.tooltip_text = config.description if is_unlocked else "Eliminate every enemy in the previous level to unlock this level."
 		level_button.pressed.connect(_on_level_selected.bind(config))
 		level_list.add_child(level_button)
 
@@ -212,7 +265,9 @@ func _sort_level_configs(first: LevelConfig, second: LevelConfig) -> bool:
 	return first.level_number < second.level_number
 
 func _on_level_selected(config: LevelConfig) -> void:
-	get_node("/root/GameManager").start_level(config)
+	var game_mgr = get_node("/root/GameManager")
+	if game_mgr.is_level_unlocked(config.level_number):
+		game_mgr.start_level(config)
 
 # Called by child slots when mouse enters
 func show_tooltip(upgrade: UpgradeData, slot_global_pos: Vector2) -> void:
@@ -266,7 +321,7 @@ func _get_furthest_children_by_direction(parent_slot: UpgradeSlotUI, slot_map: D
 	var parent_center = parent_slot.position + parent_slot.size / 2.0
 	var clusters: Array = [] # Array of Dictionary: { "angle": float, "child_ids": Array }
 	
-	for child_id in parent_slot.upgrade_data.unlocks:
+	for child_id in _get_child_ids(parent_slot.upgrade_data.upgrade_id):
 		if slot_map.has(child_id):
 			var child_slot = slot_map[child_id]
 			var child_center = child_slot.position + child_slot.size / 2.0
@@ -455,7 +510,7 @@ func _on_line_animation_finished(anim: Dictionary) -> void:
 			var target_angle = diff.angle()
 				
 			# Bounce all children that are in the same direction (within 20 degrees)!
-			for other_id in parent_slot.upgrade_data.unlocks:
+			for other_id in _get_child_ids(parent_id):
 				if slot_map.has(other_id):
 					var other_slot = slot_map[other_id]
 					var other_center = other_slot.position + other_slot.size / 2.0
@@ -501,6 +556,9 @@ func _on_grid_container_gui_input(event: InputEvent) -> void:
 			scroll_container.scroll_vertical = int(drag_start_scroll_pos.y - diff.y)
 
 func _update_canvas_size() -> void:
+	if is_instance_valid(skill_tree_config):
+		grid_container.custom_minimum_size = skill_tree_config.get_canvas_size(Vector2(80.0, 80.0))
+		return
 	var slots = _find_slots_recursive(grid_container)
 	if slots.is_empty():
 		grid_container.custom_minimum_size = Vector2(1920.0, 1080.0)

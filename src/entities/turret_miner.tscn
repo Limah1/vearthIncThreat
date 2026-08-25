@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/entities/turret_miner.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/resources/turrets/MinerTurretConfig.tres" id="2_config"]
+
+[sub_resource type="StandardMaterial3D" id="MinerBodyMaterial"]
+shading_mode = 0
+albedo_color = Color(0.92, 0.68, 0.1, 1)
+roughness = 0.55
+emission_enabled = false
+
+[sub_resource type="CylinderMesh" id="MinerBodyMesh"]
+material = SubResource("MinerBodyMaterial")
+top_radius = 7.0
+bottom_radius = 7.0
+height = 3.0
+radial_segments = 3
+rings = 1
+
+[node name="TurretMiner" type="Node3D"]
+script = ExtResource("1_script")
+turret_config = ExtResource("2_config")
+turret_type_id = "turret_miner"
+turret_display_name = "Turret Miner"
+damage_upgrade_category = "MinerDamage"
+fire_rate_upgrade_category = ""
+
+[node name="TurretMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("MinerBodyMesh")
+cast_shadow = 0

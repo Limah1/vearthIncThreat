@@ -125,12 +125,14 @@ Defensive actor authored directly inside the selected full level scene's `AllySh
 * **Break behavior**: At 0 HP, barrier visual and collision disable; planet remains active.
 
 ### Preparation phase and barrier turrets
-Once `DA_UnlockTurret` is purchased, a new `PREPARATION` state pauses movement and spawning before each run.
+Once the `Defense Blaster` upgrade (`DA_UnlockTurret`) is purchased, a new `PREPARATION` state pauses movement and spawning before each run.
 * Each full level scene has an `AllyShips` node where barriers are placed manually in the editor. The scene also contains the planet and all first-level world systems, so barrier placement has the correct gameplay context.
 * The bottom preparation footer keeps the normal menu cursor visible and shows 4 turret slots, plus `RESET` and `START WAVE` controls.
 * Click the turret icon to attach a grey preview actor to the cursor. Left-click commits the placement; right-click cancels. Turrets must be placed inside a level barrier.
 * `Barrier` allows up to three non-overlapping turrets. Their calculated footprint radius is 7 units for the current 50x80 barrier, leaving a 2-unit gap when placed side-by-side.
-* `BarrierTurret` is a triangular prism that locks the nearest active asteroid and applies 1 damage every 0.35 seconds until that target is destroyed, then acquires the next nearest asteroid.
+* `DefenseBlaster` is a triangular barrier-mounted actor that scans its configured action cone and fires pooled satellite-style projectiles at the nearest valid asteroid.
+* `Defense Blaster Attack Speed` has three ranks. It costs $20, $40, and $80 and multiplies fire rate by 1.10 per rank.
+* `Defense Blaster Damage` is a one-time $80 purchase that adds 1 projectile damage.
 
 ---
 

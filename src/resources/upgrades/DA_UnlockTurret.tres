@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("2_script")
 upgrade_id = "DA_UnlockTurret"
-upgrade_name = "Barrier Turrets"
-description = "Unlocks turret deployment during the preparation phase. Barriers are authored per level in AllyShips scenes."
+upgrade_name = "Defense Blaster"
+description = "Unlocks Defense Blaster deployment during the preparation phase. Blasters are mounted on barriers authored in each level."
 icon = ExtResource("1_icon")
 category = "UnlockTurret"
-unlocks = Array[String]([])
+unlocks = Array[String](["DA_DefenseBlasterAttackSpeed", "DA_DefenseBlasterDamage"])
 base_cost = 10.0
 max_level = 1
 value_increment = 0.0

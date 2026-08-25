@@ -22,6 +22,7 @@
 [ext_resource type="Resource" path="res://src/resources/upgrades/DA_DebrisPiercing_T0.tres" id="17_pierce"]
 [ext_resource type="Resource" uid="uid://dqo5affrkigry" path="res://src/resources/upgrades/DA_DebrisAmount_T0.tres" id="18_amount"]
 [ext_resource type="Resource" path="res://src/resources/upgrades/DA_UnlockTurret.tres" id="19_turret"]
+[ext_resource type="Resource" path="res://src/resources/skill_trees/MainSkillTreeConfig.tres" id="20_tree_config"]
 
 [node name="SkillTree" type="Control" unique_id=1201646280]
 layout_mode = 3
@@ -31,6 +32,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_tree")
+skill_tree_config = ExtResource("20_tree_config")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1620092915]
 layout_mode = 1

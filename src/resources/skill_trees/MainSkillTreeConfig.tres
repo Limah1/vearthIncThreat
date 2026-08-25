@@ -1,0 +1,69 @@
+[gd_resource type="Resource" script_class="SkillTreeConfig" format=3 uid="uid://ct4pxhbdkr3ik"]
+
+[ext_resource type="Script" uid="uid://ckt66bdji2pvd" path="res://src/resources/skill_tree_config.gd" id="1_config"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_iutmo"]
+[ext_resource type="Script" uid="uid://cj2gdeyff3um3" path="res://src/resources/skill_tree_node_data.gd" id="2_node"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_UnlockTurret.tres" id="22_turret"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_DefenseBlasterAttackSpeed.tres" id="23_blaster_speed"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_DefenseBlasterDamage.tres" id="24_blaster_damage"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_UnlockLaserTurret.tres" id="25_laser"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_LaserCooldownReduction.tres" id="26_laser_cooldown"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_LaserDamage.tres" id="27_laser_damage"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_UnlockTurretMiner.tres" id="28_miner"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_MinerDamage.tres" id="29_miner_damage"]
+[ext_resource type="Resource" path="res://src/resources/upgrades/DA_MinerRadius.tres" id="30_miner_radius"]
+
+[sub_resource type="Resource" id="Resource_2x48m"]
+script = ExtResource("2_node")
+upgrade = ExtResource("22_turret")
+grid_position = Vector2i(5, 3)
+
+[sub_resource type="Resource" id="Resource_blaster_speed"]
+script = ExtResource("2_node")
+upgrade = ExtResource("23_blaster_speed")
+grid_position = Vector2i(6, 2)
+prerequisites = Array[Resource]([ExtResource("22_turret")])
+
+[sub_resource type="Resource" id="Resource_blaster_damage"]
+script = ExtResource("2_node")
+upgrade = ExtResource("24_blaster_damage")
+grid_position = Vector2i(6, 4)
+prerequisites = Array[Resource]([ExtResource("22_turret")])
+
+[sub_resource type="Resource" id="Resource_laser"]
+script = ExtResource("2_node")
+upgrade = ExtResource("25_laser")
+grid_position = Vector2i(5, 0)
+
+[sub_resource type="Resource" id="Resource_laser_cooldown"]
+script = ExtResource("2_node")
+upgrade = ExtResource("26_laser_cooldown")
+grid_position = Vector2i(6, 0)
+prerequisites = Array[Resource]([ExtResource("25_laser")])
+
+[sub_resource type="Resource" id="Resource_laser_damage"]
+script = ExtResource("2_node")
+upgrade = ExtResource("27_laser_damage")
+grid_position = Vector2i(7, 0)
+prerequisites = Array[Resource]([ExtResource("25_laser")])
+
+[sub_resource type="Resource" id="Resource_miner"]
+script = ExtResource("2_node")
+upgrade = ExtResource("28_miner")
+grid_position = Vector2i(5, 6)
+
+[sub_resource type="Resource" id="Resource_miner_damage"]
+script = ExtResource("2_node")
+upgrade = ExtResource("29_miner_damage")
+grid_position = Vector2i(6, 5)
+prerequisites = Array[Resource]([ExtResource("28_miner")])
+
+[sub_resource type="Resource" id="Resource_miner_radius"]
+script = ExtResource("2_node")
+upgrade = ExtResource("30_miner_radius")
+grid_position = Vector2i(6, 7)
+prerequisites = Array[Resource]([ExtResource("28_miner")])
+
+[resource]
+script = ExtResource("1_config")
+nodes = Array[ExtResource("2_node")]([SubResource("Resource_2x48m"), SubResource("Resource_blaster_speed"), SubResource("Resource_blaster_damage"), SubResource("Resource_laser"), SubResource("Resource_laser_cooldown"), SubResource("Resource_laser_damage"), SubResource("Resource_miner"), SubResource("Resource_miner_damage"), SubResource("Resource_miner_radius")])

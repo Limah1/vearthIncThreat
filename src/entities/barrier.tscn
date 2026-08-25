@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/entities/barrier.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/resources/barriers/BarrierConfig.tres" id="2_config"]
 [ext_resource type="PackedScene" path="res://src/entities/visuals/barrier_3d.tscn" id="3_visual"]
-[ext_resource type="PackedScene" path="res://src/entities/barrier_turret.tscn" id="4_turret"]
+[ext_resource type="PackedScene" path="res://src/entities/defense_blaster.tscn" id="4_turret"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_barrier"]
 size = Vector2(50, 80)

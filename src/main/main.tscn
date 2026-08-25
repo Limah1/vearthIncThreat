@@ -99,7 +99,7 @@ pool_size = 500
 [node name="Asteroids" type="Node3D" parent="." unique_id=77777777]
 script = ExtResource("27_asteroid_master_script")
 scene_to_pool = ExtResource("28_asteroid_3d_scene")
-pool_size = 2000
+pool_size = 450
 
 [node name="Enemies" type="Node3D" parent="." unique_id=88888888]
 script = ExtResource("29_enemy_master_script")
@@ -511,7 +511,7 @@ transform = Transform3D(80, 0, 0, 0, 80, 0, 0, 0, 80, 0, 0, 0)
 
 [node name="PlayerCursor" type="Node3D" parent="." unique_id=987654321]
 script = ExtResource("15_cursor")
-base_click_damage = 3.0
+base_click_damage = 1.0
 
 [node name="Spawner" type="Node" parent="." unique_id=999888777]
 script = ExtResource("17_spawner")

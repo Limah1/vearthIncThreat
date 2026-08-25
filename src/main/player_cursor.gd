@@ -2,12 +2,14 @@
 extends Node3D
 class_name PlayerCursor
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var base_click_radius: float = 15.0
-@export var base_click_damage: float = 3.0
+@export var base_click_damage: float = 1.0
 @export var base_auto_click_interval: float = 1.5
 
 var final_click_radius: float = 15.0
-var click_damage: float = 3.0
+var click_damage: float = 1.0
 var auto_click_timer: float = 0.0
 
 var mouse_circle_visual: Node3D
@@ -189,7 +191,4 @@ func _perform_click_sweep() -> void:
 		
 		# Hit if the hover circle overlaps anywhere with the target's physical shape bounds
 		if dist <= (final_click_radius + target_radius):
-			if target.has_method("take_player_damage"):
-				target.take_player_damage(click_damage)
-			else:
-				target.take_damage(click_damage)
+			DamageSystemScript.apply(target, click_damage, DamageSystemScript.Team.ALLY)

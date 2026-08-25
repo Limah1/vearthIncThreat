@@ -3,12 +3,15 @@ extends Node
 
 signal upgrade_purchased(upgrade_id: String, new_level: int)
 
+const DEFAULT_SKILL_TREE_CONFIG_PATH := "res://src/resources/skill_trees/MainSkillTreeConfig.tres"
+
 # Holds all loaded UpgradeData resources
 var upgrades_list: Array[UpgradeData] = []
 var upgrades_by_id: Dictionary = {}
 
 # Player's current levels: { upgrade_id: int }
 var purchased_levels: Dictionary = {}
+var skill_tree_config: SkillTreeConfig = null
 
 func _ready() -> void:
 	# Create directory if it doesn't exist
@@ -16,45 +19,79 @@ func _ready() -> void:
 	if not dir.dir_exists("res://src/resources/upgrades"):
 		dir.make_dir_recursive("res://src/resources/upgrades")
 	
+	load_skill_tree_config()
 	load_all_upgrades()
+
+func load_skill_tree_config() -> void:
+	var loaded_resource := load(DEFAULT_SKILL_TREE_CONFIG_PATH)
+	if loaded_resource is SkillTreeConfig:
+		skill_tree_config = loaded_resource as SkillTreeConfig
+	else:
+		push_error("[UpgradeManager] Invalid SkillTreeConfig: " + DEFAULT_SKILL_TREE_CONFIG_PATH)
 
 # Scans directory and loads all .tres upgrades
 func load_all_upgrades() -> void:
 	upgrades_list.clear()
 	upgrades_by_id.clear()
 	
-	var dir = DirAccess.open("res://src/resources/upgrades/")
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if not dir.current_is_dir():
-				var actual_file = file_name
-				if file_name.ends_with(".remap"):
-					actual_file = file_name.trim_suffix(".remap")
-				
-				if actual_file.ends_with(".tres") or actual_file.ends_with(".res"):
-					var upgrade = load("res://src/resources/upgrades/" + actual_file) as UpgradeData
-					if upgrade:
-						upgrades_list.append(upgrade)
-						upgrades_by_id[upgrade.upgrade_id] = upgrade
-			file_name = dir.get_next()
-		dir.list_dir_end()
+	_load_upgrades_from_directory("res://src/resources/upgrades")
 	
 	# Set levels for all loaded upgrades
 	for upgrade in upgrades_list:
 		if not purchased_levels.has(upgrade.upgrade_id):
 			purchased_levels[upgrade.upgrade_id] = 0
 
+func _load_upgrades_from_directory(directory_path: String) -> void:
+	var directory := DirAccess.open(directory_path)
+	if not directory:
+		return
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while not file_name.is_empty():
+		var resource_path := directory_path.path_join(file_name)
+		if directory.current_is_dir():
+			_load_upgrades_from_directory(resource_path)
+		else:
+			var actual_path := resource_path.trim_suffix(".remap") if file_name.ends_with(".remap") else resource_path
+			if actual_path.ends_with(".tres") or actual_path.ends_with(".res"):
+				var upgrade := load(actual_path) as UpgradeData
+				if upgrade and not upgrade.upgrade_id.is_empty():
+					if upgrades_by_id.has(upgrade.upgrade_id):
+						push_error("[UpgradeManager] Duplicate upgrade ID: " + upgrade.upgrade_id)
+					else:
+						upgrades_list.append(upgrade)
+						upgrades_by_id[upgrade.upgrade_id] = upgrade
+		file_name = directory.get_next()
+	directory.list_dir_end()
+
 func get_upgrade_level(upgrade_id: String) -> int:
 	return purchased_levels.get(upgrade_id, 0)
 
 # Checks if the upgrade is revealed/visible in the skill tree
 func is_upgrade_visible(upgrade: UpgradeData) -> bool:
+	if not is_instance_valid(upgrade):
+		return false
+	if get_upgrade_level(upgrade.upgrade_id) > 0:
+		return true
 	if upgrade.default_unlocked:
 		return true
+
+	if is_instance_valid(skill_tree_config):
+		var node_data := skill_tree_config.find_node_by_upgrade(upgrade)
+		if is_instance_valid(node_data):
+			if node_data.prerequisites.is_empty():
+				return false
+			if node_data.requirement_mode == SkillTreeNodeData.RequirementMode.ALL:
+				for prerequisite in node_data.prerequisites:
+					if get_upgrade_level(prerequisite.upgrade_id) <= 0:
+						return false
+				return true
+			for prerequisite in node_data.prerequisites:
+				if get_upgrade_level(prerequisite.upgrade_id) > 0:
+					return true
+			return false
 	
-	# Check if any other upgrade is purchased (level > 0) and has this upgrade's ID in its 'unlocks' list
+	# Compatibility for upgrade resources not migrated into SkillTreeConfig.
 	for other in upgrades_list:
 		if get_upgrade_level(other.upgrade_id) > 0:
 			if upgrade.upgrade_id in other.unlocks:

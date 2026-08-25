@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/entities/laser_turret.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/resources/turrets/LaserTurretConfig.tres" id="2_config"]
+
+[sub_resource type="StandardMaterial3D" id="LaserBodyMaterial"]
+shading_mode = 0
+albedo_color = Color(0.12, 0.75, 1, 1)
+roughness = 0.4
+emission_enabled = false
+
+[sub_resource type="CylinderMesh" id="LaserBodyMesh"]
+material = SubResource("LaserBodyMaterial")
+top_radius = 7.0
+bottom_radius = 7.0
+height = 3.0
+radial_segments = 3
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="LaserBeamMaterial"]
+shading_mode = 0
+transparency = 1
+albedo_color = Color(0.2, 0.8, 1, 0.8)
+no_depth_test = true
+emission_enabled = false
+
+[sub_resource type="BoxMesh" id="LaserBeamMesh"]
+material = SubResource("LaserBeamMaterial")
+size = Vector3(2, 0.8, 1)
+
+[node name="LaserTurret" type="Node3D"]
+script = ExtResource("1_script")
+turret_config = ExtResource("2_config")
+turret_type_id = "laser_turret"
+turret_display_name = "Laser Turret"
+damage_upgrade_category = "LaserDamage"
+fire_rate_upgrade_category = ""
+
+[node name="TurretMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("LaserBodyMesh")
+cast_shadow = 0
+
+[node name="LaserBeam" type="MeshInstance3D" parent="."]
+mesh = SubResource("LaserBeamMesh")
+cast_shadow = 0
+visible = false

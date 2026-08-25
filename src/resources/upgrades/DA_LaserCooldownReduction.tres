@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Texture2D" path="res://src/assets/UI/UpgradeIcons/Hourglass2.png" id="1_icon"]
+[ext_resource type="Script" path="res://src/resources/upgrade_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+upgrade_id = "DA_LaserCooldownReduction"
+upgrade_name = "Laser Cooldown Reduction"
+description = "Reduces Laser Turret cooldown by 1 second per rank, from 10 seconds down to 7 seconds."
+icon = ExtResource("1_icon")
+category = "LaserCooldownReduction"
+unlocks = Array[String]([])
+base_cost = 100.0
+cost_increment = 100.0
+max_level = 3
+value_increment = 1.0

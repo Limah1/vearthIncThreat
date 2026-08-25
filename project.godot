@@ -13,7 +13,6 @@ config_version=5
 config/name="VearthIncrementalThreat"
 run/main_scene="res://src/main/bootstrap.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-run/max_fps=0
 config/icon="res://icon.svg"
 
 [autoload]
@@ -28,6 +27,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/vsync/vsync_mode=0
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/skill_tree_designer/plugin.cfg")
 
 [physics]
 

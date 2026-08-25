@@ -2,6 +2,8 @@
 extends Node3D
 class_name EnemyProjectileInstance
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var speed: float = 140.0 # --- VELOCIDADE DO TIRO DO INIMIGO
 @export var damage: float = 4.0 # --- DANO QUE O TIRO DO INIMIGO CAUSA NO PLANETA
 var arena_radius: float = 450.0
@@ -55,7 +57,7 @@ func _manager_move(delta: float) -> void:
 	if dist < 45.0:
 		var planet = GameManager.get_player_planet()
 		if planet:
-			planet.take_damage(damage)
+			DamageSystemScript.apply(planet, damage, DamageSystemScript.Team.ENEMY)
 		_recycle()
 		return
 		

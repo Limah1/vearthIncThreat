@@ -2,6 +2,8 @@
 extends Node3D
 class_name SatelliteProjectileInstance
 
+const DamageSystemScript = preload("res://src/core/damage_system.gd")
+
 @export var base_speed: float = 350.0 # --- VELOCIDADE DO TIRO DO SATELLITE
 @export var base_damage: float = 3.0 # --- DANO DO TIRO DO SATELLITE
 @export var base_lifetime: float = 4.0 # --- TEMPO DE VIDA MAXIMO DO PROJÉTIL (SEGUNDOS)
@@ -21,18 +23,24 @@ var movement_direction: Vector3 = Vector3.ZERO
 func _ready() -> void:
 	add_to_group("satellite_projectile")
 
-func on_pool_activate(spawn_pos_3d: Vector3, dir_3d: Vector3) -> void:
+func on_pool_activate(
+	spawn_pos_3d: Vector3,
+	dir_3d: Vector3,
+	damage_override: float = -1.0
+) -> void:
 	global_position = spawn_pos_3d
 	movement_direction = dir_3d.normalized()
 	
 	var upgrade_mgr = UpgradeManager
 	var speed_mult = 1.0
 	var dmg_mult = 1.0
-	if upgrade_mgr:
+	# Regular satellites keep using their upgrades. Turrets provide their own
+	# damage value and therefore remain independent from satellite upgrades.
+	if upgrade_mgr and damage_override < 0.0:
 		speed_mult = upgrade_mgr.get_multiplier("SatelliteProjectileSpeed")
 		dmg_mult = upgrade_mgr.get_multiplier("SatelliteDamage")
 		
-	damage = base_damage * dmg_mult
+	damage = damage_override if damage_override >= 0.0 else base_damage * dmg_mult
 	speed = base_speed * speed_mult
 	max_lifetime = base_lifetime
 	lifetime_timer = 0.0
@@ -105,11 +113,7 @@ func _sweep_damage() -> void:
 			
 		var target_dist_sq = my_pos_2d.distance_squared_to(target_pos_2d)
 		if target_dist_sq <= (max_dist * max_dist):
-			# Deal damage to target (as player-sourced damage)
-			if target.has_method("take_player_damage"):
-				target.take_player_damage(damage)
-			else:
-				target.take_damage(damage)
+			DamageSystemScript.apply(target, damage, DamageSystemScript.Team.ALLY)
 				
 			hit_targets[target] = true
 			

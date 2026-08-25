@@ -15,6 +15,14 @@ extends Resource
 	"PlanetHealth",
 	"ShieldHP",
 	"UnlockTurret",
+	"TurretAttackSpeed",
+	"TurretDamage",
+	"UnlockLaserTurret",
+	"LaserCooldownReduction",
+	"LaserDamage",
+	"UnlockTurretMiner",
+	"MinerDamage",
+	"MinerRadius",
 	"SatelliteAmount",
 	"SatelliteDamage",
 	"SatelliteSpeed",
@@ -79,6 +87,8 @@ func _get_upgrade_ids() -> Array[String]:
 	return ids
 
 @export var base_cost: float = 100.0
+@export_range(1.0, 100.0, 0.05) var cost_growth_multiplier: float = 1.0
+@export_range(0.0, 1000000.0, 1.0) var cost_increment: float = 0.0
 @export var max_level: int = 1
 
 @export var value_increment: float = 0.1
@@ -99,4 +109,6 @@ func calculate_multiplier(level: int) -> float:
 
 # Calculates the cost to purchase the next level
 func get_cost(level: int) -> float:
-	return base_cost
+	if cost_increment > 0.0:
+		return base_cost + cost_increment * maxi(level, 0)
+	return base_cost * pow(cost_growth_multiplier, maxi(level, 0))
