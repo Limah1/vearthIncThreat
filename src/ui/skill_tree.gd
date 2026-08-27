@@ -252,10 +252,18 @@ func _load_level_configs() -> Array[LevelConfig]:
 	directory.list_dir_begin()
 	var file_name := directory.get_next()
 	while not file_name.is_empty():
-		if not directory.current_is_dir() and file_name.ends_with(".tres"):
-			var loaded_resource: Resource = load(LEVEL_CONFIG_DIRECTORY + "/" + file_name)
+		if not directory.current_is_dir():
+			# Exported Godot resources are listed inside the PCK as
+			# `.tres.remap`. Loading must still use their logical `.tres` path.
+			var resource_file_name := file_name.trim_suffix(".remap") if file_name.ends_with(".remap") else file_name
+			if not resource_file_name.ends_with(".tres") and not resource_file_name.ends_with(".res"):
+				file_name = directory.get_next()
+				continue
+			var loaded_resource: Resource = load(LEVEL_CONFIG_DIRECTORY + "/" + resource_file_name)
 			if loaded_resource is LevelConfig:
-				configs.append(loaded_resource as LevelConfig)
+				var level_config := loaded_resource as LevelConfig
+				if level_config.show_in_level_select:
+					configs.append(level_config)
 		file_name = directory.get_next()
 	directory.list_dir_end()
 	configs.sort_custom(_sort_level_configs)

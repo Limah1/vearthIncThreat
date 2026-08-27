@@ -142,7 +142,10 @@ func sync_from_barrier() -> void:
 	var height: float = turret_height
 	if barrier_ref.has_method("get_turret_height"):
 		height = float(barrier_ref.get_turret_height())
-	global_position = Vector3(barrier_position.x + local_offset.x, height, barrier_position.y + local_offset.y)
+	var mount_position: Vector2 = barrier_position + local_offset
+	if barrier_ref.has_method("get_world_position_for_local_offset"):
+		mount_position = barrier_ref.get_world_position_for_local_offset(local_offset)
+	global_position = Vector3(mount_position.x, height, mount_position.y)
 
 func set_deployment_active(value: bool) -> void:
 	active = value

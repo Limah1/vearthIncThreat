@@ -3,6 +3,44 @@
 class_name UpgradeData
 extends Resource
 
+const UPGRADE_DIRECTORY := "res://src/resources/upgrades"
+const ID_PREFIX := "UPG"
+const CATEGORIES: Array[String] = [
+	"ClickDamage",
+	"ClickRadius",
+	"AutoClickRate",
+	"PlanetHealth",
+	"ShieldHP",
+	"UnlockTurret",
+	"TurretAttackSpeed",
+	"TurretDamage",
+	"UnlockLaserTurret",
+	"LaserCooldownReduction",
+	"LaserDamage",
+	"UnlockTurretMiner",
+	"MinerDamage",
+	"MinerRadius",
+	"SatelliteAmount",
+	"SatelliteDamage",
+	"SatelliteSpeed",
+	"SatelliteProjectileSpeed",
+	"SatelliteUnlock",
+	"GarbageAmount",
+	"GarbageQuality",
+	"UnlockSmallAsteroid",
+	"UnlockMediumAsteroid",
+	"UnlockLargeAsteroid",
+	"AlienShips",
+	"ChanceSmallAsteroid",
+	"ChanceMediumAsteroid",
+	"ChanceLargeAsteroid",
+	"DebrisUnlock",
+	"DebrisPiercing",
+	"DebrisAmount",
+	"DebrisDamage",
+	"AsteroidAmount"
+]
+
 @export var upgrade_id: String = ""
 @export var upgrade_name: String = ""
 @export_multiline var description: String = ""
@@ -42,8 +80,70 @@ extends Resource
 	"DebrisAmount",
 	"DebrisDamage",
 	"AsteroidAmount"
-) var category: String = ""
+) var category: String = "":
+	set(value):
+		category = value
+		_maybe_generate_id()
 var unlocks: Array[String] = []
+
+## Returns the supported gameplay categories used by the inspector and tools.
+static func get_categories() -> Array[String]:
+	return CATEGORIES.duplicate()
+
+## Generates a stable, human-readable ID for a new upgrade asset.
+## Existing IDs are deliberately never changed: they are save-game and tree keys.
+static func generate_unique_id(category_name: String, ignored_id: String = "") -> String:
+	var category_key := _normalize_id_component(category_name)
+	if category_key.is_empty():
+		category_key = "UPGRADE"
+	var prefix := "%s_%s_" % [ID_PREFIX, category_key]
+	var used_ids := _collect_upgrade_ids(UPGRADE_DIRECTORY)
+	var sequence := 1
+	while true:
+		var candidate := "%s%03d" % [prefix, sequence]
+		if candidate != ignored_id and not used_ids.has(candidate):
+			return candidate
+		sequence += 1
+	return "%s%03d" % [prefix, sequence]
+
+static func _normalize_id_component(value: String) -> String:
+	var normalized := value.strip_edges().to_upper()
+	var result := ""
+	for character in normalized:
+		if (character >= "A" and character <= "Z") or (character >= "0" and character <= "9"):
+			result += character
+		elif not result.ends_with("_"):
+			result += "_"
+	return result.trim_prefix("_").trim_suffix("_")
+
+static func _collect_upgrade_ids(directory_path: String) -> Dictionary:
+	var ids: Dictionary = {}
+	var directory := DirAccess.open(directory_path)
+	if not directory:
+		return ids
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while not file_name.is_empty():
+		var resource_path := directory_path.path_join(file_name)
+		if directory.current_is_dir():
+			var nested_ids := _collect_upgrade_ids(resource_path)
+			for nested_id in nested_ids:
+				ids[nested_id] = true
+		else:
+			var actual_path := resource_path.trim_suffix(".remap") if file_name.ends_with(".remap") else resource_path
+			if actual_path.ends_with(".tres") or actual_path.ends_with(".res"):
+				var upgrade := load(actual_path) as UpgradeData
+				if is_instance_valid(upgrade) and not upgrade.upgrade_id.is_empty():
+					ids[upgrade.upgrade_id] = true
+		file_name = directory.get_next()
+	directory.list_dir_end()
+	return ids
+
+func _maybe_generate_id() -> void:
+	if not Engine.is_editor_hint() or not upgrade_id.is_empty() or category.is_empty():
+		return
+	upgrade_id = generate_unique_id(category)
+	emit_changed()
 
 func _get_property_list() -> Array[Dictionary]:
 	var properties: Array[Dictionary] = []
@@ -64,25 +164,9 @@ func _get_property_list() -> Array[Dictionary]:
 
 func _get_upgrade_ids() -> Array[String]:
 	var ids: Array[String] = []
-	var path = "res://src/resources/upgrades/"
-	if DirAccess.dir_exists_absolute(path):
-		var dir = DirAccess.open(path)
-		if dir:
-			dir.list_dir_begin()
-			var file_name = dir.get_next()
-			while file_name != "":
-				if not dir.current_is_dir():
-					var actual_file = file_name
-					if file_name.ends_with(".remap"):
-						actual_file = file_name.trim_suffix(".remap")
-					
-					if actual_file.ends_with(".tres") or actual_file.ends_with(".res"):
-						var upgrade = load(path + actual_file) as UpgradeData
-						if upgrade and upgrade.upgrade_id != "":
-							if not upgrade.upgrade_id in ids:
-								ids.append(upgrade.upgrade_id)
-				file_name = dir.get_next()
-			dir.list_dir_end()
+	var collected_ids := _collect_upgrade_ids(UPGRADE_DIRECTORY)
+	for upgrade_id_key in collected_ids:
+		ids.append(upgrade_id_key)
 	ids.sort()
 	return ids
 

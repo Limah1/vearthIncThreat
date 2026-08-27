@@ -117,19 +117,21 @@ A customized `Path2D` that draws and generates a spawning ring around the planet
   - `circle_radius` (default `650.0`): The distance from the center planet at which threats spawn.
   - `spawner_count` (default `40`): Number of marker spawn points generated.
 
-### `Barrier` (`barrier.gd`)
+### `BasicAllyShip` (`barrier.tscn`)
 Defensive actor authored directly inside the selected full level scene's `AllyShips` node.
-* **Data**: `BarrierConfig.tres` defines 10 base HP, 50x80 gameplay size, 80-unit center distance, and side.
-* **Availability**: Barriers are always available when authored in `AllyShips`; no barrier unlock upgrade is required.
-* **Collision**: Asteroids, garbage, and enemy projectiles query the barrier rectangle before planet collision. A hit applies that threat's normal planet damage and recycles the threat/projectile.
-* **Break behavior**: At 0 HP, barrier visual and collision disable; planet remains active.
+* **2D authoring actor**: `barrier.tscn` is an `Area2D` placed under the level's `AllyShips` `Node2D`. Its editor blueprint displays the 50x80 footprint and both turret mounts.
+* **3D runtime representation**: authored 2D X/Y maps directly to 3D X/Z. The 2D rotation is synchronized to the 3D ship yaw, turret mounts, and collision orientation.
+* **Data**: `BarrierConfig.tres` currently defines 10 base HP and the 50x80 ship footprint.
+* **Availability**: Basic Ally Ships are always available when authored in a level; no ship unlock upgrade is required.
+* **Collision**: Asteroids, garbage, and enemy projectiles query the rotated ship rectangle before planet collision. A hit applies that threat's normal planet damage and recycles the threat/projectile.
+* **Break behavior**: At 0 HP, the ship visual, collision, and mounted turrets disable; the planet remains active.
 
-### Preparation phase and barrier turrets
+### Preparation phase and ship-mounted turrets
 Once the `Defense Blaster` upgrade (`DA_UnlockTurret`) is purchased, a new `PREPARATION` state pauses movement and spawning before each run.
-* Each full level scene has an `AllyShips` node where barriers are placed manually in the editor. The scene also contains the planet and all first-level world systems, so barrier placement has the correct gameplay context.
+* Each full level scene has an `AllyShips` `Node2D`. Designers instance `barrier.tscn` there and use Godot's normal 2D move/rotate tools.
 * The bottom preparation footer keeps the normal menu cursor visible and shows 4 turret slots, plus `RESET` and `START WAVE` controls.
-* Click the turret icon to attach a grey preview actor to the cursor. Left-click commits the placement; right-click cancels. Turrets must be placed inside a level barrier.
-* `Barrier` allows up to three non-overlapping turrets. Their calculated footprint radius is 7 units for the current 50x80 barrier, leaving a 2-unit gap when placed side-by-side.
+* Each Basic Ally Ship exposes exactly two grey circular mounts during preparation. A turret preview snaps to an empty mount; left-click commits and right-click cancels.
+* Mounts are fixed at local X offsets -12 and +12, rotate with the ship, and disappear when occupied or when the wave starts.
 * `DefenseBlaster` is a triangular barrier-mounted actor that scans its configured action cone and fires pooled satellite-style projectiles at the nearest valid asteroid.
 * `Defense Blaster Attack Speed` has three ranks. It costs $20, $40, and $80 and multiplies fire rate by 1.10 per rank.
 * `Defense Blaster Damage` is a one-time $80 purchase that adds 1 projectile damage.

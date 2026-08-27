@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GridPrototypeConfig" format=3]
+
+[ext_resource type="Script" path="res://src/prototypes/grid_combat/resources/grid_prototype_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+columns = 10
+rows = 6
+cell_size = 100.0
+blocked_cells = Array[Vector2i]([Vector2i(4, 2), Vector2i(5, 2), Vector2i(4, 3), Vector2i(5, 3)])

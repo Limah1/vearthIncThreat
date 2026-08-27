@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://ikgwhhg7fyul" path="res://src/resources/level_config.gd" id="1_gdetf"]
 [ext_resource type="Texture2D" uid="uid://cgg7ke1b7rwm2" path="res://src/assets/UI/UpgradeIcons/T_MoreAsteroids.png" id="2_icon"]
-[ext_resource type="PackedScene" path="res://src/levels/Level1.tscn" id="3_level_scene"]
+[ext_resource type="PackedScene" path="res://src/levels/GridCombatLevel.tscn" id="3_level_scene"]
+[ext_resource type="Resource" path="res://src/prototypes/grid_combat/resources/GridPrototypeConfig.tres" id="4_grid_config"]
 
 [resource]
 script = ExtResource("1_gdetf")
@@ -13,3 +14,8 @@ icon = ExtResource("2_icon")
 level_scene = ExtResource("3_level_scene")
 actor_type = "small_asteroid"
 total_enemies = 200
+grid_combat_enabled = true
+grid_board_config = ExtResource("4_grid_config")
+starting_ally_ships = 4
+starting_defense_blocks = 3
+minimum_ally_ships_to_start = 1

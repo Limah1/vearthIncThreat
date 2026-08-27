@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="UpgradeData" format=3]
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://bboypkbo2hrac"]
 
-[ext_resource type="Texture2D" path="res://src/assets/UI/UpgradeIcons/T_AtkSpeed.png" id="1_icon"]
-[ext_resource type="Script" path="res://src/resources/upgrade_data.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://viuupex8k4ld" path="res://src/assets/UI/UpgradeIcons/T_AtkSpeed.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -10,10 +10,8 @@ upgrade_name = "Defense Blaster Attack Speed"
 description = "Increases Defense Blaster firing speed by 10% per rank."
 icon = ExtResource("1_icon")
 category = "TurretAttackSpeed"
-unlocks = Array[String]([])
-base_cost = 20.0
+base_cost = 13.0
 cost_growth_multiplier = 2.0
 max_level = 3
-value_increment = 0.1
 is_percentage = true
-
+unlocks = Array[String]([])

@@ -70,15 +70,17 @@ func _refresh_barriers() -> void:
 
 func _on_state_changed(new_state: int) -> void:
 	active = is_instance_valid(game_manager) and new_state == game_manager.GameState.PREPARATION
+	_refresh_barriers()
+	_set_mount_spots_visible(active)
 	if active:
 		_cancel_placement()
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 		_set_footer_visible(true)
 		if barriers.is_empty():
-			_set_status("No barriers found in AllyShips. Add barriers to the selected level scene.")
+			_set_status("No Basic Ally Ships found. Add them to the level's AllyShips node.")
 		else:
-			_set_status("Place unlocked turrets, configure their cones, then left-click to confirm. R returns all turrets.")
+			_set_status("Select a turret, click a grey mount on a Basic Ally Ship, then configure its cone.")
 	else:
 		_cancel_placement()
 		_set_footer_visible(false)
@@ -95,6 +97,10 @@ func _process(_delta: float) -> void:
 		var target_barrier := _find_barrier_at(pointer)
 		if target_barrier:
 			preview_height = target_barrier.get_turret_height()
+			var mount_position: Variant = target_barrier.get_available_mount_world_position_near(pointer)
+			if mount_position is Vector2:
+				pointer_world.x = (mount_position as Vector2).x
+				pointer_world.z = (mount_position as Vector2).y
 		elif not barriers.is_empty() and is_instance_valid(barriers[0]):
 			preview_height = barriers[0].get_turret_height()
 		preview_turret.global_position = Vector3(pointer_world.x, preview_height, pointer_world.z)
@@ -177,7 +183,7 @@ func begin_turret_placement(turret_type: TurretType = TurretType.DEFENSE_BLASTER
 		return
 	_refresh_barriers()
 	if barriers.is_empty():
-		_set_status("No barrier found in AllyShips.")
+		_set_status("No Basic Ally Ship found in the level's AllyShips node.")
 		return
 	_cancel_placement()
 	selected_turret_type = turret_type
@@ -196,7 +202,7 @@ func begin_turret_placement(turret_type: TurretType = TurretType.DEFENSE_BLASTER
 	preview_turret.set_footprint_radius(barriers[0].get_turret_radius())
 	preview_turret.set_preview(true)
 	placement_mode = PlacementMode.POSITIONING
-	_set_status("%s attached to cursor. Click a barrier to position it; right-click cancels." % get_turret_type_name(turret_type))
+	_set_status("%s attached to cursor. Click an empty grey ship mount; right-click cancels." % get_turret_type_name(turret_type))
 
 func begin_laser_turret_placement() -> void:
 	begin_turret_placement(TurretType.LASER_TURRET)
@@ -228,7 +234,7 @@ func start_wave() -> void:
 		return
 	_refresh_barriers()
 	if barriers.is_empty():
-		_set_status("Add at least one barrier to AllyShips before starting the wave.")
+		_set_status("Add at least one Basic Ally Ship to AllyShips before starting the wave.")
 		return
 	if placement_mode == PlacementMode.AIMING:
 		_confirm_turret_aim()
@@ -288,10 +294,10 @@ func _commit_turret(world_point: Vector2) -> void:
 		return
 	var target_barrier := _find_barrier_at(world_point)
 	if not target_barrier:
-		_set_status("Click inside a barrier from AllyShips to place the %s." % get_turret_type_name(selected_turret_type))
+		_set_status("Click an empty grey mount on a Basic Ally Ship to place the %s." % get_turret_type_name(selected_turret_type))
 		return
 	if not target_barrier.attach_turret(preview_turret, world_point):
-		_set_status("Invalid %s position: keep it inside and avoid overlap." % get_turret_type_name(selected_turret_type))
+		_set_status("That mount is unavailable. Choose one of the empty grey circles.")
 		return
 
 	available_by_type[selected_turret_type] = get_available_turrets_for_type(selected_turret_type) - 1
@@ -454,3 +460,8 @@ func _set_footer_visible(value: bool) -> void:
 func _set_status(message: String) -> void:
 	if footer and footer.has_method("set_status"):
 		footer.set_status(message)
+
+func _set_mount_spots_visible(value: bool) -> void:
+	for current_barrier in barriers:
+		if is_instance_valid(current_barrier) and current_barrier.has_method("set_mount_spots_visible"):
+			current_barrier.set_mount_spots_visible(value)

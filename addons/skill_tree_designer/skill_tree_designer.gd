@@ -24,6 +24,8 @@ var prerequisites_label: RichTextLabel
 var columns_spin: SpinBox
 var rows_spin: SpinBox
 var requirement_option: OptionButton
+var parent_option: OptionButton
+var remove_parent_button: Button
 var connect_button: Button
 var move_button: Button
 var remove_button: Button
@@ -37,6 +39,9 @@ var picker_place_button: Button
 var picker_selected_upgrade: UpgradeData
 var available_upgrades: Array[UpgradeData] = []
 var validation_dialog: AcceptDialog
+var creation_popup: PopupPanel
+var creation_name: LineEdit
+var creation_category: OptionButton
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -77,6 +82,7 @@ func _build_interface() -> void:
 	var resize_button := _make_button("Apply Grid", _apply_grid_size)
 	toolbar.add_child(resize_button)
 	toolbar.add_child(_make_button("Reload", _load_config))
+	toolbar.add_child(_make_button("New Upgrade", _open_creation_popup))
 	toolbar.add_child(_make_button("Validate", _validate_config))
 	toolbar.add_child(_make_button("Save", _save_config))
 
@@ -127,6 +133,17 @@ func _build_interface() -> void:
 	prerequisites_label.custom_minimum_size.y = 110.0
 	side_panel.add_child(prerequisites_label)
 
+	var parent_row := HBoxContainer.new()
+	parent_row.add_child(_make_label("Parent"))
+	parent_option = OptionButton.new()
+	parent_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent_option.tooltip_text = "Choose which prerequisite connection to remove."
+	parent_row.add_child(parent_option)
+	remove_parent_button = _make_button("Remove Parent", _remove_selected_parent)
+	remove_parent_button.tooltip_text = "Remove the selected parent connection without deleting either upgrade."
+	parent_row.add_child(remove_parent_button)
+	side_panel.add_child(parent_row)
+
 	var requirement_row := HBoxContainer.new()
 	requirement_row.add_child(_make_label("Multiple parents"))
 	requirement_option = OptionButton.new()
@@ -151,6 +168,7 @@ func _build_interface() -> void:
 	side_panel.add_child(legend)
 
 	_build_picker_popup()
+	_build_creation_popup()
 	validation_dialog = AcceptDialog.new()
 	validation_dialog.title = "Skill Tree Validation"
 	add_child(validation_dialog)
@@ -208,6 +226,94 @@ func _build_picker_popup() -> void:
 	picker_place_button.disabled = true
 	button_row.add_child(picker_place_button)
 	picker_vbox.add_child(button_row)
+
+func _build_creation_popup() -> void:
+	creation_popup = PopupPanel.new()
+	creation_popup.size = Vector2i(520, 260)
+	add_child(creation_popup)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	creation_popup.add_child(margin)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	margin.add_child(content)
+
+	var title := Label.new()
+	title.text = "CREATE UPGRADE"
+	title.add_theme_font_size_override("font_size", 20)
+	content.add_child(title)
+
+	creation_name = LineEdit.new()
+	creation_name.placeholder_text = "Upgrade name"
+	content.add_child(creation_name)
+
+	var category_row := HBoxContainer.new()
+	category_row.add_child(_make_label("Type"))
+	creation_category = OptionButton.new()
+	creation_category.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for category in UpgradeData.get_categories():
+		creation_category.add_item(category)
+	category_row.add_child(creation_category)
+	content.add_child(category_row)
+
+	var help := Label.new()
+	help.text = "The ID is generated automatically and will remain stable."
+	help.modulate = Color(0.75, 0.8, 0.9)
+	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(help)
+
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_END
+	buttons.add_child(_make_button("Cancel", _close_creation_popup))
+	buttons.add_child(_make_button("Create", _create_upgrade))
+	content.add_child(buttons)
+
+func _open_creation_popup() -> void:
+	if not is_instance_valid(creation_popup):
+		return
+	creation_name.clear()
+	if creation_category.item_count > 0:
+		creation_category.select(0)
+	creation_popup.popup_centered(Vector2i(520, 260))
+	creation_name.grab_focus.call_deferred()
+
+func _close_creation_popup() -> void:
+	if is_instance_valid(creation_popup):
+		creation_popup.hide()
+
+func _create_upgrade() -> void:
+	var display_name := creation_name.text.strip_edges()
+	if display_name.is_empty():
+		_set_status("Enter a name for the new upgrade.", true)
+		return
+	if creation_category.selected < 0:
+		_set_status("Choose an upgrade type.", true)
+		return
+
+	var category := creation_category.get_item_text(creation_category.selected)
+	var generated_id := UpgradeData.generate_unique_id(category)
+	var resource_path := UPGRADE_DIRECTORY.path_join(generated_id + ".tres")
+	var upgrade := UpgradeData.new()
+	upgrade.upgrade_id = generated_id
+	upgrade.upgrade_name = display_name
+	upgrade.category = category
+	upgrade.base_cost = 100.0
+	upgrade.max_level = 1
+	upgrade.value_increment = 0.1
+	var save_error := ResourceSaver.save(upgrade, resource_path)
+	if save_error != OK:
+		_set_status("Could not create upgrade. Error code: %d" % save_error, true)
+		return
+
+	_close_creation_popup()
+	EditorInterface.get_resource_filesystem().scan()
+	available_upgrades = _scan_all_upgrades()
+	_set_status("Created '%s' with ID %s. Choose an empty cell to place it." % [display_name, generated_id])
 
 func _load_config() -> void:
 	var loaded_resource := ResourceLoader.load(
@@ -379,6 +485,25 @@ func _remove_selected_node() -> void:
 	canvas.refresh()
 	_refresh_selected_panel()
 
+func _remove_selected_parent() -> void:
+	if not is_instance_valid(selected_node) or parent_option.selected < 0:
+		return
+	var parent_upgrade := parent_option.get_item_metadata(parent_option.selected) as UpgradeData
+	if not is_instance_valid(parent_upgrade):
+		return
+	if not selected_node.prerequisites.has(parent_upgrade):
+		_set_status("That parent connection no longer exists. Refresh the selection.", true)
+		_refresh_selected_panel()
+		return
+	selected_node.prerequisites.erase(parent_upgrade)
+	interaction_mode = InteractionMode.NORMAL
+	_mark_dirty("Removed parent '%s' from '%s'." % [
+		parent_upgrade.upgrade_name,
+		selected_node.upgrade.upgrade_name
+	])
+	canvas.refresh()
+	_refresh_selected_panel()
+
 func _cancel_interaction() -> void:
 	interaction_mode = InteractionMode.NORMAL
 	_set_status("Current action cancelled.")
@@ -398,7 +523,10 @@ func _refresh_selected_panel() -> void:
 	move_button.disabled = not has_selection
 	remove_button.disabled = not has_selection
 	requirement_option.disabled = not has_selection
+	parent_option.clear()
 	if not has_selection:
+		parent_option.disabled = true
+		remove_parent_button.disabled = true
 		selected_label.text = "No upgrade selected"
 		prerequisites_label.text = "[color=gray]Click an occupied slot to select it.[/color]"
 		return
@@ -412,6 +540,12 @@ func _refresh_selected_panel() -> void:
 	for prerequisite in selected_node.prerequisites:
 		if is_instance_valid(prerequisite):
 			prerequisite_names.append(prerequisite.upgrade_name)
+			parent_option.add_item(prerequisite.upgrade_name)
+			var parent_index: int = parent_option.item_count - 1
+			parent_option.set_item_metadata(parent_index, prerequisite)
+	var has_parents := parent_option.item_count > 0
+	parent_option.disabled = not has_parents
+	remove_parent_button.disabled = not has_parents
 	prerequisites_label.text = (
 		"[b]Prerequisites[/b]\n[color=gray]None — root node[/color]"
 		if prerequisite_names.is_empty()

@@ -3,6 +3,7 @@ extends Node3D
 class_name PlayerCursor
 
 const DamageSystemScript = preload("res://src/core/damage_system.gd")
+const PreparationCursorTexture: Texture2D = preload("res://src/assets/UI/Cursors/preparation_cursor.svg")
 
 @export var base_click_radius: float = 15.0
 @export var base_click_damage: float = 1.0
@@ -18,10 +19,13 @@ var inner_material_ref: StandardMaterial3D
 var camera: Camera3D
 var _game_manager_ref: Node = null
 var _upgrade_manager_ref: Node = null
+var preparation_cursor_active: bool = false
 
 func _ready() -> void:
 	_game_manager_ref = get_node_or_null("/root/GameManager")
 	_upgrade_manager_ref = get_node_or_null("/root/UpgradeManager")
+	if _game_manager_ref:
+		_game_manager_ref.state_changed.connect(_on_game_state_changed)
 	# Find current camera
 	camera = get_node_or_null("../CameraController")
 	if not camera:
@@ -72,6 +76,45 @@ func _ready() -> void:
 	# Connect dynamic stats calculations
 	_recalculate_click_stats()
 	get_node("/root/UpgradeManager").upgrade_purchased.connect(func(_id, _lvl): _recalculate_click_stats())
+	_apply_cursor_state()
+
+func _on_game_state_changed(_new_state: int) -> void:
+	_apply_cursor_state()
+
+func refresh_state() -> void:
+	## Public refresh hook for scenes that set GameManager state before signals connect.
+	_apply_cursor_state()
+
+func _apply_cursor_state() -> void:
+	if not _game_manager_ref:
+		return
+	var current_state: int = _game_manager_ref.current_state
+	var is_playing: bool = current_state == _game_manager_ref.GameState.PLAYING
+	var is_preparing: bool = current_state == _game_manager_ref.GameState.PREPARATION
+	if mouse_circle_visual:
+		mouse_circle_visual.visible = is_playing
+	if is_playing:
+		_clear_preparation_cursor()
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	elif is_preparing:
+		preparation_cursor_active = true
+		Input.set_custom_mouse_cursor(
+			PreparationCursorTexture,
+			Input.CURSOR_ARROW,
+			Vector2(3.0, 2.0)
+		)
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+	else:
+		_clear_preparation_cursor()
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+
+func _clear_preparation_cursor() -> void:
+	if not preparation_cursor_active:
+		return
+	preparation_cursor_active = false
+	Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW)
 
 func _recalculate_click_stats() -> void:
 	var upgrade_mgr = _upgrade_manager_ref
@@ -90,6 +133,7 @@ func _input(event: InputEvent) -> void:
 		_perform_click_sweep()
 
 func _exit_tree() -> void:
+	_clear_preparation_cursor()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _process(delta: float) -> void:
@@ -97,10 +141,7 @@ func _process(delta: float) -> void:
 	if not game_mgr:
 		return
 	if game_mgr.current_state != game_mgr.GameState.PLAYING:
-		if mouse_circle_visual:
-			mouse_circle_visual.visible = false
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		_apply_cursor_state()
 		return
 		
 	# Hide Windows mouse cursor during active gameplay

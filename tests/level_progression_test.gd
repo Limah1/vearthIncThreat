@@ -10,6 +10,7 @@ func _ready() -> void:
 
 func _run_tests() -> void:
 	_test_asteroid_health_range()
+	_test_level_selector_discovery()
 	_test_sequential_level_unlock()
 	if _failures == 0:
 		print("Level progression tests passed.")
@@ -47,6 +48,17 @@ func _test_sequential_level_unlock() -> void:
 	GameManager.register_eliminated_threat()
 	_expect(GameManager.is_current_level_complete(), "Eliminating 100% must complete the current level.")
 	_expect(GameManager.is_level_unlocked(2), "Completing level 1 must unlock level 2.")
+
+func _test_level_selector_discovery() -> void:
+	var selector := SkillTree.new()
+	var configs: Array[LevelConfig] = selector._load_level_configs()
+	var visible_level_numbers: Array[int] = []
+	for config in configs:
+		visible_level_numbers.append(config.level_number)
+	_expect(visible_level_numbers.has(1), "The level selector must discover Level 1.")
+	_expect(visible_level_numbers.has(2), "The level selector must discover Level 2.")
+	_expect(not visible_level_numbers.has(0), "Hidden test levels must stay out of the selector.")
+	selector.free()
 
 func _expect(condition: bool, message: String) -> void:
 	if condition:

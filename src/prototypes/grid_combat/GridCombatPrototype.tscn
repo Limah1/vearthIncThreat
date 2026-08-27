@@ -1,0 +1,216 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://src/main/main.tscn" id="1_main"]
+[ext_resource type="Script" path="res://src/prototypes/grid_combat/grid_combat_controller.gd" id="2_controller"]
+[ext_resource type="Script" path="res://src/prototypes/grid_combat/grid_board.gd" id="3_board"]
+[ext_resource type="Resource" path="res://src/prototypes/grid_combat/resources/GridPrototypeConfig.tres" id="4_config"]
+
+[sub_resource type="StyleBoxFlat" id="Style_top"]
+bg_color = Color(0.025, 0.045, 0.09, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.56, 0.82, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Style_footer"]
+bg_color = Color(0.025, 0.045, 0.09, 0.96)
+border_width_top = 1
+border_color = Color(0.15, 0.56, 0.82, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="Style_key"]
+bg_color = Color(0.07, 0.11, 0.18, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.82, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="GridCombatPrototype" instance=ExtResource("1_main")]
+
+[node name="PreparationController" parent="." index="13"]
+process_mode = 3
+
+[node name="Spawner" parent="." index="19"]
+start_blocked = true
+
+[node name="GridBoard" type="Node3D" parent="." index="20"]
+script = ExtResource("3_board")
+config = ExtResource("4_config")
+
+[node name="GridActors" type="Node3D" parent="." index="21"]
+
+[node name="AllyShips" type="Node2D" parent="." index="22"]
+
+[node name="GridCombatController" type="Node3D" parent="." index="23"]
+process_mode = 3
+script = ExtResource("2_controller")
+
+[node name="PreparationFooter" parent="CanvasLayer" index="1"]
+process_mode = 4
+visible = false
+
+[node name="Panel" parent="CanvasLayer/PreparationFooter" index="0"]
+offset_top = -280.0
+offset_bottom = -120.0
+
+[node name="GridPrototypeUI" type="Control" parent="CanvasLayer" index="6"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopPanel" type="PanelContainer" parent="CanvasLayer/GridPrototypeUI"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -620.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 150.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("Style_top")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/GridPrototypeUI/TopPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/GridPrototypeUI/TopPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="CanvasLayer/GridPrototypeUI/TopPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "GRID COMBAT — LIVE GAMEPLAY"
+
+[node name="InventoryLabel" type="Label" parent="CanvasLayer/GridPrototypeUI/TopPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "ALLY SHIPS: 4    BARRIERS: 3"
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/GridPrototypeUI/TopPanel/Margin/VBox"]
+layout_mode = 2
+text = "Select an Ally Ship or Barrier, then place it on the grid."
+
+[node name="Footer" type="PanelContainer" parent="CanvasLayer/GridPrototypeUI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -176.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("Style_footer")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/GridPrototypeUI/Footer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="Buttons" type="GridContainer" parent="CanvasLayer/GridPrototypeUI/Footer/Margin"]
+layout_mode = 2
+columns = 4
+theme_override_constants/separation = 12
+
+[node name="AllyShipButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(250, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "ALLY SHIP (2 CELLS)  x4"
+
+[node name="DefenseBlockButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(230, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "BARRIER (1 CELL)  x3"
+
+[node name="ResetButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(130, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "RESET"
+
+[node name="StartButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(160, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "START WAVE"
+
+[node name="ReturnButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(170, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "RETURN LEVEL 1"
+
+[node name="DefenseTurretButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(250, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "DEFENSE BLASTER  x0"
+
+[node name="LaserTurretButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(230, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "LASER TURRET  x0"
+
+[node name="TurretMinerButton" type="Button" parent="CanvasLayer/GridPrototypeUI/Footer/Margin/Buttons"]
+custom_minimum_size = Vector2(230, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "TURRET MINER  x0"
+
+[node name="RotationHints" type="Control" parent="CanvasLayer/GridPrototypeUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftHint" type="PanelContainer" parent="CanvasLayer/GridPrototypeUI/RotationHints"]
+custom_minimum_size = Vector2(48, 56)
+layout_mode = 0
+theme_override_styles/panel = SubResource("Style_key")
+
+[node name="Label" type="Label" parent="CanvasLayer/GridPrototypeUI/RotationHints/LeftHint"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "A"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightHint" type="PanelContainer" parent="CanvasLayer/GridPrototypeUI/RotationHints"]
+custom_minimum_size = Vector2(48, 56)
+layout_mode = 0
+theme_override_styles/panel = SubResource("Style_key")
+
+[node name="Label" type="Label" parent="CanvasLayer/GridPrototypeUI/RotationHints/RightHint"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[editable path="CanvasLayer/PreparationFooter"]

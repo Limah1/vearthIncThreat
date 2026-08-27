@@ -1,16 +1,13 @@
-[gd_resource type="Resource" script_class="TurretConfig" format=3]
+[gd_resource type="Resource" script_class="TurretConfig" format=3 uid="uid://bucnvm11mso7i"]
 
-[ext_resource type="Script" path="res://src/resources/turret_config.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://c14qdfioipybm" path="res://src/resources/turret_config.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 damage = 5.0
 fire_rate = 0.1
-attack_range = 700.0
+attack_range = 350.0
 default_cone_angle = 75.0
 minimum_cone_angle = 15.0
 maximum_cone_angle = 140.0
 sweep_speed = 0.35
-target_refresh_interval = 0.1
-minimum_handle_distance = 24.0
-maximum_handle_distance = 130.0

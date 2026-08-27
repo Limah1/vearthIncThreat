@@ -124,6 +124,9 @@ func reset_game() -> void:
 	save_game()
 
 func requires_preparation() -> bool:
+	var level_config := get_selected_level_config()
+	if is_instance_valid(level_config) and level_config.requires_preparation():
+		return true
 	return (
 		UpgradeManager.get_upgrade_level("DA_UnlockTurret") > 0
 		or UpgradeManager.get_upgrade_level("DA_UnlockLaserTurret") > 0
@@ -168,7 +171,8 @@ func spend_lifetime_credits(amount: float) -> bool:
 # Finish round, bank run credits into lifetime bank, open summary menu
 func end_round() -> void:
 	lifetime_credits += run_credits
-	change_state(GameState.PAUSED)
+	get_tree().paused = false
+	change_state(GameState.END_SESSION)
 	credits_changed.emit(run_credits, lifetime_credits)
 	save_game()
 

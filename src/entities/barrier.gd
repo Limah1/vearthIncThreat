@@ -1,3 +1,4 @@
+@tool
 extends Area2D
 class_name Barrier
 
@@ -7,9 +8,11 @@ signal health_changed(current_hp: float, maximum_hp: float)
 signal deployment_changed(world_position: Vector2)
 
 const DEFAULT_CONFIG_PATH: String = "res://src/resources/barriers/BarrierConfig.tres"
-const MAX_TURRETS: int = 3
+const MAX_TURRETS: int = 2
 const TURRET_GAP: float = 2.0
 const MAX_TURRET_RADIUS: float = 7.0
+const TURRET_SLOT_CLICK_RADIUS: float = 12.0
+const TURRET_SLOT_OFFSETS: Array[Vector2] = [Vector2(-12.0, 0.0), Vector2(12.0, 0.0)]
 const PLAYFIELD_Y: float = 0.0
 
 @export var barrier_config: BarrierConfig
@@ -24,30 +27,56 @@ var placed: bool = true
 var previewing: bool = false
 ## 3D height shared by planet, spawn actors, and barrier placement plane.
 var world_plane_y: float = PLAYFIELD_Y
+var world_yaw: float = 0.0
 var visual_3d: Node3D = null
 var life_bar: Node3D = null
 var life_bar_fill: MeshInstance3D = null
 var life_bar_width: float = 42.0
 var turrets: Array[Node3D] = []
+var mount_spot_visuals: Array[MeshInstance3D] = []
+var mount_spots_visible: bool = false
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		_load_default_config()
+		_apply_config()
+		queue_redraw()
+		return
 	add_to_group("barrier")
+	add_to_group("ally_ship")
 	GameManager.register_barrier(self)
-	if not barrier_config:
-		var default_resource: Resource = load(DEFAULT_CONFIG_PATH)
-		if default_resource is BarrierConfig:
-			barrier_config = default_resource as BarrierConfig
+	_load_default_config()
 
 	_apply_config()
+	# 2D authoring maps X/Y to 3D X/Z. Invert 2D rotation so the 3D yaw
+	# matches the direction seen in the 2D editor.
+	world_yaw = -global_rotation
 	# Barriers are authored directly in each AllyShips level scene. Turret unlock
 	# controls preparation mode; barrier visibility is no longer upgrade-gated.
 	_set_unlocked(true)
 	call_deferred("_add_visual_to_scene")
 
+func _load_default_config() -> void:
+	if barrier_config:
+		return
+	var default_resource: Resource = load(DEFAULT_CONFIG_PATH)
+	if default_resource is BarrierConfig:
+		barrier_config = default_resource as BarrierConfig
+
+func _draw() -> void:
+	if not Engine.is_editor_hint() or not barrier_config:
+		return
+	var half_size: Vector2 = barrier_config.size * 0.5
+	var footprint := Rect2(-half_size, barrier_config.size)
+	draw_rect(footprint, Color(0.12, 0.65, 0.95, 0.18), true)
+	draw_rect(footprint, Color(0.12, 0.65, 0.95, 0.9), false, 2.0)
+	for slot_offset in TURRET_SLOT_OFFSETS:
+		draw_circle(slot_offset, 9.0, Color(0.38, 0.4, 0.44, 0.9))
+
 func _exit_tree() -> void:
-	if is_instance_valid(GameManager):
+	if not Engine.is_editor_hint() and is_instance_valid(GameManager):
 		GameManager.unregister_barrier(self)
 
 func _apply_config() -> void:
@@ -78,6 +107,11 @@ func _add_visual_to_scene() -> void:
 	visual_3d.name = "BarrierVisual"
 	life_bar = visual_3d.find_child("LifeBar", true, false) as Node3D
 	life_bar_fill = visual_3d.find_child("LifeBarFill", true, false) as MeshInstance3D
+	mount_spot_visuals.clear()
+	for slot_index in range(TURRET_SLOT_OFFSETS.size()):
+		var mount_spot := visual_3d.find_child("MountSpot%d" % slot_index, true, false) as MeshInstance3D
+		if mount_spot:
+			mount_spot_visuals.append(mount_spot)
 	_apply_visual_config()
 	_sync_visual_transform()
 	visual_3d.visible = unlocked and (placed or previewing)
@@ -101,22 +135,36 @@ func _apply_visual_config() -> void:
 	if life_bar_fill and life_bar_fill.mesh is BoxMesh:
 		var fill_mesh := life_bar_fill.mesh as BoxMesh
 		fill_mesh.size = Vector3(life_bar_width, 1.2, 3.0)
+	for slot_index in range(mount_spot_visuals.size()):
+		var local_offset: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
+		mount_spot_visuals[slot_index].position = Vector3(
+			local_offset.x,
+			barrier_config.depth * 0.5 + 0.35,
+			local_offset.y
+		)
 	_sync_life_bar()
+	_sync_mount_spot_visuals()
 
 func _sync_visual_transform() -> void:
 	if visual_3d:
 		# Gameplay uses XZ plane: 2D X/Y maps to 3D X/Z.
 		visual_3d.global_position = Vector3(global_position.x, world_plane_y, global_position.y)
+		visual_3d.global_rotation = Vector3(0.0, world_yaw, 0.0)
 	_sync_turret_transforms()
 
 func set_deployment_position(world_position: Vector2) -> void:
 	set_deployment_world_position(Vector3(world_position.x, world_plane_y, world_position.y))
 
 func set_deployment_world_position(world_position: Vector3) -> void:
+	set_deployment_world_transform(world_position, world_yaw)
+
+func set_deployment_world_transform(world_position: Vector3, yaw: float) -> void:
 	if not unlocked:
 		return
 	world_plane_y = world_position.y
+	world_yaw = wrapf(yaw, -PI, PI)
 	global_position = Vector2(world_position.x, world_position.z)
+	global_rotation = -world_yaw
 	_sync_visual_transform()
 	GameManager.update_avoidance_obstacle(self)
 	deployment_changed.emit(global_position)
@@ -145,6 +193,7 @@ func _sync_placement_state() -> void:
 			turret.set_deployment_active(active)
 	if is_inside_tree():
 		GameManager.update_avoidance_obstacle(self)
+	_sync_mount_spot_visuals()
 
 func _apply_preview_visual() -> void:
 	if not visual_3d:
@@ -166,18 +215,13 @@ func _apply_preview_visual() -> void:
 func contains_world_point(world_point: Vector2, padding: float = 0.0) -> bool:
 	if not barrier_config:
 		return false
-	var local_point := world_point - global_position
+	var local_point: Vector2 = (world_point - global_position).rotated(world_yaw)
 	var half_size := barrier_config.size * 0.5
 	return absf(local_point.x) <= half_size.x + padding and absf(local_point.y) <= half_size.y + padding
 
-## Radius is calculated from the current barrier width so three footprints fit
-## side-by-side with a small gap. For the current 50x80 barrier this is 7 units.
+## Both fixed mount spots use the same footprint size.
 func get_turret_radius() -> float:
-	if not barrier_config:
-		return MAX_TURRET_RADIUS
-	var width_limit := (barrier_config.size.x - TURRET_GAP * 2.0) / 6.0
-	var height_limit := (barrier_config.size.y - TURRET_GAP * 2.0) / 6.0
-	return maxf(2.0, minf(MAX_TURRET_RADIUS, minf(width_limit, height_limit)))
+	return MAX_TURRET_RADIUS
 
 func get_turret_height() -> float:
 	if not barrier_config:
@@ -204,17 +248,11 @@ func add_turret_at(world_position: Vector2) -> Node3D:
 func attach_turret(turret: Node3D, world_position: Vector2) -> bool:
 	if not active or not is_instance_valid(turret) or turrets.size() >= MAX_TURRETS:
 		return false
-	if not contains_world_point(world_position):
+	var slot_index: int = _find_mount_slot_index(world_position)
+	if slot_index < 0:
 		return false
-
-	var local_point := world_position - global_position
-	var half_size := barrier_config.size * 0.5
+	var local_point: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
 	var radius := get_turret_radius()
-	local_point.x = clampf(local_point.x, -half_size.x + radius, half_size.x - radius)
-	local_point.y = clampf(local_point.y, -half_size.y + radius, half_size.y - radius)
-	var placement := global_position + local_point
-	if not _can_place_turret_at(placement):
-		return false
 
 	if not turret.get_parent():
 		var current_scene := get_tree().current_scene
@@ -227,23 +265,22 @@ func attach_turret(turret: Node3D, world_position: Vector2) -> bool:
 	if turret.has_method("set_preview"):
 		turret.set_preview(false)
 	_sync_turret_transforms()
+	_sync_mount_spot_visuals()
 	return true
 
 func move_turret_to(turret: Node3D, world_position: Vector2) -> bool:
-	if not turrets.has(turret) or not contains_world_point(world_position):
+	if not turrets.has(turret):
 		return false
-	var local_point := world_position - global_position
-	var half_size := barrier_config.size * 0.5
-	var radius := get_turret_radius()
-	local_point.x = clampf(local_point.x, -half_size.x + radius, half_size.x - radius)
-	local_point.y = clampf(local_point.y, -half_size.y + radius, half_size.y - radius)
-	var placement := global_position + local_point
-	if not _can_place_turret_at(placement, turret):
+	var slot_index: int = _find_mount_slot_index(world_position, turret)
+	if slot_index < 0:
 		return false
+	var local_point: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
 	if turret.has_method("set_barrier_offset"):
 		turret.set_barrier_offset(local_point)
 	else:
+		var placement: Vector2 = get_world_position_for_local_offset(local_point)
 		turret.global_position = Vector3(placement.x, get_turret_height(), placement.y)
+	_sync_mount_spot_visuals()
 	return true
 
 func remove_turret(turret: Node3D) -> void:
@@ -252,24 +289,62 @@ func remove_turret(turret: Node3D) -> void:
 	turrets.erase(turret)
 	if is_instance_valid(turret):
 		turret.queue_free()
+	_sync_mount_spot_visuals()
 
 func clear_turrets() -> void:
 	for turret in turrets:
 		if is_instance_valid(turret):
 			turret.queue_free()
 	turrets.clear()
+	_sync_mount_spot_visuals()
 
-func _can_place_turret_at(world_position: Vector2, ignored_turret: Node3D = null) -> bool:
-	if not contains_world_point(world_position, -get_turret_radius()):
-		return false
-	var minimum_distance := get_turret_radius() * 2.0 + TURRET_GAP
+func get_world_position_for_local_offset(local_offset: Vector2) -> Vector2:
+	return global_position + local_offset.rotated(-world_yaw)
+
+func get_available_mount_world_position_near(world_position: Vector2) -> Variant:
+	var slot_index: int = _find_mount_slot_index(world_position)
+	if slot_index < 0:
+		return null
+	return get_world_position_for_local_offset(TURRET_SLOT_OFFSETS[slot_index])
+
+func set_mount_spots_visible(value: bool) -> void:
+	mount_spots_visible = value
+	_sync_mount_spot_visuals()
+
+func _find_mount_slot_index(world_position: Vector2, ignored_turret: Node3D = null) -> int:
+	var nearest_index: int = -1
+	var nearest_distance_squared: float = TURRET_SLOT_CLICK_RADIUS * TURRET_SLOT_CLICK_RADIUS
+	for slot_index in range(TURRET_SLOT_OFFSETS.size()):
+		if _is_mount_slot_occupied(slot_index, ignored_turret):
+			continue
+		var slot_position: Vector2 = get_world_position_for_local_offset(TURRET_SLOT_OFFSETS[slot_index])
+		var distance_squared: float = world_position.distance_squared_to(slot_position)
+		if distance_squared <= nearest_distance_squared:
+			nearest_distance_squared = distance_squared
+			nearest_index = slot_index
+	return nearest_index
+
+func _is_mount_slot_occupied(slot_index: int, ignored_turret: Node3D = null) -> bool:
+	if slot_index < 0 or slot_index >= TURRET_SLOT_OFFSETS.size():
+		return true
+	var slot_offset: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
 	for turret in turrets:
 		if turret == ignored_turret or not is_instance_valid(turret):
 			continue
-		var turret_position := Vector2(turret.global_position.x, turret.global_position.z)
-		if world_position.distance_to(turret_position) < minimum_distance:
-			return false
-	return true
+		var turret_offset: Variant = turret.get("local_offset")
+		if turret_offset is Vector2 and (turret_offset as Vector2).is_equal_approx(slot_offset):
+			return true
+	return false
+
+func _sync_mount_spot_visuals() -> void:
+	for slot_index in range(mount_spot_visuals.size()):
+		var spot := mount_spot_visuals[slot_index]
+		if is_instance_valid(spot):
+			spot.visible = (
+				mount_spots_visible
+				and active
+				and not _is_mount_slot_occupied(slot_index)
+			)
 
 func _sync_turret_transforms() -> void:
 	for turret in turrets:
@@ -325,12 +400,11 @@ func contains_collision(hit_position: Vector3, impact_radius: float = 0.0) -> bo
 	if not active or not barrier_config:
 		return false
 
-	var point := Vector2(hit_position.x, hit_position.z)
+	var point: Vector2 = (Vector2(hit_position.x, hit_position.z) - global_position).rotated(world_yaw)
 	var half_size := barrier_config.size * 0.5
-	var center := global_position
 	var closest := Vector2(
-		clampf(point.x, center.x - half_size.x, center.x + half_size.x),
-		clampf(point.y, center.y - half_size.y, center.y + half_size.y)
+		clampf(point.x, -half_size.x, half_size.x),
+		clampf(point.y, -half_size.y, half_size.y)
 	)
 	if point.distance_squared_to(closest) > impact_radius * impact_radius:
 		return false

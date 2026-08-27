@@ -1,6 +1,6 @@
 # Advanced Barrier Turrets
 
-All turret actors share barrier placement, overlap validation, action-cone editing, right-click cancellation, and the `R` reset workflow. Their combat loops remain separate.
+All turret actors are 3D and share fixed Basic Ally Ship mount placement, action-cone editing, right-click cancellation, and the `R` reset workflow. Their combat loops remain separate. Each ship has two mount spots.
 
 ## Laser Turret
 

@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://barrieractor" path="res://src/entities/barrier.tscn" id="1_barrier"]
 
-[node name="AllyShips" type="Node3D" unique_id=113604251]
+[node name="AllyShips" type="Node2D" unique_id=113604251]
 
-[node name="Barrier_01" parent="." unique_id=662533161 instance=ExtResource("1_barrier")]
+[node name="BasicAllyShip_01" parent="." unique_id=662533161 instance=ExtResource("1_barrier")]
 position = Vector2(-80, 0)

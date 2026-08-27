@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://barriervisual"]
+[gd_scene load_steps=9 format=3 uid="uid://barriervisual"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrier"]
 albedo_color = Color(0.12, 0.65, 0.95, 1)
@@ -28,10 +28,36 @@ size = Vector3(44, 1, 5)
 material = SubResource("StandardMaterial3D_life_bar_fill")
 size = Vector3(42, 1.2, 3)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mount_spot"]
+albedo_color = Color(0.38, 0.4, 0.44, 0.95)
+metallic = 0.1
+roughness = 0.7
+emission_enabled = false
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mount_spot"]
+material = SubResource("StandardMaterial3D_mount_spot")
+top_radius = 9.0
+bottom_radius = 9.0
+height = 0.7
+radial_segments = 32
+rings = 1
+
 [node name="BarrierVisual" type="Node3D"]
 
 [node name="BarrierMesh" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_barrier")
+cast_shadow = 0
+
+[node name="MountSpots" type="Node3D" parent="."]
+
+[node name="MountSpot0" type="MeshInstance3D" parent="MountSpots"]
+position = Vector3(-12, 3.35, 0)
+mesh = SubResource("CylinderMesh_mount_spot")
+cast_shadow = 0
+
+[node name="MountSpot1" type="MeshInstance3D" parent="MountSpots"]
+position = Vector3(12, 3.35, 0)
+mesh = SubResource("CylinderMesh_mount_spot")
 cast_shadow = 0
 
 [node name="LifeBar" type="Node3D" parent="."]

@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://src/entities/barrier.tscn" id="1_base_ship"]
+[ext_resource type="Resource" path="res://src/prototypes/grid_combat/resources/GridAllyShipConfig.tres" id="2_config"]
+
+[node name="GridAllyShip" instance=ExtResource("1_base_ship")]
+barrier_config = ExtResource("2_config")

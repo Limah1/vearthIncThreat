@@ -30,7 +30,7 @@ window/vsync/vsync_mode=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/skill_tree_designer/plugin.cfg")
+enabled=PackedStringArray("res://addons/skill_tree_designer/plugin.cfg", "res://addons/balance_editor/plugin.cfg")
 
 [physics]
 

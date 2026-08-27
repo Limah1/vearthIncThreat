@@ -3,6 +3,7 @@ extends Node
 const LASER_SCENE := preload("res://src/entities/laser_turret.tscn")
 const MINER_SCENE := preload("res://src/entities/turret_miner.tscn")
 const BARRIER_SCENE := preload("res://src/entities/barrier.tscn")
+const DEFENSE_BLASTER_SCENE := preload("res://src/entities/defense_blaster.tscn")
 const DamageSystemScript = preload("res://src/core/damage_system.gd")
 
 class DummyHostile extends Node3D:
@@ -33,6 +34,7 @@ func _run_tests() -> void:
 	await _test_mine_fuse_and_area_damage()
 	await _test_miner_upgrades()
 	await _test_unlocked_preparation_inventory()
+	await _test_2d_ally_ship_to_3d_mounts()
 	if failures == 0:
 		print("Advanced turret tests passed.")
 	else:
@@ -131,6 +133,37 @@ func _test_unlocked_preparation_inventory() -> void:
 	UpgradeManager.purchased_levels["DA_UnlockTurret"] = 0
 	UpgradeManager.purchased_levels["DA_UnlockLaserTurret"] = 0
 	UpgradeManager.purchased_levels["DA_UnlockTurretMiner"] = 0
+
+func _test_2d_ally_ship_to_3d_mounts() -> void:
+	var ship := BARRIER_SCENE.instantiate() as Barrier
+	ship.position = Vector2(100.0, 200.0)
+	ship.rotation = PI * 0.5
+	add_child(ship)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_expect(ship.MAX_TURRETS == 2, "Basic Ally Ship must have exactly two turret mounts.")
+	_expect(ship.mount_spot_visuals.size() == 2, "The 2D Ally Ship must render two grey 3D mount circles.")
+	_expect(ship.visual_3d.global_position.is_equal_approx(Vector3(100.0, 0.0, 200.0)), "The 3D ship must use the authored 2D X/Y position as X/Z.")
+	_expect(is_equal_approx(ship.visual_3d.global_rotation.y, -PI * 0.5), "The 3D ship yaw must follow the authored 2D rotation.")
+	var first_mount: Vector2 = ship.get_world_position_for_local_offset(ship.TURRET_SLOT_OFFSETS[0])
+	var second_mount: Vector2 = ship.get_world_position_for_local_offset(ship.TURRET_SLOT_OFFSETS[1])
+	_expect(first_mount.is_equal_approx(Vector2(100.0, 188.0)), "2D rotation must rotate the first 3D mount into world space.")
+	_expect(second_mount.is_equal_approx(Vector2(100.0, 212.0)), "2D rotation must rotate the second 3D mount into world space.")
+	_expect(ship.contains_collision(Vector3(130.0, 0.0, 200.0)), "Rotated ship collision must follow its long 3D axis.")
+	_expect(not ship.contains_collision(Vector3(100.0, 0.0, 230.0)), "Rotated ship collision must reject points beyond its short 3D axis.")
+	var first_turret := DEFENSE_BLASTER_SCENE.instantiate() as DefenseBlaster
+	var second_turret := DEFENSE_BLASTER_SCENE.instantiate() as DefenseBlaster
+	var rejected_turret := DEFENSE_BLASTER_SCENE.instantiate() as DefenseBlaster
+	add_child(first_turret)
+	add_child(second_turret)
+	add_child(rejected_turret)
+	_expect(ship.attach_turret(first_turret, first_mount), "First turret must snap to the first mount.")
+	_expect(ship.attach_turret(second_turret, second_mount), "Second turret must snap to the second mount.")
+	_expect(not ship.attach_turret(rejected_turret, first_mount), "A third turret must be rejected when both mounts are occupied.")
+	rejected_turret.queue_free()
+	ship.clear_turrets()
+	ship.queue_free()
+	await get_tree().process_frame
 
 func _create_hostile(world_position: Vector3) -> DummyHostile:
 	var hostile := DummyHostile.new()

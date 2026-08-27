@@ -17,6 +17,13 @@ once if the tab does not appear immediately after pulling or enabling the plugin
 3. Select an unplaced upgrade and press **Place**.
 4. Press **Save** when the layout is ready.
 
+To create an upgrade asset from the designer, press **New Upgrade**, enter its
+display name, and choose its type. The asset is saved under
+`res://src/resources/upgrades/` with a generated ID such as
+`UPG_LASERDAMAGE_001`. The sequence is checked recursively against existing
+upgrade assets. Existing IDs are never renamed, because they are also used by
+the skill tree, `UpgradeManager`, and saved progression.
+
 The clicked slot determines `grid_position`; coordinates are never typed
 manually. The picker scans `res://src/resources/upgrades` recursively.
 
@@ -28,6 +35,10 @@ manually. The picker scans `res://src/resources/upgrades` recursively.
 
 Repeating the same action removes that connection. Select the child and choose
 **ANY purchased** or **ALL purchased** to control multiple-prerequisite logic.
+
+To remove a parent directly, select the child node, choose the prerequisite in
+the **Parent** dropdown, and press **Remove Parent**. This only removes the
+connection; both upgrade nodes and their data assets remain in the tree.
 
 ## Edit the layout
 

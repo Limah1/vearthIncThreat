@@ -363,46 +363,46 @@ rotates = false
 
 [node name="SpawnerPoint_49" type="Node2D" parent="AsteoidsCircleSpawner/SpawnPath/@PathFollow2D@37401" index="0" unique_id=700786315]
 
-[node name="AllyShips" type="Node3D" parent="." index="20" unique_id=969316477]
+[node name="AllyShips" type="Node2D" parent="." index="20" unique_id=969316477]
 
-[node name="Barrier_01" parent="AllyShips" index="0" unique_id=1376109855 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_01" parent="AllyShips" index="0" unique_id=1376109855 instance=ExtResource("2_barrier")]
 position = Vector2(-281, -2)
 
-[node name="Barrier_02" parent="AllyShips" index="1" unique_id=1414810138 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_02" parent="AllyShips" index="1" unique_id=1414810138 instance=ExtResource("2_barrier")]
 position = Vector2(-281, 141)
 
-[node name="Barrier_03" parent="AllyShips" index="2" unique_id=1361555703 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_03" parent="AllyShips" index="2" unique_id=1361555703 instance=ExtResource("2_barrier")]
 position = Vector2(-278, -144)
 
-[node name="Barrier_07" parent="AllyShips" index="3" unique_id=1656410445 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_07" parent="AllyShips" index="3" unique_id=1656410445 instance=ExtResource("2_barrier")]
 position = Vector2(165, -2)
 
-[node name="Barrier_08" parent="AllyShips" index="4" unique_id=1006288809 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_08" parent="AllyShips" index="4" unique_id=1006288809 instance=ExtResource("2_barrier")]
 position = Vector2(165, 141)
 
-[node name="Barrier_09" parent="AllyShips" index="5" unique_id=1255182362 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_09" parent="AllyShips" index="5" unique_id=1255182362 instance=ExtResource("2_barrier")]
 position = Vector2(168, -144)
 
-[node name="Barrier_04" parent="AllyShips" index="6" unique_id=309557148 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_04" parent="AllyShips" index="6" unique_id=309557148 instance=ExtResource("2_barrier")]
 position = Vector2(-164, -249)
 rotation = 1.5707964
 
-[node name="Barrier_05" parent="AllyShips" index="7" unique_id=512802185 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_05" parent="AllyShips" index="7" unique_id=512802185 instance=ExtResource("2_barrier")]
 position = Vector2(-30, -250)
 rotation = 1.5707964
 
-[node name="Barrier_06" parent="AllyShips" index="8" unique_id=1535288472 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_06" parent="AllyShips" index="8" unique_id=1535288472 instance=ExtResource("2_barrier")]
 position = Vector2(90, -250)
 rotation = 1.5707964
 
-[node name="Barrier_10" parent="AllyShips" index="9" unique_id=611166847 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_10" parent="AllyShips" index="9" unique_id=611166847 instance=ExtResource("2_barrier")]
 position = Vector2(-170, 189)
 rotation = 1.5707964
 
-[node name="Barrier_11" parent="AllyShips" index="10" unique_id=2047898853 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_11" parent="AllyShips" index="10" unique_id=2047898853 instance=ExtResource("2_barrier")]
 position = Vector2(-36, 188)
 rotation = 1.5707964
 
-[node name="Barrier_12" parent="AllyShips" index="11" unique_id=109366358 instance=ExtResource("2_barrier")]
+[node name="BasicAllyShip_12" parent="AllyShips" index="11" unique_id=109366358 instance=ExtResource("2_barrier")]
 position = Vector2(84, 188)
 rotation = 1.5707964

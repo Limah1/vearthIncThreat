@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="UpgradeData" format=3]
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://pbwh7j7pjt4i"]
 
-[ext_resource type="Texture2D" path="res://src/assets/UI/PreparationIcons/turret.svg" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://mq1rohxi0poq" path="res://src/assets/UI/PreparationIcons/turret.svg" id="1_icon"]
 [ext_resource type="Script" uid="uid://bqxo10t8muw4q" path="res://src/resources/upgrade_data.gd" id="2_script"]
 
 [resource]
@@ -10,8 +10,7 @@ upgrade_name = "Defense Blaster"
 description = "Unlocks Defense Blaster deployment during the preparation phase. Blasters are mounted on barriers authored in each level."
 icon = ExtResource("1_icon")
 category = "UnlockTurret"
-unlocks = Array[String](["DA_DefenseBlasterAttackSpeed", "DA_DefenseBlasterDamage"])
-base_cost = 10.0
-max_level = 1
+base_cost = 3.0
 value_increment = 0.0
 default_unlocked = true
+unlocks = Array[String](["DA_DefenseBlasterAttackSpeed", "DA_DefenseBlasterDamage"])

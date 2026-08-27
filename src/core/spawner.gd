@@ -6,6 +6,7 @@ const DEFAULT_LEVEL_CONFIG_PATH: String = "res://src/resources/levels/FirstLevel
 const SPAWN_INTERVAL_SECONDS: float = 1.0
 
 @export var level_config: LevelConfig
+@export var start_blocked: bool = false
 
 var _level_started: bool = false
 var _level_spawned_count: int = 0
@@ -86,6 +87,8 @@ func _ensure_fallback_spawners() -> void:
 		spawn_points.append(point)
 
 func start_spawning() -> void:
+	if start_blocked:
+		return
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		return
 	if not level_config:
@@ -120,6 +123,11 @@ func start_level(config: LevelConfig = null) -> void:
 	if config:
 		set_level_config(config)
 	start_spawning()
+
+func set_start_blocked(blocked: bool) -> void:
+	start_blocked = blocked
+	if blocked:
+		_spawning_batches = false
 
 func _start_configured_level() -> void:
 	_level_started = true
@@ -219,5 +227,5 @@ func _spawn_asteroid(spawn_point: Node2D, asteroid_type: String) -> bool:
 	return is_instance_valid(_asteroid_master.spawn_asteroid(spawn_pos_3d, dir_3d, asteroid_type))
 
 func _on_state_changed(new_state: GameManager.GameState) -> void:
-	if new_state == GameManager.GameState.PLAYING and not _level_started:
+	if not start_blocked and new_state == GameManager.GameState.PLAYING and not _level_started:
 		start_level(level_config)
