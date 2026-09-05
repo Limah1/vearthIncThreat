@@ -1,14 +1,24 @@
-[gd_scene load_steps=4 format=3 uid="uid://c6p50gcrw4w80"]
+[gd_scene load_steps=5 format=3 uid="uid://c6p50gcrw4w80"]
 
 [ext_resource type="Script" path="res://src/entities/instances/satellite_projectile_instance.gd" id="1_script"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_outline"]
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 1)
+cull_mode = 1
+grow = true
+grow_amount = 0.8
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_satlaser"]
+next_pass = SubResource("StandardMaterial3D_outline")
 albedo_color = Color(0, 0.8, 1, 1)
-emission_enabled = false
+emission_enabled = true
+emission = Color(0, 0.8, 1, 1)
+emission_energy_multiplier = 3.0
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_satlaser"]
 material = SubResource("StandardMaterial3D_satlaser")
-radius = 0.2
+radius = 0.75
 height = 1.0
 
 [node name="SatelliteProjectile3D" type="Node3D" unique_id=1100189090]

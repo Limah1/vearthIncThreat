@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://src/assets/3d/meteoro_medium.FBX" id="1_model"]
+
+[node name="AsteroidMediumVisual" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+scale = Vector3(140, 140, 140)

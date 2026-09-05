@@ -4,6 +4,8 @@ class_name EnemyMaster
 
 func _ready() -> void:
 	add_to_group("enemy_master")
+	if GameManager.get_selected_level_config().use_mass_enemies:
+		return
 	super._ready()
 
 func spawn_enemy(spawn_pos_3d: Vector3) -> Node3D:

@@ -24,6 +24,7 @@ var spawn_points: Array[Node2D] = []
 var _garbage_master: SpaceGarbageMaster = null
 var _enemy_master: Node = null
 var _asteroid_master: Node = null
+var mass_runtime: MassEnemyRuntime
 
 func _ready() -> void:
 	add_to_group("spawner")
@@ -117,6 +118,12 @@ func set_level_config(config: LevelConfig) -> void:
 	_spawn_batch_size = 0
 	_spawn_rounds_total = 0
 	_spawn_rounds_completed = 0
+	if is_instance_valid(mass_runtime):
+		if config.use_mass_enemies:
+			mass_runtime.configure(config)
+		else:
+			mass_runtime.free()
+			mass_runtime = null
 
 ## Select resource and start it.
 func start_level(config: LevelConfig = null) -> void:
@@ -128,8 +135,21 @@ func set_start_blocked(blocked: bool) -> void:
 	start_blocked = blocked
 	if blocked:
 		_spawning_batches = false
+		if is_instance_valid(mass_runtime):
+			mass_runtime.spawner.stop_spawning()
+	elif is_instance_valid(mass_runtime):
+		mass_runtime.spawner.resume_spawning()
 
 func _start_configured_level() -> void:
+	if level_config != null and level_config.use_mass_enemies:
+		if not is_instance_valid(mass_runtime):
+			mass_runtime = MassEnemyRuntime.new()
+			mass_runtime.name = "MassEnemyRuntime"
+			mass_runtime.level_config = level_config
+			add_child(mass_runtime)
+		_level_started = mass_runtime.begin(spawn_points)
+		_spawning_batches = false
+		return
 	_level_started = true
 	_level_spawned_count = 0
 	_spawn_timer = 0.0
@@ -153,9 +173,13 @@ func _start_configured_level() -> void:
 	_spawning_batches = _level_spawned_count < total
 
 func is_level_spawn_complete() -> bool:
+	if is_instance_valid(mass_runtime) and level_config.use_mass_enemies:
+		return mass_runtime.spawner.is_spawn_complete()
 	return level_config != null and _level_started and _level_spawned_count >= level_config.get_total_configured_enemies()
 
 func get_spawned_actor_count() -> int:
+	if is_instance_valid(mass_runtime) and level_config.use_mass_enemies:
+		return mass_runtime.spawner.spawned_enemy_count
 	return _level_spawned_count
 
 func get_spawn_total() -> int:

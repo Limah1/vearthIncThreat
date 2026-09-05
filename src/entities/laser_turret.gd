@@ -47,6 +47,12 @@ func _process(delta: float) -> void:
 		return
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		return
+	if is_instance_valid(GameManager.mass_combat):
+		if beam_remaining > 0:
+			_update_active_beam(delta)
+		else:
+			_process_mass(delta)
+		return
 
 	if beam_remaining > 0.0:
 		_update_active_beam(delta)
@@ -58,7 +64,7 @@ func _process(delta: float) -> void:
 	if not _is_valid_target(target):
 		target = null
 	if not is_instance_valid(target) and target_refresh_timer <= 0.0:
-		target = _find_nearest_asteroid()
+		target = _find_nearest_enemy()
 		target_refresh_timer = turret_config.target_refresh_interval
 
 	sweep_phase = fmod(sweep_phase + delta * turret_config.sweep_speed * TAU, TAU)
@@ -81,9 +87,10 @@ func _begin_beam(first_target: Node) -> void:
 	if not _is_valid_target(first_target):
 		return
 	var target_position: Vector3 = first_target.get("global_position")
+	var origin := get_shot_origin()
 	beam_direction = Vector2(
-		target_position.x - global_position.x,
-		target_position.z - global_position.z
+		target_position.x - origin.x,
+		target_position.z - origin.z
 	).normalized()
 	if beam_direction.is_zero_approx():
 		return
@@ -115,6 +122,11 @@ func _stop_beam(start_cooldown: bool) -> void:
 func _damage_beam_tick() -> void:
 	if beam_direction.is_zero_approx() or not turret_config:
 		return
+	var origin := get_shot_origin()
+	if is_instance_valid(GameManager.mass_combat):
+		var end := origin + Vector3(beam_direction.x, 0, beam_direction.y) * turret_config.attack_range
+		GameManager.mass_combat.damage_line(origin, end, beam_half_width, effective_damage * DAMAGE_TICK_INTERVAL)
+		return
 	var candidates: Array = GameManager.get_nearby_entities(global_position, turret_config.attack_range)
 	var tick_damage: float = effective_damage * DAMAGE_TICK_INTERVAL
 	for candidate in candidates:
@@ -122,8 +134,8 @@ func _damage_beam_tick() -> void:
 			continue
 		var candidate_position: Vector3 = candidate.get("global_position")
 		var offset := Vector2(
-			candidate_position.x - global_position.x,
-			candidate_position.z - global_position.z
+			candidate_position.x - origin.x,
+			candidate_position.z - origin.z
 		)
 		var along_beam: float = offset.dot(beam_direction)
 		if along_beam < 0.0 or along_beam > turret_config.attack_range:
@@ -140,23 +152,24 @@ func _set_beam_visible(value: bool) -> void:
 	if not beam_visual or not turret_config:
 		return
 	beam_visual.visible = value
-	beam_visual.rotation.y = current_aim_yaw
-	beam_visual.position = Vector3(
-		sin(current_aim_yaw) * turret_config.attack_range * 0.5,
-		1.0,
-		cos(current_aim_yaw) * turret_config.attack_range * 0.5
-	)
+	var origin := get_shot_origin()
+	beam_visual.global_rotation = Vector3(0, current_aim_yaw, 0)
+	beam_visual.global_position = origin + Vector3(beam_direction.x, 0, beam_direction.y) * turret_config.attack_range * 0.5
 	beam_visual.scale = Vector3(1.0, 1.0, turret_config.attack_range)
 
 func _sync_turret_mesh_rotation() -> void:
-	var turret_mesh := get_node_or_null("TurretMesh") as MeshInstance3D
-	if turret_mesh:
-		turret_mesh.rotation.y = current_aim_yaw
+	_sync_aim_visual()
 	if beam_remaining > 0.0 and beam_visual:
 		beam_visual.rotation.y = current_aim_yaw
 
-func _is_hostile_candidate(candidate: Node) -> bool:
-	return (
-		is_instance_valid(candidate)
-		and (candidate.is_in_group("asteroid") or candidate.is_in_group("enemy"))
-	)
+
+func _fire_mass(target_position: Vector3) -> void:
+	var offset := target_position - get_shot_origin()
+	beam_direction = Vector2(offset.x, offset.z).normalized()
+	current_aim_yaw = atan2(beam_direction.x, beam_direction.y)
+	beam_remaining = beam_duration
+	beam_tick_timer = DAMAGE_TICK_INTERVAL
+	mass_target = -1
+	_sync_turret_mesh_rotation()
+	_set_beam_visible(true)
+	_damage_beam_tick()

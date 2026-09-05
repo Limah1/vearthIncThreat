@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Material"]
+shading_mode = 0
+albedo_color = Color(0.92, 0.68, 0.1, 1)
+roughness = 0.55
+
+[sub_resource type="CylinderMesh" id="Mesh"]
+material = SubResource("Material")
+top_radius = 7.0
+bottom_radius = 7.0
+height = 3.0
+radial_segments = 3
+rings = 1
+
+[node name="TurretMinerVisual" type="Node3D"]
+
+[node name="AimPivot" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="AimPivot"]
+mesh = SubResource("Mesh")
+cast_shadow = 0
+
+[node name="Muzzle" type="Marker3D" parent="AimPivot"]
+position = Vector3(0, 2, 5)

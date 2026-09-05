@@ -206,6 +206,8 @@ func project_mouse_to_plane() -> Vector2:
 # Apply damage sweep in a circle
 func _perform_click_sweep() -> void:
 	var click_pos = project_mouse_to_plane()
+	if is_instance_valid(GameManager.mass_combat):
+		GameManager.mass_combat.damage_circle(Vector3(click_pos.x, 0, click_pos.y), final_click_radius, click_damage)
 	# Query nearby grid cells instead of scanning every active target.
 	var targets = GameManager.get_nearby_entities(
 		Vector3(click_pos.x, 0.0, click_pos.y),

@@ -1,9 +1,12 @@
-[gd_resource type="Resource" script_class="TurretConfig" format=3 uid="uid://11hrd87jgu58"]
+[gd_resource type="Resource" script_class="TurretConfig" load_steps=3 format=3 uid="uid://11hrd87jgu58"]
 
 [ext_resource type="Script" uid="uid://c14qdfioipybm" path="res://src/resources/turret_config.gd" id="1_config"]
+[ext_resource type="Resource" path="res://src/resources/visuals/turrets/defense_blaster_visual.tres" id="2_visual"]
 
 [resource]
 script = ExtResource("1_config")
-fire_rate = 3.0
+visual_asset = ExtResource("2_visual")
+fire_rate = 10.0
+tracking_speed = 20.0
 attack_range = 350.0
 sweep_speed = 0.5

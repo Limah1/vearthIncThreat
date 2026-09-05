@@ -1,0 +1,63 @@
+{
+	"build": "debug",
+	"cpu": "AMD Ryzen 5 3600 6-Core Processor",
+	"debris_upgrades": {
+		"amount": 1,
+		"chance": 1,
+		"damage": 1,
+		"piercing": 3,
+		"unlock": 1
+	},
+	"engine": "4.7.2-stable (steam)",
+	"fixture": "production GridCombatLevel, 4 allied ships, 3 barriers, 4 blasters, 2 lasers, 2 miners; original spawn points; 60/25/10/5 roster",
+	"gpu": "NVIDIA GeForce RTX 4060",
+	"legacy_rules_and_feedback": true,
+	"physics": "normal engine fixed ticks, no manual simulation steps",
+	"resolution": "(1920, 1080)",
+	"results": [
+		{
+			"debris_bursts": 289,
+			"draw_calls": 181.0,
+			"dropped_cosmetic_feedback": 0,
+			"elapsed_seconds": 4.01,
+			"escaped": 0,
+			"first_observed_batch": 1024,
+			"frame_median_ms": 11.913,
+			"frame_p95_ms": 13.563,
+			"kills": 943,
+			"peak_alive": 4854,
+			"physics_median_ms": 2.464,
+			"projectiles": 209,
+			"rejected_debris_commands": 0,
+			"rejected_projectiles": 0,
+			"requested": 5000,
+			"samples": 180,
+			"spawn_points": 50,
+			"steady_max_alive": 4854,
+			"steady_min_alive": 4057,
+			"total_spawned": 5000
+		},
+		{
+			"debris_bursts": 186,
+			"draw_calls": 50.0,
+			"dropped_cosmetic_feedback": 0,
+			"elapsed_seconds": 6.051,
+			"escaped": 0,
+			"first_observed_batch": 1024,
+			"frame_median_ms": 11.197,
+			"frame_p95_ms": 14.357,
+			"kills": 622,
+			"peak_alive": 9514,
+			"physics_median_ms": 1.797,
+			"projectiles": 269,
+			"rejected_debris_commands": 0,
+			"rejected_projectiles": 0,
+			"requested": 10000,
+			"samples": 180,
+			"spawn_points": 50,
+			"steady_max_alive": 9514,
+			"steady_min_alive": 9378,
+			"total_spawned": 10000
+		}
+	]
+}

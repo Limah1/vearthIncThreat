@@ -1,38 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://barriervisual"]
+[gd_scene format=3 uid="uid://barriervisual"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrier"]
-albedo_color = Color(0.12, 0.65, 0.95, 1)
-metallic = 0.15
-roughness = 0.35
-emission_enabled = false
-
-[sub_resource type="BoxMesh" id="BoxMesh_barrier"]
-material = SubResource("StandardMaterial3D_barrier")
-size = Vector3(50, 6, 80)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_life_bar_background"]
-albedo_color = Color(0.04, 0.04, 0.06, 1)
-roughness = 0.8
-emission_enabled = false
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_life_bar_fill"]
-albedo_color = Color(0.1, 0.9, 0.35, 1)
-roughness = 0.55
-emission_enabled = false
-
-[sub_resource type="BoxMesh" id="BoxMesh_life_bar_background"]
-material = SubResource("StandardMaterial3D_life_bar_background")
-size = Vector3(44, 1, 5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_life_bar_fill"]
-material = SubResource("StandardMaterial3D_life_bar_fill")
-size = Vector3(42, 1.2, 3)
+[ext_resource type="PackedScene" uid="uid://cjabmrav0gqk8" path="res://src/entities/visuals/SpaceShipTest.glb" id="1_vuwq3"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mount_spot"]
 albedo_color = Color(0.38, 0.4, 0.44, 0.95)
 metallic = 0.1
 roughness = 0.7
-emission_enabled = false
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_mount_spot"]
 material = SubResource("StandardMaterial3D_mount_spot")
@@ -42,31 +15,48 @@ height = 0.7
 radial_segments = 32
 rings = 1
 
-[node name="BarrierVisual" type="Node3D"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_life_bar_background"]
+albedo_color = Color(0.04, 0.04, 0.06, 1)
+roughness = 0.8
 
-[node name="BarrierMesh" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_barrier")
+[sub_resource type="BoxMesh" id="BoxMesh_life_bar_background"]
+material = SubResource("StandardMaterial3D_life_bar_background")
+size = Vector3(44, 1, 5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_life_bar_fill"]
+albedo_color = Color(0.1, 0.9, 0.35, 1)
+roughness = 0.55
+
+[sub_resource type="BoxMesh" id="BoxMesh_life_bar_fill"]
+material = SubResource("StandardMaterial3D_life_bar_fill")
+size = Vector3(42, 1.2, 3)
+
+[node name="BarrierVisual" type="Node3D" unique_id=1690885164]
+
+[node name="MountSpots" type="Node3D" parent="." unique_id=2039127943]
+
+[node name="MountSpot0" type="MeshInstance3D" parent="MountSpots" unique_id=1986608485]
+transform = Transform3D(1.9312303, 0, 0, 0, 1, 0, 0, 0, 2.049633, 1.7751513, 3.35, -27.59503)
 cast_shadow = 0
-
-[node name="MountSpots" type="Node3D" parent="."]
-
-[node name="MountSpot0" type="MeshInstance3D" parent="MountSpots"]
-position = Vector3(-12, 3.35, 0)
 mesh = SubResource("CylinderMesh_mount_spot")
-cast_shadow = 0
 
-[node name="MountSpot1" type="MeshInstance3D" parent="MountSpots"]
-position = Vector3(12, 3.35, 0)
+[node name="MountSpot1" type="MeshInstance3D" parent="MountSpots" unique_id=777133770]
+transform = Transform3D(1.7156808, 0, 0, 0, 1, 0, 0, 0, 1.9715354, 0.9226475, 3.35, 34.69129)
+cast_shadow = 0
 mesh = SubResource("CylinderMesh_mount_spot")
+
+[node name="LifeBar" type="Node3D" parent="." unique_id=996916230]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -46)
+
+[node name="LifeBarBackground" type="MeshInstance3D" parent="LifeBar" unique_id=426175147]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -45.309708)
 cast_shadow = 0
-
-[node name="LifeBar" type="Node3D" parent="."]
-position = Vector3(0, 4, -46)
-
-[node name="LifeBarBackground" type="MeshInstance3D" parent="LifeBar"]
 mesh = SubResource("BoxMesh_life_bar_background")
-cast_shadow = 0
 
-[node name="LifeBarFill" type="MeshInstance3D" parent="LifeBar"]
-mesh = SubResource("BoxMesh_life_bar_fill")
+[node name="LifeBarFill" type="MeshInstance3D" parent="LifeBar" unique_id=887253667]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -45.309708)
 cast_shadow = 0
+mesh = SubResource("BoxMesh_life_bar_fill")
+
+[node name="SpaceShipTest" parent="." unique_id=1263754623 instance=ExtResource("1_vuwq3")]
+transform = Transform3D(54.601986, 0, 0, 0, 1, 0, 0, 0, 24.730179, 1.9435062, 1.9566517, -29.94032)

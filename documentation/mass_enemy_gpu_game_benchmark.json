@@ -1,0 +1,49 @@
+{
+	"build": "debug",
+	"cpu": "AMD Ryzen 5 3600 6-Core Processor",
+	"engine": "4.7.2-stable (steam)",
+	"fixture": "production GridCombatLevel, 4 allied ships, 3 barriers, 4 blasters, 2 lasers, 2 miners; original spawn points; 60/25/10/5 roster",
+	"gpu": "NVIDIA GeForce RTX 4060",
+	"physics": "normal engine fixed ticks, no manual simulation steps",
+	"resolution": "(1920, 1080)",
+	"results": [
+		{
+			"draw_calls": 42.0,
+			"elapsed_seconds": 3.942,
+			"escaped": 0,
+			"first_observed_batch": 1024,
+			"frame_median_ms": 11.092,
+			"frame_p95_ms": 11.729,
+			"kills": 210,
+			"peak_alive": 4898,
+			"physics_median_ms": 16.683,
+			"projectiles": 131,
+			"rejected_projectiles": 0,
+			"requested": 5000,
+			"samples": 180,
+			"spawn_points": 50,
+			"steady_max_alive": 4898,
+			"steady_min_alive": 4790,
+			"total_spawned": 5000
+		},
+		{
+			"draw_calls": 31.0,
+			"elapsed_seconds": 5.946,
+			"escaped": 0,
+			"first_observed_batch": 1024,
+			"frame_median_ms": 11.138,
+			"frame_p95_ms": 11.498,
+			"kills": 115,
+			"peak_alive": 9885,
+			"physics_median_ms": 1.751,
+			"projectiles": 229,
+			"rejected_projectiles": 0,
+			"requested": 10000,
+			"samples": 180,
+			"spawn_points": 50,
+			"steady_max_alive": 9885,
+			"steady_min_alive": 9885,
+			"total_spawned": 10000
+		}
+	]
+}

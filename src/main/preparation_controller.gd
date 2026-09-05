@@ -1,6 +1,8 @@
 extends Node3D
 class_name PreparationController
 
+signal layout_changed
+
 const TurretAimGizmoScript = preload("res://src/main/turret_aim_gizmo.gd")
 const DefenseBlasterScene = preload("res://src/entities/defense_blaster.tscn")
 const LaserTurretScene = preload("res://src/entities/laser_turret.tscn")
@@ -27,6 +29,7 @@ var aiming_is_new_turret: bool = false
 var original_center_yaw: float = 0.0
 var original_cone_angle: float = 90.0
 var available_turrets: int = STARTING_TURRETS
+var starting_turrets: int = STARTING_TURRETS
 var selected_turret_type: TurretType = TurretType.DEFENSE_BLASTER
 var available_by_type: Dictionary = {}
 var barriers: Array[Barrier] = []
@@ -49,6 +52,10 @@ func _initialize() -> void:
 	_refresh_barriers()
 	if not camera:
 		camera = get_viewport().get_camera_3d()
+	if game_manager:
+		var level_config := game_manager.get_selected_level_config() as LevelConfig
+		if is_instance_valid(level_config):
+			starting_turrets = maxi(level_config.starting_defense_blasters, 0)
 	_reset_inventory()
 	_on_state_changed(game_manager.current_state if game_manager else 0)
 
@@ -228,6 +235,7 @@ func _return_all_turrets(status_message: String) -> void:
 			current_barrier.clear_turrets()
 	_reset_inventory()
 	_set_status(status_message)
+	layout_changed.emit()
 
 func start_wave() -> void:
 	if not active:
@@ -264,6 +272,10 @@ func get_available_turrets_for_type(turret_type: TurretType) -> int:
 	return int(available_by_type.get(turret_type, 0))
 
 func is_turret_type_unlocked(turret_type: TurretType) -> bool:
+	if turret_type == TurretType.DEFENSE_BLASTER and game_manager:
+		var level_config := game_manager.get_selected_level_config() as LevelConfig
+		if is_instance_valid(level_config) and level_config.defense_blasters_unlocked:
+			return true
 	return UpgradeManager.get_upgrade_level(_get_unlock_upgrade_id(turret_type)) > 0
 
 func get_turret_type_name(turret_type: TurretType) -> String:
@@ -334,6 +346,53 @@ func _confirm_turret_aim() -> void:
 	dragging_aim_handle = false
 	placement_mode = PlacementMode.NONE
 	_set_status("%s angle confirmed. Select another turret, edit a placed turret, or start the wave." % get_turret_type_name(selected_turret_type))
+	layout_changed.emit()
+
+
+func commit_pending_layout_changes() -> void:
+	if placement_mode == PlacementMode.AIMING:
+		_confirm_turret_aim()
+	elif placement_mode == PlacementMode.POSITIONING:
+		_cancel_placement()
+
+
+func prepare_inventory_for_layout_restore() -> void:
+	_cancel_placement()
+	_refresh_barriers()
+	_reset_inventory()
+
+
+func restore_turret_configuration(
+	barrier: Barrier,
+	turret_type_id: String,
+	mount_slot: int,
+	center_yaw: float,
+	cone_angle: float
+) -> bool:
+	if not is_instance_valid(barrier) or mount_slot < 0 or mount_slot >= Barrier.MAX_TURRETS:
+		return false
+	var turret_type := _get_type_for_id(turret_type_id)
+	if not is_turret_type_unlocked(turret_type) or get_available_turrets_for_type(turret_type) <= 0:
+		return false
+	var turret_scene := _get_scene_for_type(turret_type)
+	var turret := turret_scene.instantiate() as DefenseBlaster if turret_scene else null
+	if not is_instance_valid(turret):
+		return false
+	var current_scene := get_tree().current_scene
+	if not is_instance_valid(current_scene):
+		turret.queue_free()
+		return false
+	current_scene.add_child(turret)
+	var mount_position := barrier.get_world_position_for_local_offset(
+		barrier.get_mount_slot_offset(mount_slot)
+	)
+	if not barrier.attach_turret(turret, mount_position):
+		turret.queue_free()
+		return false
+	turret.set_aim_configuration(center_yaw, cone_angle)
+	available_by_type[turret_type] = get_available_turrets_for_type(turret_type) - 1
+	available_turrets = get_available_turrets()
+	return true
 
 func _get_turret_source_barrier() -> Barrier:
 	for current_barrier in barriers:
@@ -385,7 +444,7 @@ func _cancel_placement() -> void:
 	placement_mode = PlacementMode.NONE
 
 func _reset_inventory() -> void:
-	available_by_type[TurretType.DEFENSE_BLASTER] = STARTING_TURRETS if is_turret_type_unlocked(TurretType.DEFENSE_BLASTER) else 0
+	available_by_type[TurretType.DEFENSE_BLASTER] = starting_turrets if is_turret_type_unlocked(TurretType.DEFENSE_BLASTER) else 0
 	available_by_type[TurretType.LASER_TURRET] = STARTING_LASER_TURRETS if is_turret_type_unlocked(TurretType.LASER_TURRET) else 0
 	available_by_type[TurretType.TURRET_MINER] = STARTING_TURRET_MINERS if is_turret_type_unlocked(TurretType.TURRET_MINER) else 0
 	available_turrets = get_available_turrets()
@@ -415,12 +474,22 @@ func _get_maximum_for_type(turret_type: TurretType) -> int:
 		TurretType.TURRET_MINER:
 			return STARTING_TURRET_MINERS
 		_:
-			return STARTING_TURRETS
+			return starting_turrets
 
 func _get_type_for_turret(turret: DefenseBlaster) -> TurretType:
 	if not is_instance_valid(turret):
 		return TurretType.DEFENSE_BLASTER
 	match turret.get_turret_type_id():
+		"laser_turret":
+			return TurretType.LASER_TURRET
+		"turret_miner":
+			return TurretType.TURRET_MINER
+		_:
+			return TurretType.DEFENSE_BLASTER
+
+
+func _get_type_for_id(turret_type_id: String) -> TurretType:
+	match turret_type_id:
 		"laser_turret":
 			return TurretType.LASER_TURRET
 		"turret_miner":

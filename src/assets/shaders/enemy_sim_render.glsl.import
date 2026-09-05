@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b6qcitkeewtta"
+path="res://.godot/imported/enemy_sim_render.glsl-58865a4f1b86e32704ef17b28449b5de.res"
+
+[deps]
+
+source_file="res://src/assets/shaders/enemy_sim_render.glsl"
+dest_files=["res://.godot/imported/enemy_sim_render.glsl-58865a4f1b86e32704ef17b28449b5de.res"]
+
+[params]
+

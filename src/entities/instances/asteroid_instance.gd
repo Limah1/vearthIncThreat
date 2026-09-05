@@ -9,7 +9,7 @@ const DamageSystemScript = preload("res://src/core/damage_system.gd")
 @export var base_value: float = 1.0 # --- CRÉDITOS CONCEDIDOS NA DESTRUIÇÃO
 @export var base_planet_damage: float = 1.0 # --- DANO AO ATINGIR O PLANETA
 @export_range(1, 5, 1) var minimum_spawn_hp: int = 1
-@export_range(1, 5, 1) var maximum_spawn_hp: int = 5
+@export_range(1, 5, 1) var maximum_spawn_hp: int = 1
 
 @export_group("Ally Avoidance")
 @export var avoidance_enabled: bool = true
@@ -29,7 +29,7 @@ var slowdown_timer: float = 0.0
 var max_hp: float = 1.0
 var hp: float = 1.0
 var active: bool = false
-var pool_type: String = "asteroid"
+var pool_type: String = "enemy"
 var master_node: Node = null
 var movement_direction: Vector3 = Vector3.ZERO
 var asteroid_type: String = "small"
@@ -45,7 +45,7 @@ var _avoidance_query_timer: float = 0.0
 var _barrier_contact: Node = null
 
 func _ready() -> void:
-	add_to_group("asteroid")
+	add_to_group("enemy")
 
 	# The pooled scene already contains the small asteroid mesh. Reuse it and
 	# lazily create medium/large visuals only if a level actually needs them.
@@ -101,7 +101,7 @@ func set_asteroid_type(type: String) -> void:
 	match type:
 		"small":
 			current_value = base_value
-			planet_damage = base_planet_damage * zone_scale
+			planet_damage = base_planet_damage
 			radius = 24.0
 		"medium":
 			current_value = base_value
@@ -190,7 +190,7 @@ func _manager_move(delta: float) -> void:
 	# Move node
 	global_position += movement_direction * speed * delta
 
-	# Rotate the active mesh slowly
+	# Small directional enemies always face the planet. Other asteroids tumble.
 	var active_mesh: Node3D = null
 	match asteroid_type:
 		"small": active_mesh = fbx_small
@@ -198,8 +198,14 @@ func _manager_move(delta: float) -> void:
 		"large": active_mesh = fbx_large
 
 	if active_mesh and is_instance_valid(active_mesh):
-		active_mesh.rotate_x(0.6 * delta)
-		active_mesh.rotate_z(0.3 * delta)
+		if asteroid_type == "small":
+			var facing := -global_position
+			facing.y = 0.0
+			if facing.length_squared() > 0.000001:
+				active_mesh.rotation.y = atan2(facing.x, facing.z)
+		else:
+			active_mesh.rotate_x(0.6 * delta)
+			active_mesh.rotate_z(0.3 * delta)
 
 	var collided_barrier: Node = GameManager.get_barrier_collision(global_position, radius)
 	if is_instance_valid(collided_barrier):

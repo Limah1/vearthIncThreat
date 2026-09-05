@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="TurretConfig" format=3 uid="uid://bucnvm11mso7i"]
+[gd_resource type="Resource" script_class="TurretConfig" load_steps=3 format=3 uid="uid://bucnvm11mso7i"]
 
 [ext_resource type="Script" uid="uid://c14qdfioipybm" path="res://src/resources/turret_config.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/resources/visuals/turrets/laser_turret_visual.tres" id="2_visual"]
 
 [resource]
 script = ExtResource("1_script")
+visual_asset = ExtResource("2_visual")
 damage = 5.0
 fire_rate = 0.1
 attack_range = 350.0

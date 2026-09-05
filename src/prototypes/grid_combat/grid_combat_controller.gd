@@ -3,12 +3,15 @@ class_name GridCombatController
 
 const GridAllyShipScene: PackedScene = preload("res://src/prototypes/grid_combat/grid_ally_ship.tscn")
 const GridDefenseBlockScene: PackedScene = preload("res://src/prototypes/grid_combat/grid_defense_block.tscn")
+const GridLayoutStoreScript = preload("res://src/core/grid_layout_store.gd")
 const FIRST_LEVEL_CONFIG_PATH: String = "res://src/resources/levels/FirstLevelConfig.tres"
 const DEFAULT_STARTING_ALLY_SHIPS: int = 4
 const DEFAULT_STARTING_DEFENSE_BLOCKS: int = 3
 
 enum PlacementMode { IDLE, PLACING }
 enum PlaceableType { ALLY_SHIP, DEFENSE_BLOCK }
+
+signal layout_restored(restored_actor_count: int, restored_turret_count: int)
 
 @onready var board: GridBoard = $"../GridBoard"
 @onready var ally_ships_root: Node2D = $"../AllyShips"
@@ -52,6 +55,7 @@ var placed_ally_ships: Array[Barrier] = []
 var anchor_by_actor: Dictionary = {}
 var orientation_by_actor: Dictionary = {}
 var type_by_actor: Dictionary = {}
+var _layout_io_suspended: bool = false
 
 func _enter_tree() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -95,6 +99,8 @@ func _ready() -> void:
 	turret_miner_button.pressed.connect(_begin_turret_miner_placement)
 	GameManager.level_completed.connect(_on_level_completed)
 	GameManager.state_changed.connect(_on_game_state_changed)
+	if not standard_preparation_controller.layout_changed.is_connected(_on_turret_layout_changed):
+		standard_preparation_controller.layout_changed.connect(_on_turret_layout_changed)
 	rotation_hints.visible = false
 	_enable_standard_preparation_ui()
 	call_deferred("_enable_standard_preparation_ui")
@@ -102,6 +108,12 @@ func _ready() -> void:
 	call_deferred("_sync_prototype_runtime_state")
 	_set_status("Prepare the defense grid, then start the wave.")
 	_update_ui()
+	call_deferred("_restore_saved_layout")
+
+
+func _exit_tree() -> void:
+	if active and not wave_started:
+		save_layout()
 
 func _process(_delta: float) -> void:
 	if not active:
@@ -254,6 +266,7 @@ func reset_prototype() -> void:
 	wave_started = false
 	_set_status("Grid reset. Select an Ally Ship or Barrier to begin.")
 	_update_ui()
+	save_layout()
 
 func start_wave() -> void:
 	if not active:
@@ -267,6 +280,9 @@ func start_wave() -> void:
 	if not is_instance_valid(level_config):
 		_set_status("Could not load the grid prototype level configuration.")
 		return
+	if is_instance_valid(standard_preparation_controller):
+		standard_preparation_controller.commit_pending_layout_changes()
+	save_layout()
 	# Re-apply config here. This removes startup-order dependency on main.gd.
 	spawner.set_level_config(level_config)
 	_enter_gameplay_handoff()
@@ -287,6 +303,7 @@ func _on_game_state_changed(new_state: GameManager.GameState) -> void:
 	_sync_prototype_runtime_state()
 
 func _enter_gameplay_handoff() -> void:
+	save_layout()
 	_cancel_preview()
 	_select_ship(null)
 	active = false
@@ -304,6 +321,7 @@ func _on_level_completed(level_number: int, _next_level_number: int) -> void:
 	GameManager.end_round()
 
 func return_to_first_level() -> void:
+	save_layout()
 	var loaded_resource: Resource = load(FIRST_LEVEL_CONFIG_PATH)
 	if loaded_resource is LevelConfig:
 		GameManager.start_level(loaded_resource as LevelConfig)
@@ -368,8 +386,9 @@ func _commit_preview(anchor_cell: Vector2i) -> void:
 		var placed_block := placed_actor as GridDefenseBlock
 		defense_blocks_remaining -= 1
 		placed_block.destroyed.connect(_on_defense_block_destroyed)
-		_set_status("Brown Barrier placed. It has 10 HP and occupies one cell.")
+		_set_status("Brown Barrier placed. It has 200 HP and occupies one cell.")
 	_update_ui()
+	save_layout()
 
 func _rotate_active_ship(direction: int) -> void:
 	if placement_mode == PlacementMode.PLACING and is_instance_valid(preview_actor):
@@ -403,6 +422,7 @@ func _rotate_active_ship(direction: int) -> void:
 	orientation_by_actor[selected_ship] = next_orientation
 	_set_actor_transform(selected_ship, next_footprint, next_orientation)
 	_set_status("Ally Ship rotated 90 degrees.")
+	save_layout()
 
 func _get_footprint_cells(
 	placeable_type: PlaceableType,
@@ -636,3 +656,179 @@ func _sync_turret_status() -> void:
 			_set_status("Turret selected. Click an empty mount on an Ally Ship; right-click cancels.")
 		PreparationController.PlacementMode.AIMING:
 			_set_status("Aim the turret cone. Drag the handle; left-click confirms; right-click cancels.")
+
+
+func save_layout() -> bool:
+	if _layout_io_suspended or not GridLayoutStoreScript.is_available():
+		return false
+	var layout_key := _get_layout_key()
+	if layout_key.is_empty():
+		return false
+	var actor_entries: Array = []
+	for actor in placed_actors:
+		if not is_instance_valid(actor) or not anchor_by_actor.has(actor):
+			continue
+		var placeable_type: int = int(type_by_actor.get(actor, PlaceableType.DEFENSE_BLOCK))
+		var anchor: Vector2i = anchor_by_actor[actor] as Vector2i
+		var entry := {
+			"type": "ally_ship" if placeable_type == PlaceableType.ALLY_SHIP else "defense_block",
+			"anchor": {"x": anchor.x, "y": anchor.y},
+			"orientation": int(orientation_by_actor.get(actor, 0)),
+		}
+		if actor is Barrier:
+			entry["turrets"] = _serialize_ship_turrets(actor as Barrier)
+		actor_entries.append(entry)
+	var layout := {
+		"actors": actor_entries,
+	}
+	return GridLayoutStoreScript.save_layout(layout_key, layout) == OK
+
+
+func restore_saved_layout() -> bool:
+	return await _restore_saved_layout()
+
+
+func _restore_saved_layout() -> bool:
+	if not active or _layout_io_suspended or not GridLayoutStoreScript.is_available():
+		return false
+	var layout_key := _get_layout_key()
+	if layout_key.is_empty() or not GridLayoutStoreScript.has_layout(layout_key):
+		return false
+	var layout := GridLayoutStoreScript.load_layout(layout_key)
+	var actor_variants: Variant = layout.get("actors", [])
+	if not actor_variants is Array:
+		return false
+
+	_layout_io_suspended = true
+	_clear_deployed_layout_for_restore()
+	var pending_turrets: Array = []
+	var restored_turret_count: int = 0
+	for actor_variant in actor_variants as Array:
+		if not actor_variant is Dictionary:
+			continue
+		var entry := actor_variant as Dictionary
+		var restored_actor := _restore_actor_entry(entry)
+		if not restored_actor is Barrier:
+			continue
+		var turret_variants: Variant = entry.get("turrets", [])
+		if turret_variants is Array:
+			pending_turrets.append({"ship": restored_actor, "turrets": turret_variants})
+
+	# Barrier visuals define the authored mount offsets and are added deferred.
+	# Wait one frame before mounting turrets so restored slots match those visuals.
+	await get_tree().process_frame
+	for pending_variant in pending_turrets:
+		var pending := pending_variant as Dictionary
+		var ship := pending.get("ship") as Barrier
+		if not is_instance_valid(ship):
+			continue
+		for turret_variant in pending.get("turrets", []) as Array:
+			if turret_variant is Dictionary and _restore_turret_entry(
+				ship,
+				turret_variant as Dictionary
+			):
+				restored_turret_count += 1
+	_layout_io_suspended = false
+	_select_ship(null)
+	_set_status("Saved defense layout restored. You can edit it or start the wave.")
+	_update_ui()
+	layout_restored.emit(placed_actors.size(), restored_turret_count)
+	return true
+
+
+func _clear_deployed_layout_for_restore() -> void:
+	_cancel_preview()
+	_select_ship(null)
+	if is_instance_valid(standard_preparation_controller):
+		standard_preparation_controller.prepare_inventory_for_layout_restore()
+	for actor in placed_actors.duplicate():
+		_destroy_actor(actor as Node)
+	placed_actors.clear()
+	placed_ally_ships.clear()
+	anchor_by_actor.clear()
+	orientation_by_actor.clear()
+	type_by_actor.clear()
+	board.clear_occupancy()
+	ally_ships_remaining = starting_ally_ships
+	defense_blocks_remaining = starting_defense_blocks
+
+
+func _restore_actor_entry(entry: Dictionary) -> Node:
+	var type_name := String(entry.get("type", ""))
+	var placeable_type: PlaceableType
+	match type_name:
+		"ally_ship":
+			placeable_type = PlaceableType.ALLY_SHIP
+		"defense_block":
+			placeable_type = PlaceableType.DEFENSE_BLOCK
+		_:
+			return null
+	var anchor_data: Variant = entry.get("anchor", {})
+	if not anchor_data is Dictionary:
+		return null
+	var anchor_dictionary := anchor_data as Dictionary
+	var anchor := Vector2i(
+		int(anchor_dictionary.get("x", -1)),
+		int(anchor_dictionary.get("y", -1))
+	)
+	var actor_count_before := placed_actors.size()
+	_begin_placement(placeable_type)
+	if not is_instance_valid(preview_actor):
+		return null
+	preview_orientation = posmod(int(entry.get("orientation", 0)), 4)
+	_commit_preview(anchor)
+	if placed_actors.size() <= actor_count_before:
+		_cancel_preview()
+		return null
+	return placed_actors[-1]
+
+
+func _restore_turret_entry(ship: Barrier, entry: Dictionary) -> bool:
+	if not is_instance_valid(standard_preparation_controller):
+		return false
+	return standard_preparation_controller.restore_turret_configuration(
+		ship,
+		String(entry.get("type", "defense_blaster")),
+		int(entry.get("mount_slot", -1)),
+		float(entry.get("center_yaw", 0.0)),
+		float(entry.get("cone_angle", 90.0))
+	)
+
+
+func _serialize_ship_turrets(ship: Barrier) -> Array:
+	var result: Array = []
+	for turret_variant in ship.turrets:
+		var turret := turret_variant as DefenseBlaster
+		if not is_instance_valid(turret):
+			continue
+		var mount_slot := _get_turret_mount_slot(ship, turret)
+		if mount_slot < 0:
+			continue
+		result.append({
+			"type": turret.get_turret_type_id(),
+			"mount_slot": mount_slot,
+			"center_yaw": turret.get_center_yaw(),
+			"cone_angle": turret.get_cone_angle(),
+		})
+	return result
+
+
+func _get_turret_mount_slot(ship: Barrier, turret: DefenseBlaster) -> int:
+	for slot_index in range(Barrier.MAX_TURRETS):
+		if turret.local_offset.is_equal_approx(ship.get_mount_slot_offset(slot_index)):
+			return slot_index
+	return -1
+
+
+func _get_layout_key() -> String:
+	if not is_instance_valid(GameManager):
+		return ""
+	if not GameManager.selected_level_config_path.is_empty():
+		return GameManager.selected_level_config_path
+	var level_config := GameManager.get_selected_level_config()
+	return level_config.resource_path if is_instance_valid(level_config) else ""
+
+
+func _on_turret_layout_changed() -> void:
+	if active and not wave_started:
+		save_layout()

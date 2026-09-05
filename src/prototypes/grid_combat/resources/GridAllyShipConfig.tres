@@ -4,6 +4,6 @@
 
 [resource]
 script = ExtResource("1_config")
-max_hp = 10.0
+max_hp = 200.0
 size = Vector2(90, 190)
 depth = 8.0

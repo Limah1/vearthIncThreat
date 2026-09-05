@@ -16,6 +16,8 @@ var current_state: GameState = GameState.PLAYING
 var object_pooler: Node = null
 
 var spatial_grid: Dictionary = {}
+## Set by the active MassEnemyRuntime and cleared on scene exit.
+var mass_combat: Node = null
 var cell_size: float = 80.0
 var _entity_cells: Dictionary = {}
 const MAX_DAMAGEABLE_RADIUS: float = 70.0
@@ -147,7 +149,7 @@ func change_state(new_state: GameState, should_emit: bool = true) -> void:
 	if should_emit:
 		state_changed.emit(new_state)
 	
-	if new_state == GameState.PAUSED or new_state == GameState.PREPARATION or new_state == GameState.END_SESSION:
+	if new_state == GameState.PREPARATION or new_state == GameState.END_SESSION:
 		for grp in ["garbage_master", "debris_master", "asteroid_master", "enemy_master", "enemy_proj_master", "sat_proj_master", "satellite_master"]:
 			var master_nodes = get_tree().get_nodes_in_group(grp)
 			for master in master_nodes:
@@ -266,8 +268,10 @@ func save_game() -> void:
 func load_game() -> void:
 	return
 
-func register_eliminated_threat() -> void:
-	eliminated_threats += 1
+func register_eliminated_threat(count: int = 1) -> void:
+	if count <= 0:
+		return
+	eliminated_threats += count
 	var config: LevelConfig = get_selected_level_config()
 	if not is_instance_valid(config):
 		return

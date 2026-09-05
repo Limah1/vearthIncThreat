@@ -3,9 +3,14 @@ class_name TurretConfig
 extends Resource
 
 ## Combat values shared by every turret instance of this type.
+@export_group("Visual")
+@export var visual_asset: VisualAsset3D
+
+@export_group("Combat")
 @export_range(0.0, 10000.0, 0.1) var damage: float = 1.0
 ## Shots per second. Runtime cooldown is derived from this value.
 @export_range(0.05, 100.0, 0.05) var fire_rate: float = 2.85
+@export_range(0.1, 100.0, 0.1) var tracking_speed: float = 10.0
 @export_range(10.0, 5000.0, 1.0) var attack_range: float = 700.0
 
 ## Player-configurable action cone.
@@ -64,3 +69,14 @@ func contains_offset_in_action_cone(
 	var target_direction: Vector2 = world_offset / sqrt(distance_squared)
 	var minimum_dot: float = cos(deg_to_rad(get_clamped_cone_angle(angle_degrees) * 0.5))
 	return normalized_forward.dot(target_direction) >= minimum_dot
+
+
+func get_visual_validation_errors() -> PackedStringArray:
+	if visual_asset == null:
+		return PackedStringArray(["Turret visual_asset cannot be empty."])
+	var errors := visual_asset.get_validation_errors(false)
+	if visual_asset.aim_pivot_path.is_empty():
+		errors.append("Turret visual needs an aim_pivot_path.")
+	if visual_asset.muzzle_path.is_empty():
+		errors.append("Turret visual needs a muzzle_path.")
+	return errors

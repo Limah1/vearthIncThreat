@@ -4,6 +4,8 @@ class_name AsteroidMaster
 
 func _ready() -> void:
 	add_to_group("asteroid_master")
+	if GameManager.get_selected_level_config().use_mass_enemies:
+		return
 	super._ready()
 
 func spawn_asteroid(spawn_pos_3d: Vector3, dir_3d: Vector3, type: String = "small") -> Node3D:

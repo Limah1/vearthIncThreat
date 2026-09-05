@@ -4,6 +4,8 @@ const LASER_SCENE := preload("res://src/entities/laser_turret.tscn")
 const MINER_SCENE := preload("res://src/entities/turret_miner.tscn")
 const BARRIER_SCENE := preload("res://src/entities/barrier.tscn")
 const DEFENSE_BLASTER_SCENE := preload("res://src/entities/defense_blaster.tscn")
+const ASTEROID_SCENE := preload("res://src/entities/visuals/small_asteroid.tscn")
+const ENEMY_SHIP_SCENE := preload("res://src/entities/visuals/enemy_spaceship_3d.tscn")
 const DamageSystemScript = preload("res://src/core/damage_system.gd")
 
 class DummyHostile extends Node3D:
@@ -12,7 +14,7 @@ class DummyHostile extends Node3D:
 	var damage_received: float = 0.0
 
 	func _ready() -> void:
-		add_to_group("asteroid")
+		add_to_group("enemy")
 
 	func receive_damage(amount: float, source_team: int) -> bool:
 		if source_team != DamageSystemScript.Team.ALLY:
@@ -29,17 +31,32 @@ func _run_tests() -> void:
 	UpgradeManager.purchased_levels.clear()
 	UpgradeManager.load_all_upgrades()
 	GameManager.current_state = GameManager.GameState.PLAYING
+	await _test_unified_enemy_group()
 	await _test_piercing_laser()
 	await _test_laser_upgrades()
 	await _test_mine_fuse_and_area_damage()
 	await _test_miner_upgrades()
 	await _test_unlocked_preparation_inventory()
 	await _test_2d_ally_ship_to_3d_mounts()
+	await _test_standardized_turret_visuals()
 	if failures == 0:
 		print("Advanced turret tests passed.")
 	else:
 		push_error("Advanced turret tests failed: %d" % failures)
 	get_tree().quit(failures)
+
+func _test_unified_enemy_group() -> void:
+	var asteroid := ASTEROID_SCENE.instantiate() as Node3D
+	var enemy_ship := ENEMY_SHIP_SCENE.instantiate() as Node3D
+	add_child(asteroid)
+	add_child(enemy_ship)
+	await get_tree().process_frame
+	_expect(asteroid.is_in_group("enemy"), "Asteroids must use the unified enemy group.")
+	_expect(not asteroid.is_in_group("asteroid"), "Asteroids must not use the legacy asteroid group.")
+	_expect(enemy_ship.is_in_group("enemy"), "Enemy ships must use the unified enemy group.")
+	asteroid.queue_free()
+	enemy_ship.queue_free()
+	await get_tree().process_frame
 
 func _test_piercing_laser() -> void:
 	var barrier := BARRIER_SCENE.instantiate() as Barrier
@@ -145,10 +162,13 @@ func _test_2d_ally_ship_to_3d_mounts() -> void:
 	_expect(ship.mount_spot_visuals.size() == 2, "The 2D Ally Ship must render two grey 3D mount circles.")
 	_expect(ship.visual_3d.global_position.is_equal_approx(Vector3(100.0, 0.0, 200.0)), "The 3D ship must use the authored 2D X/Y position as X/Z.")
 	_expect(is_equal_approx(ship.visual_3d.global_rotation.y, -PI * 0.5), "The 3D ship yaw must follow the authored 2D rotation.")
-	var first_mount: Vector2 = ship.get_world_position_for_local_offset(ship.TURRET_SLOT_OFFSETS[0])
-	var second_mount: Vector2 = ship.get_world_position_for_local_offset(ship.TURRET_SLOT_OFFSETS[1])
-	_expect(first_mount.is_equal_approx(Vector2(100.0, 188.0)), "2D rotation must rotate the first 3D mount into world space.")
-	_expect(second_mount.is_equal_approx(Vector2(100.0, 212.0)), "2D rotation must rotate the second 3D mount into world space.")
+	var first_mount: Vector2 = ship.get_world_position_for_local_offset(ship.get_mount_slot_offset(0))
+	var second_mount: Vector2 = ship.get_world_position_for_local_offset(ship.get_mount_slot_offset(1))
+	var first_visual := ship.visual_3d.find_child("MountSpot0", true, false) as MeshInstance3D
+	var second_visual := ship.visual_3d.find_child("MountSpot1", true, false) as MeshInstance3D
+	_expect(first_visual and is_equal_approx(first_visual.position.x, ship.get_mount_slot_offset(0).x) and is_equal_approx(first_visual.position.z, ship.get_mount_slot_offset(0).y), "First mount gameplay position must follow the authored 3D visual.")
+	_expect(second_visual and is_equal_approx(second_visual.position.x, ship.get_mount_slot_offset(1).x) and is_equal_approx(second_visual.position.z, ship.get_mount_slot_offset(1).y), "Second mount gameplay position must follow the authored 3D visual.")
+	_expect(first_mount != second_mount, "Rotated 3D mounts must remain distinct in world space.")
 	_expect(ship.contains_collision(Vector3(130.0, 0.0, 200.0)), "Rotated ship collision must follow its long 3D axis.")
 	_expect(not ship.contains_collision(Vector3(100.0, 0.0, 230.0)), "Rotated ship collision must reject points beyond its short 3D axis.")
 	var first_turret := DEFENSE_BLASTER_SCENE.instantiate() as DefenseBlaster
@@ -164,6 +184,47 @@ func _test_2d_ally_ship_to_3d_mounts() -> void:
 	ship.clear_turrets()
 	ship.queue_free()
 	await get_tree().process_frame
+
+
+func _test_standardized_turret_visuals() -> void:
+	for turret_scene: PackedScene in [DEFENSE_BLASTER_SCENE, LASER_SCENE, MINER_SCENE]:
+		var turret := turret_scene.instantiate() as DefenseBlaster
+		add_child(turret)
+		await get_tree().process_frame
+		_expect(turret.turret_config.visual_asset != null, "Every authored turret must reference VisualAsset3D.")
+		_expect(turret.turret_config.get_visual_validation_errors().is_empty(), "Every authored turret visual must satisfy pivot/muzzle contract.")
+		_expect(is_instance_valid(turret.visual_root) and is_instance_valid(turret.aim_pivot) and is_instance_valid(turret.muzzle), "Turret must instantiate its visual and resolve AimPivot/Muzzle.")
+		var origin := turret.get_shot_origin()
+		_expect(origin.distance_to(turret.global_position) > 1.0, "Turret shot origin must use the authored muzzle marker.")
+		var body := turret.visual_root.find_child("Body", true, false) as Node3D
+		var body_position := body.global_position if is_instance_valid(body) else Vector3.ZERO
+		turret.current_aim_yaw = 0.75
+		turret._sync_aim_visual()
+		_expect(is_equal_approx(turret.aim_pivot.rotation.y, 0.75), "Turret aiming must rotate the standardized AimPivot.")
+		if turret.get_turret_type_id() == &"defense_blaster":
+			_expect(turret.turret_config.fire_rate == 10.0, "Defense Blaster must fire ten shots per second before upgrades.")
+			_expect(turret.turret_config.tracking_speed == 20.0, "Defense Blaster must use the faster tracking speed.")
+			_expect(turret.aim_pivot.position.is_zero_approx(), "Defense Blaster AimPivot must stay aligned with its gameplay position.")
+			_expect(is_instance_valid(body) and body.position.is_zero_approx(), "Defense Blaster body must be centered on AimPivot.")
+			_expect(body.global_position.is_equal_approx(body_position), "Defense Blaster must rotate around its own body axis.")
+			turret.set_aim_direction(Vector2.RIGHT)
+			var muzzle_offset := Vector2(
+				turret.muzzle.global_position.x - turret.global_position.x,
+				turret.muzzle.global_position.z - turret.global_position.z
+			).normalized()
+			_expect(muzzle_offset.dot(Vector2.RIGHT) > 0.98, "Defense Blaster visual forward axis must follow its gameplay aim direction.")
+			turret.set_aim_direction(Vector2.LEFT)
+			muzzle_offset = Vector2(
+				turret.muzzle.global_position.x - turret.global_position.x,
+				turret.muzzle.global_position.z - turret.global_position.z
+			).normalized()
+			_expect(muzzle_offset.dot(Vector2.LEFT) > 0.98, "Defense Blaster visual forward axis must also follow the opposite cone direction.")
+		turret.set_preview(true)
+		_expect(not turret._preview_materials.is_empty(), "Preview ghost material must cover meshes inside the visual prefab.")
+		turret.set_preview(false)
+		_expect(turret._preview_materials.is_empty(), "Preview materials must restore when placement preview ends.")
+		turret.queue_free()
+		await get_tree().process_frame
 
 func _create_hostile(world_position: Vector3) -> DummyHostile:
 	var hostile := DummyHostile.new()

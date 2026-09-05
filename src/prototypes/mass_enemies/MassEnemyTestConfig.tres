@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="LevelConfig" format=3 uid="uid://hrwqfxqpg3ff"]
+
+[ext_resource type="Script" uid="uid://ikgwhhg7fyul" path="res://src/resources/level_config.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://dwo0c3mk8n2p1" path="res://src/resources/enemy_spawn_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://src/resources/enemies/asteroid_small.tres" id="3_small"]
+[ext_resource type="Resource" path="res://src/resources/enemies/asteroid_medium.tres" id="4_medium"]
+[ext_resource type="Resource" path="res://src/resources/enemies/asteroid_large.tres" id="5_large"]
+[ext_resource type="Resource" path="res://src/resources/enemies/barrier_attack_ship.tres" id="6_ship"]
+
+[sub_resource type="Resource" id="Entry_small"]
+script = ExtResource("2_entry")
+enemy = ExtResource("3_small")
+spawn_weight = 60.0
+
+[sub_resource type="Resource" id="Entry_medium"]
+script = ExtResource("2_entry")
+enemy = ExtResource("4_medium")
+spawn_weight = 25.0
+
+[sub_resource type="Resource" id="Entry_large"]
+script = ExtResource("2_entry")
+enemy = ExtResource("5_large")
+spawn_weight = 10.0
+
+[sub_resource type="Resource" id="Entry_ship"]
+script = ExtResource("2_entry")
+enemy = ExtResource("6_ship")
+spawn_weight = 5.0
+
+[resource]
+script = ExtResource("1_level")
+level_name = "EnemyWorld 10k Foundation"
+show_in_level_select = false
+total_enemies = 10000
+enemies_per_spawn_point = 25
+enemy_roster = Array[ExtResource("2_entry")]([SubResource("Entry_small"), SubResource("Entry_medium"), SubResource("Entry_large"), SubResource("Entry_ship")])

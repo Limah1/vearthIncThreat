@@ -6,11 +6,11 @@ const DamageSystemScript = preload("res://src/core/damage_system.gd")
 signal health_changed(current_hp: float, maximum_hp: float)
 signal destroyed(block: GridDefenseBlock)
 
-@export var maximum_hp: float = 10.0
+@export var maximum_hp: float = 200.0
 @export var block_size: Vector2 = Vector2(90.0, 90.0)
 @export var block_height: float = 18.0
 
-var hp: float = 10.0
+var hp: float = 200.0
 var placed: bool = true
 var previewing: bool = false
 var active: bool = false

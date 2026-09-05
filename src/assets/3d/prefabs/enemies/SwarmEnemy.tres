@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="VisualAsset3D" format=3 uid="uid://bo2yfcmqtktbe"]
+
+[ext_resource type="Script" uid="uid://b6ttseyh3jjvx" path="res://src/resources/visual_asset_3d.gd" id="1_vv8o1"]
+
+[resource]
+script = ExtResource("1_vv8o1")
+metadata/_custom_type_script = "uid://b6ttseyh3jjvx"

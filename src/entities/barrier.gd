@@ -34,6 +34,7 @@ var life_bar_fill: MeshInstance3D = null
 var life_bar_width: float = 42.0
 var turrets: Array[Node3D] = []
 var mount_spot_visuals: Array[MeshInstance3D] = []
+var mount_slot_offsets: Array[Vector2] = [Vector2(-12.0, 0.0), Vector2(12.0, 0.0)]
 var mount_spots_visible: bool = false
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -112,6 +113,7 @@ func _add_visual_to_scene() -> void:
 		var mount_spot := visual_3d.find_child("MountSpot%d" % slot_index, true, false) as MeshInstance3D
 		if mount_spot:
 			mount_spot_visuals.append(mount_spot)
+	_capture_mount_slot_offsets()
 	_apply_visual_config()
 	_sync_visual_transform()
 	visual_3d.visible = unlocked and (placed or previewing)
@@ -136,12 +138,9 @@ func _apply_visual_config() -> void:
 		var fill_mesh := life_bar_fill.mesh as BoxMesh
 		fill_mesh.size = Vector3(life_bar_width, 1.2, 3.0)
 	for slot_index in range(mount_spot_visuals.size()):
-		var local_offset: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
-		mount_spot_visuals[slot_index].position = Vector3(
-			local_offset.x,
-			barrier_config.depth * 0.5 + 0.35,
-			local_offset.y
-		)
+		var mount_position := mount_spot_visuals[slot_index].position
+		mount_position.y = barrier_config.depth * 0.5 + 0.35
+		mount_spot_visuals[slot_index].position = mount_position
 	_sync_life_bar()
 	_sync_mount_spot_visuals()
 
@@ -251,7 +250,7 @@ func attach_turret(turret: Node3D, world_position: Vector2) -> bool:
 	var slot_index: int = _find_mount_slot_index(world_position)
 	if slot_index < 0:
 		return false
-	var local_point: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
+	var local_point := get_mount_slot_offset(slot_index)
 	var radius := get_turret_radius()
 
 	if not turret.get_parent():
@@ -274,7 +273,7 @@ func move_turret_to(turret: Node3D, world_position: Vector2) -> bool:
 	var slot_index: int = _find_mount_slot_index(world_position, turret)
 	if slot_index < 0:
 		return false
-	var local_point: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
+	var local_point := get_mount_slot_offset(slot_index)
 	if turret.has_method("set_barrier_offset"):
 		turret.set_barrier_offset(local_point)
 	else:
@@ -301,11 +300,16 @@ func clear_turrets() -> void:
 func get_world_position_for_local_offset(local_offset: Vector2) -> Vector2:
 	return global_position + local_offset.rotated(-world_yaw)
 
+func get_mount_slot_offset(slot_index: int) -> Vector2:
+	if slot_index < 0 or slot_index >= mount_slot_offsets.size():
+		return Vector2.ZERO
+	return mount_slot_offsets[slot_index]
+
 func get_available_mount_world_position_near(world_position: Vector2) -> Variant:
 	var slot_index: int = _find_mount_slot_index(world_position)
 	if slot_index < 0:
 		return null
-	return get_world_position_for_local_offset(TURRET_SLOT_OFFSETS[slot_index])
+	return get_world_position_for_local_offset(get_mount_slot_offset(slot_index))
 
 func set_mount_spots_visible(value: bool) -> void:
 	mount_spots_visible = value
@@ -314,10 +318,10 @@ func set_mount_spots_visible(value: bool) -> void:
 func _find_mount_slot_index(world_position: Vector2, ignored_turret: Node3D = null) -> int:
 	var nearest_index: int = -1
 	var nearest_distance_squared: float = TURRET_SLOT_CLICK_RADIUS * TURRET_SLOT_CLICK_RADIUS
-	for slot_index in range(TURRET_SLOT_OFFSETS.size()):
+	for slot_index in range(mount_slot_offsets.size()):
 		if _is_mount_slot_occupied(slot_index, ignored_turret):
 			continue
-		var slot_position: Vector2 = get_world_position_for_local_offset(TURRET_SLOT_OFFSETS[slot_index])
+		var slot_position: Vector2 = get_world_position_for_local_offset(get_mount_slot_offset(slot_index))
 		var distance_squared: float = world_position.distance_squared_to(slot_position)
 		if distance_squared <= nearest_distance_squared:
 			nearest_distance_squared = distance_squared
@@ -325,9 +329,9 @@ func _find_mount_slot_index(world_position: Vector2, ignored_turret: Node3D = nu
 	return nearest_index
 
 func _is_mount_slot_occupied(slot_index: int, ignored_turret: Node3D = null) -> bool:
-	if slot_index < 0 or slot_index >= TURRET_SLOT_OFFSETS.size():
+	if slot_index < 0 or slot_index >= mount_slot_offsets.size():
 		return true
-	var slot_offset: Vector2 = TURRET_SLOT_OFFSETS[slot_index]
+	var slot_offset := get_mount_slot_offset(slot_index)
 	for turret in turrets:
 		if turret == ignored_turret or not is_instance_valid(turret):
 			continue
@@ -335,6 +339,17 @@ func _is_mount_slot_occupied(slot_index: int, ignored_turret: Node3D = null) -> 
 		if turret_offset is Vector2 and (turret_offset as Vector2).is_equal_approx(slot_offset):
 			return true
 	return false
+
+func _capture_mount_slot_offsets() -> void:
+	if not is_instance_valid(visual_3d) or mount_spot_visuals.is_empty():
+		return
+	mount_slot_offsets.clear()
+	for spot in mount_spot_visuals:
+		if is_instance_valid(spot):
+			var local_position := visual_3d.to_local(spot.global_position)
+			mount_slot_offsets.append(Vector2(local_position.x, local_position.z))
+	while mount_slot_offsets.size() < MAX_TURRETS:
+		mount_slot_offsets.append(TURRET_SLOT_OFFSETS[mount_slot_offsets.size()])
 
 func _sync_mount_spot_visuals() -> void:
 	for slot_index in range(mount_spot_visuals.size()):

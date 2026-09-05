@@ -7,12 +7,13 @@ const DamageSystemScript = preload("res://src/core/damage_system.gd")
 @export var base_speed: float = 350.0 # --- VELOCIDADE DO TIRO DO SATELLITE
 @export var base_damage: float = 3.0 # --- DANO DO TIRO DO SATELLITE
 @export var base_lifetime: float = 4.0 # --- TEMPO DE VIDA MAXIMO DO PROJÉTIL (SEGUNDOS)
-@export var hit_radius: float = 15.0 # --- RAIO DE COLISÃO DO TIRO DO SATELLITE
+@export var hit_radius: float = 9.0 # --- RAIO DE COLISÃO DO TIRO DO SATELLITE
 
 var speed: float = 350.0
 var damage: float = 3.0
 var max_lifetime: float = 4.0
 var lifetime_timer: float = 0.0
+var _mass_sweep_origin := Vector3.ZERO
 
 var hit_targets: Dictionary = {}
 var active: bool = false
@@ -29,6 +30,7 @@ func on_pool_activate(
 	damage_override: float = -1.0
 ) -> void:
 	global_position = spawn_pos_3d
+	_mass_sweep_origin = spawn_pos_3d
 	movement_direction = dir_3d.normalized()
 	
 	var upgrade_mgr = UpgradeManager
@@ -43,6 +45,10 @@ func on_pool_activate(
 	damage = damage_override if damage_override >= 0.0 else base_damage * dmg_mult
 	speed = base_speed * speed_mult
 	max_lifetime = base_lifetime
+	if GameManager.mass_combat is EnemyGPUCombat:
+		GameManager.mass_combat.fire_projectile_with_radius(spawn_pos_3d, movement_direction, damage, speed, max_lifetime, DamageSystemScript.Team.ALLY, hit_radius)
+		call_deferred("_recycle")
+		return
 	lifetime_timer = 0.0
 	hit_targets.clear()
 	active = true
@@ -85,6 +91,12 @@ func _manager_collision() -> void:
 	_sweep_damage()
 
 func _sweep_damage() -> void:
+	if is_instance_valid(GameManager.mass_combat):
+		var hits: int = GameManager.mass_combat.damage_line(_mass_sweep_origin, global_position, hit_radius, damage, true)
+		_mass_sweep_origin = global_position
+		if hits > 0:
+			_recycle()
+		return
 	var my_pos_2d = Vector2(global_position.x, global_position.z)
 	var targets = GameManager.get_nearby_entities(
 		global_position,

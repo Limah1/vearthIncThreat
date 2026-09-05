@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/prototypes/mass_enemies/mass_enemy_foundation.gd" id="1_demo"]
+[ext_resource type="Script" path="res://src/core/enemy_world.gd" id="2_world"]
+[ext_resource type="Script" path="res://src/core/mass_enemy_spawner.gd" id="3_spawner"]
+[ext_resource type="Resource" path="res://src/prototypes/mass_enemies/MassEnemyTestConfig.tres" id="4_config"]
+
+[node name="MassEnemyFoundation" type="Node"]
+script = ExtResource("1_demo")
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="EnemyWorld" type="Node" parent="."]
+script = ExtResource("2_world")
+capacity = 10000
+
+[node name="MassEnemySpawner" type="Node" parent="." node_paths=PackedStringArray("enemy_world", "spawn_root")]
+script = ExtResource("3_spawner")
+level_config = ExtResource("4_config")
+enemy_world = NodePath("../EnemyWorld")
+spawn_root = NodePath("../SpawnPoints")
+auto_start = true
+respect_game_state = false
+random_seed = 101
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="CanvasLayer"]
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 1000.0
+offset_bottom = 600.0
+theme_override_font_sizes/font_size = 26

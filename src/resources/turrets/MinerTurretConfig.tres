@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="TurretConfig" format=3]
+[gd_resource type="Resource" script_class="TurretConfig" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/resources/turret_config.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/resources/visuals/turrets/turret_miner_visual.tres" id="2_visual"]
 
 [resource]
 script = ExtResource("1_script")
+visual_asset = ExtResource("2_visual")
 damage = 5.0
 fire_rate = 0.333333
 attack_range = 500.0

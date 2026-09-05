@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="VisualAsset3D" format=3 uid="uid://7imlbatugs2j"]
+
+[ext_resource type="Script" uid="uid://b6ttseyh3jjvx" path="res://src/resources/visual_asset_3d.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dc3or4e1guebf" path="res://src/assets/3d/prefabs/enemies/asteroid_small_visual.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_script")
+scene = ExtResource("2_scene")
+rotation_degrees = Vector3(0, -90, 0)

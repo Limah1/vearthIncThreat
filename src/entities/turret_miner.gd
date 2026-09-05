@@ -51,9 +51,7 @@ func _process(delta: float) -> void:
 
 	sweep_phase = fmod(sweep_phase + delta * turret_config.sweep_speed * TAU, TAU)
 	current_aim_yaw = center_yaw + sin(sweep_phase) * deg_to_rad(get_cone_angle() * 0.5)
-	var turret_mesh := get_node_or_null("TurretMesh") as MeshInstance3D
-	if turret_mesh:
-		turret_mesh.rotation.y = current_aim_yaw
+	_sync_aim_visual()
 
 	cooldown -= delta
 	if cooldown <= 0.0:
@@ -99,7 +97,7 @@ func _launch_mine_at_random_cone_position() -> void:
 	var minimum_ratio: float = minimum_distance / maxf(turret_config.attack_range, 0.001)
 	var distance: float = sqrt(randf_range(minimum_ratio * minimum_ratio, 1.0)) * turret_config.attack_range
 	var direction := Vector2(sin(random_yaw), cos(random_yaw))
-	var start := global_position + Vector3(0.0, 2.0, 0.0)
+	var start := get_shot_origin()
 	var destination := Vector3(
 		global_position.x + direction.x * distance,
 		global_position.y + 0.5,
@@ -138,6 +136,10 @@ func _explode_mine(mine_index: int) -> void:
 	if mine_index < 0 or mine_index >= mine_visuals.size():
 		return
 	var explosion_position: Vector3 = mine_end_positions[mine_index]
+	if is_instance_valid(GameManager.mass_combat):
+		GameManager.mass_combat.damage_circle(explosion_position, effective_explosion_radius, effective_damage)
+		_recycle_mine(mine_index)
+		return
 	var candidates: Array = GameManager.get_nearby_entities(explosion_position, effective_explosion_radius)
 	var radius_squared: float = effective_explosion_radius * effective_explosion_radius
 	for candidate in candidates:
@@ -161,9 +163,3 @@ func _recycle_mine(mine_index: int) -> void:
 func _recycle_all_mines() -> void:
 	for mine_index in range(mine_states.size()):
 		_recycle_mine(mine_index)
-
-func _is_hostile_candidate(candidate: Node) -> bool:
-	return (
-		is_instance_valid(candidate)
-		and (candidate.is_in_group("asteroid") or candidate.is_in_group("enemy"))
-	)

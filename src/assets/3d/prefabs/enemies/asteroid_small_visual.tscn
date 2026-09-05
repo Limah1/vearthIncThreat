@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dc3or4e1guebf"]
+
+[ext_resource type="PackedScene" uid="uid://bue7phy21aecb" path="res://src/assets/3d/prefabs/enemies/AlienWorm.glb" id="1_ytuaq"]
+
+[node name="AsteroidSmallVisual" type="Node3D" unique_id=1159249327]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+
+[node name="Model" parent="." unique_id=1020961177 instance=ExtResource("1_ytuaq")]
+transform = Transform3D(-0.06202384, 0.108772576, 0.48406777, -0.008321745, 0.487539, -0.110618845, -0.49606836, -0.021778587, -0.058667716, -2.129707, 0, -3.750844)

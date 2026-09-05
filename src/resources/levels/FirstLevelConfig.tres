@@ -1,9 +1,16 @@
-[gd_resource type="Resource" script_class="LevelConfig" format=3 uid="uid://bwxbhykhow66j"]
+[gd_resource type="Resource" script_class="LevelConfig" load_steps=8 format=3 uid="uid://bwxbhykhow66j"]
 
 [ext_resource type="Script" uid="uid://ikgwhhg7fyul" path="res://src/resources/level_config.gd" id="1_gdetf"]
 [ext_resource type="Texture2D" uid="uid://cgg7ke1b7rwm2" path="res://src/assets/UI/UpgradeIcons/T_MoreAsteroids.png" id="2_icon"]
 [ext_resource type="PackedScene" path="res://src/levels/GridCombatLevel.tscn" id="3_level_scene"]
 [ext_resource type="Resource" path="res://src/prototypes/grid_combat/resources/GridPrototypeConfig.tres" id="4_grid_config"]
+[ext_resource type="Script" path="res://src/resources/enemy_spawn_entry.gd" id="5_spawn_entry"]
+[ext_resource type="Resource" path="res://src/resources/enemies/asteroid_small.tres" id="6_enemy_small"]
+
+[sub_resource type="Resource" id="Resource_enemy_small"]
+script = ExtResource("5_spawn_entry")
+enemy = ExtResource("6_enemy_small")
+spawn_weight = 1.0
 
 [resource]
 script = ExtResource("1_gdetf")
@@ -14,6 +21,9 @@ icon = ExtResource("2_icon")
 level_scene = ExtResource("3_level_scene")
 actor_type = "small_asteroid"
 total_enemies = 200
+enemies_per_spawn_point = 1
+spawn_interval_seconds = 1.0
+enemy_roster = Array[ExtResource("5_spawn_entry")]([SubResource("Resource_enemy_small")])
 grid_combat_enabled = true
 grid_board_config = ExtResource("4_grid_config")
 starting_ally_ships = 4

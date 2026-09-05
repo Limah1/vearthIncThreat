@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://dd52ixg0n8rom"]
+
+[ext_resource type="PackedScene" uid="uid://c3coopn0rewfh" path="res://src/assets/3d/prefabs/turrets/lowpoly_turret.glb" id="1_wfr0a"]
+
+[node name="DefenseBlasterVisual" type="Node3D" unique_id=2077454335]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+
+[node name="AimPivot" type="Node3D" parent="." unique_id=1061395550]
+
+[node name="Body" parent="AimPivot" unique_id=797458074 instance=ExtResource("1_wfr0a")]
+transform = Transform3D(-1.5, 0, -1.3113416e-07, 0, 1.5, 0, 1.3113416e-07, 0, -1.5, 0, 0, 0)
+
+[node name="Muzzle" type="Marker3D" parent="AimPivot" unique_id=1212995852]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5248537, 3.1497588, -0.470983)

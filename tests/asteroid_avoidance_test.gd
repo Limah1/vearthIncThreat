@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 
 const AvoidanceMathUtil = preload("res://src/core/avoidance_math.gd")
 const DamageSystemScript = preload("res://src/core/damage_system.gd")
@@ -14,7 +14,7 @@ const DELTA := 1.0 / 60.0
 
 var _failures: int = 0
 
-func _initialize() -> void:
+func _ready() -> void:
 	call_deferred("_run_tests")
 
 func _run_tests() -> void:
@@ -25,7 +25,7 @@ func _run_tests() -> void:
 		print("Asteroid avoidance tests passed.")
 	else:
 		push_error("Asteroid avoidance tests failed: %d" % _failures)
-	quit(_failures)
+	get_tree().quit(_failures)
 
 func _test_segment_circle_query() -> void:
 	_expect(
@@ -49,6 +49,7 @@ func _test_segment_circle_query() -> void:
 
 func _test_asteroid_damage_teams() -> void:
 	var asteroid: Node = AsteroidInstanceScript.new()
+	add_child(asteroid)
 	asteroid.set("active", true)
 	asteroid.set("hp", 3.0)
 
@@ -71,7 +72,7 @@ func _test_asteroid_damage_teams() -> void:
 
 func _test_first_level_routes() -> void:
 	var obstacle_centers: Array[Vector2] = _load_first_level_obstacle_centers()
-	_expect(obstacle_centers.size() == 4, "Level 1 must expose four AllyShips barriers for this test.")
+	_expect(obstacle_centers.size() == 15, "Level 1 fixture must include all fifteen authored allied ships.")
 	if obstacle_centers.is_empty():
 		return
 
@@ -179,7 +180,7 @@ func _load_first_level_obstacle_centers() -> Array[Vector2]:
 	var state: SceneState = level_scene.get_state()
 	for node_index in range(state.get_node_count()):
 		var node_path: String = str(state.get_node_path(node_index))
-		if not node_path.contains("AllyShips/Barrier_"):
+		if not node_path.contains("AllyShips/BasicAllyShip_"):
 			continue
 		var position := Vector2.ZERO
 		for property_index in range(state.get_node_property_count(node_index)):

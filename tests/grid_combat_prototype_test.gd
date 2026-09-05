@@ -108,11 +108,12 @@ func _ready() -> void:
 			break
 	_expect(is_instance_valid(defense_block), "The placed Barrier must use the destructible grid actor.")
 	if is_instance_valid(defense_block):
+		_expect(defense_block.maximum_hp == 200.0 and defense_block.hp == 200.0, "Every placed grid Barrier must start with 200 HP.")
 		_expect(
 			GameManager.get_barrier_collision(defense_block.global_position, 0.0) == defense_block,
 			"Production asteroid collision queries must find the brown Barrier."
 		)
-		defense_block.receive_damage(10.0, DamageSystemScript.Team.ENEMY)
+		defense_block.receive_damage(200.0, DamageSystemScript.Team.ENEMY)
 	await get_tree().process_frame
 	_expect(prototype.board.is_cell_available(Vector2i(0, 0)), "A destroyed Barrier must release its cell.")
 

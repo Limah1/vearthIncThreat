@@ -2,5 +2,10 @@
 extends Node2D
 class_name SpawnerPoint
 
-# Marker node in the scene.
-# Its position is gathered by the Spawner manager (spawner.gd) using Node Groups.
+const GROUP_NAME: StringName = &"spawn_point"
+
+## Marker node in the scene. SpawnPath also supports legacy plain Node2D points
+## by registering them in the same group.
+
+func _enter_tree() -> void:
+	add_to_group(GROUP_NAME)

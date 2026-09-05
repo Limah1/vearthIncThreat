@@ -11,6 +11,7 @@ var upgrades_by_id: Dictionary = {}
 
 # Player's current levels: { upgrade_id: int }
 var purchased_levels: Dictionary = {}
+var b_next_debris_guaranteed: bool = false
 var skill_tree_config: SkillTreeConfig = null
 
 func _ready() -> void:

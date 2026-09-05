@@ -1,26 +1,8 @@
-[gd_scene format=3 uid="uid://cwnyrmn1v5frt"]
+[gd_scene load_steps=3 format=3 uid="uid://cwnyrmn1v5frt"]
 
 [ext_resource type="Script" path="res://src/entities/barrier_turret.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/resources/turrets/DefaultTurretConfig.tres" id="2_config"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blaster"]
-shading_mode = 0
-albedo_color = Color(1, 0.38, 0.08, 1)
-roughness = 0.45
-emission_enabled = false
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_blaster"]
-material = SubResource("StandardMaterial3D_blaster")
-top_radius = 7.0
-bottom_radius = 7.0
-height = 3.0
-radial_segments = 3
-rings = 1
-
 [node name="DefenseBlaster" type="Node3D"]
 script = ExtResource("1_script")
 turret_config = ExtResource("2_config")
-
-[node name="TurretMesh" type="MeshInstance3D" parent="."]
-mesh = SubResource("CylinderMesh_blaster")
-cast_shadow = 0

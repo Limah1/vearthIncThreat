@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://bi6rsskkx5hdu"]
+
+[ext_resource type="Script" uid="uid://b7wshgicc81qg" path="res://src/resources/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://7imlbatugs2j" path="res://src/resources/visuals/enemies/asteroid_small_visual.tres" id="2_visual"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_id = &"asteroid_small"
+display_name = "Small Asteroid"
+description = "Fast, light asteroid that travels toward the planet."
+face_planet = true
+visual_asset = ExtResource("2_visual")
+max_hp = 1.0
+damage = 1.0
+radius = 24.0
+movement_speed = 85.0
+rotation_speed = 0.0

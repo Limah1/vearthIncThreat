@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://baj70n46w8ht7"]
+
+[ext_resource type="Script" uid="uid://d01ey52he3qly" path="res://src/prototypes/mass_enemies/mass_enemy_playable.gd" id="1"]
+
+[node name="MassEnemyPlayable5000" type="Node" unique_id=231883524]
+script = ExtResource("1")

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b7ff2bolcnbu7"
+path="res://.godot/imported/enemy_transforms.glsl-611feca5965b86bddc7764ec8fca61ae.res"
+
+[deps]
+
+source_file="res://src/assets/shaders/enemy_transforms.glsl"
+dest_files=["res://.godot/imported/enemy_transforms.glsl-611feca5965b86bddc7764ec8fca61ae.res"]
+
+[params]
+

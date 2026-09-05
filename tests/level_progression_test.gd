@@ -22,7 +22,7 @@ func _test_asteroid_health_range() -> void:
 	var asteroid: AsteroidInstance = ASTEROID_SCRIPT.new()
 	for _sample in range(100):
 		asteroid.set_asteroid_type("small")
-		_expect(asteroid.max_hp >= 1.0 and asteroid.max_hp <= 5.0, "Asteroid HP must stay in the 1–5 range.")
+		_expect(asteroid.max_hp == 1.0, "Small Asteroid HP must stay fixed at one.")
 		_expect(is_equal_approx(asteroid.hp, asteroid.max_hp), "Asteroid current HP must reset to its rolled maximum.")
 	asteroid.free()
 
